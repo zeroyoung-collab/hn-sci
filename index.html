@@ -29,7 +29,8 @@ a.card:hover{border-color:var(--green);transform:translateY(-1px)}
 .ct .d{font-size:13px;color:var(--soft);margin-top:2px}
 .arrow{margin-left:auto;color:var(--line);font-size:20px;font-weight:900}
 a.card:hover .arrow{color:var(--green)}
-.due{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:20px;background:#eceff4;color:var(--soft);font-size:12px;font-weight:900;vertical-align:middle;white-space:nowrap}
+.due{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:20px;background:var(--gold);color:var(--navy2);font-size:12px;font-weight:900;vertical-align:middle;white-space:nowrap}
+.due.over{background:#eceff4;color:var(--soft)}
 .note{background:var(--lt);border:2px solid #bfe3cb;border-radius:12px;padding:12px 14px;font-size:13px;color:var(--soft);margin-top:18px}
 .note b{color:var(--green-d)}
 footer{text-align:center;font-size:12px;color:#8a94a3;padding:20px 0 30px}
@@ -60,13 +61,13 @@ footer b{color:var(--green-d)}
   <div class="sec">학생 배포용</div>
   <a class="card" href="https://zeroyoung-collab.github.io/science-archive/vote/">
     <div class="ic">🗳️</div>
-    <div class="ct"><div class="t">SSI 탐구보고서 투표</div>
-    <div class="d">전교생 투표 페이지 (1인 1표 · 최대 4팀)</div></div>
+    <div class="ct"><div class="t">SSI 탐구보고서 투표 <span class="due" id="due-vote"></span></div>
+    <div class="d">전교생 투표 페이지 (1인 1표 · 최대 4팀) — <b style="color:var(--green-d)">9/23(수)까지</b></div></div>
     <div class="arrow">›</div>
   </a>
   <a class="card" href="https://glistening-puppy-159fa5.netlify.app/">
     <div class="ic">🔬</div>
-    <div class="ct"><div class="t">찾아오는 과학실험 수요조사 <span class="due">종료</span></div>
+    <div class="ct"><div class="t">찾아오는 과학실험 수요조사 <span class="due over">종료</span></div>
     <div class="d">조사 종료 — 결과 열람용</div></div>
     <div class="arrow">›</div>
   </a>
@@ -80,5 +81,15 @@ footer b{color:var(--green-d)}
   <div class="note"><b>비밀번호 안내</b> — 선생님용 페이지는 공용 비밀번호(과학과 단체방 공지)를 입력하고 들어가시면 됩니다.</div>
 </main>
 <footer>호남고등학교 과학과 · 2026학년도 &nbsp;|&nbsp; 제작 · <b>호남고 조영신</b></footer>
+<script>
+(function(){
+  const el = document.getElementById("due-vote");
+  const due = new Date(2026, 8, 23, 23, 59, 59);   // 2026-09-23(수)
+  const today = new Date();
+  const days = Math.ceil((new Date(2026,8,23) - new Date(today.getFullYear(),today.getMonth(),today.getDate())) / 86400000);
+  if (today > due) { el.textContent = "마감"; el.classList.add("over"); }
+  else el.textContent = days === 0 ? "오늘 마감!" : "마감 9/23(수) · D-" + days;
+})();
+</script>
 </body>
 </html>
