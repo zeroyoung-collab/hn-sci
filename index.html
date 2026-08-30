@@ -62,13 +62,7 @@ footer b{color:var(--green-d)}
   <a class="card" href="https://zeroyoung-collab.github.io/science-archive/vote/">
     <div class="ic">🗳️</div>
     <div class="ct"><div class="t">SSI 탐구보고서 투표 <span class="due" id="due-vote"></span></div>
-    <div class="d">전교생 투표 페이지 (1인 1표 · 최대 4팀) — <b style="color:var(--green-d)">9/23(수)까지</b></div></div>
-    <div class="arrow">›</div>
-  </a>
-  <a class="card" href="https://glistening-puppy-159fa5.netlify.app/">
-    <div class="ic">🔬</div>
-    <div class="ct"><div class="t">찾아오는 과학실험 수요조사 <span class="due over">종료</span></div>
-    <div class="d">조사 종료 — 결과 열람용</div></div>
+    <div class="d">전교생·선생님 투표 (1인 최대 4팀 복수 선택) — <b style="color:var(--green-d)">8/31(월) 10시 ~ 9/18(금) 10시</b></div></div>
     <div class="arrow">›</div>
   </a>
   <a class="card" href="https://stupendous-pavlova-4932ca.netlify.app/">
@@ -84,11 +78,15 @@ footer b{color:var(--green-d)}
 <script>
 (function(){
   const el = document.getElementById("due-vote");
-  const due = new Date(2026, 8, 23, 23, 59, 59);   // 2026-09-23(수)
-  const today = new Date();
-  const days = Math.ceil((new Date(2026,8,23) - new Date(today.getFullYear(),today.getMonth(),today.getDate())) / 86400000);
-  if (today > due) { el.textContent = "마감"; el.classList.add("over"); }
-  else el.textContent = days === 0 ? "오늘 마감!" : "마감 9/23(수) · D-" + days;
+  const OPEN  = new Date(2026, 7, 31, 10, 0, 0);   // 2026-08-31(월) 10:00
+  const CLOSE = new Date(2026, 8, 18, 10, 0, 0);   // 2026-09-18(금) 10:00
+  const now = new Date();
+  if (now < OPEN) { el.textContent = "8/31(월) 10시 오픈"; }
+  else if (now >= CLOSE) { el.textContent = "마감"; el.classList.add("over"); }
+  else {
+    const days = Math.ceil((new Date(2026,8,18) - new Date(now.getFullYear(),now.getMonth(),now.getDate())) / 86400000);
+    el.textContent = days === 0 ? "오늘 10시 마감!" : "마감 9/18(금) 10시 · D-" + days;
+  }
 })();
 </script>
 </body>
