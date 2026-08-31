@@ -4,77 +4,76 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>호남고 과학과</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;800;900&display=swap" rel="stylesheet">
 <style>
 :root{
   --navy:#0B3E86; --navy2:#092f66; --gold:#F5B301; --gold-d:#c8920a;
-  --green:#1A9A3E; --green-d:#0f7a2d; --ink:#141a24; --soft:#3d4652; --line:#b9c4d4; --lt:#eef7f0;
+  --green:#1A9A3E; --green-d:#0f7a2d; --ink:#141a24; --soft:#3d4652;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'Noto Sans KR',sans-serif;background:#f4f9f5;color:var(--ink);word-break:keep-all;min-height:100vh;display:flex;flex-direction:column}
-header{background:linear-gradient(150deg,#0f7a2d,#1A9A3E,#0c6425);color:#fff;padding:34px 20px 26px;text-align:center;position:relative}
-header::after{content:"";position:absolute;left:0;right:0;bottom:0;height:4px;background:linear-gradient(90deg,var(--gold),var(--navy))}
-header .en{color:var(--gold);font-size:11px;font-weight:700;letter-spacing:.16em}
-header h1{font-size:26px;font-weight:900;letter-spacing:-.02em;margin-top:4px}
-header p{font-size:13.5px;color:#d9f2e0;margin-top:8px}
-main{max-width:640px;margin:0 auto;padding:26px 16px 40px;width:100%;flex:1}
-.sec{font-size:15px;font-weight:900;color:var(--green-d);padding-left:12px;position:relative;margin:22px 0 10px}
-.sec::before{content:"";position:absolute;left:0;top:3px;width:6px;height:17px;background:var(--gold);border-radius:3px}
-.sec:first-child{margin-top:0}
-a.card{display:flex;align-items:center;gap:14px;background:#fff;border:2px solid var(--line);border-radius:14px;padding:16px;margin-bottom:10px;text-decoration:none;color:inherit;transition:border-color .15s, transform .1s}
-a.card:hover{border-color:var(--green);transform:translateY(-1px)}
-.ic{width:46px;height:46px;border-radius:12px;background:var(--green);color:#fff;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0}
-.ic.n{background:var(--navy)}
-.ct .t{font-weight:900;font-size:16px;color:var(--ink)}
-.ct .d{font-size:13px;color:var(--soft);margin-top:2px}
-.arrow{margin-left:auto;color:var(--line);font-size:20px;font-weight:900}
-a.card:hover .arrow{color:var(--green)}
-.due{display:inline-block;margin-left:8px;padding:2px 10px;border-radius:20px;background:var(--gold);color:var(--navy2);font-size:12px;font-weight:900;vertical-align:middle;white-space:nowrap}
-.due.over{background:#eceff4;color:var(--soft)}
-.note{background:var(--lt);border:2px solid #bfe3cb;border-radius:12px;padding:12px 14px;font-size:13px;color:var(--soft);margin-top:18px}
+body{font-family:'Noto Sans KR',sans-serif;background:#f3efe6;color:var(--ink);word-break:keep-all;min-height:100vh;display:flex;flex-direction:column}
+.wrap{max-width:660px;margin:0 auto;width:100%;padding:30px 18px 10px;flex:1}
+.head{background:var(--green);color:#fff;border:3px solid var(--green-d);box-shadow:8px 8px 0 var(--gold);padding:22px 26px;margin-bottom:34px}
+.head .en{font-size:11px;font-weight:800;letter-spacing:.24em;color:var(--gold)}
+.head h1{font-size:27px;font-weight:900;letter-spacing:-.02em;margin-top:3px}
+.head h1 small{font-size:14px;font-weight:800;color:var(--gold);margin-left:10px;letter-spacing:0}
+.head p{font-size:13.5px;color:#d9f2e0;margin-top:7px;font-weight:500}
+.sec{display:inline-block;background:var(--gold);color:var(--navy2);font-size:13px;font-weight:900;padding:5px 14px;border:2.5px solid var(--green-d);margin:8px 0 14px;letter-spacing:.08em}
+.sec.n{background:var(--navy);color:#fff;border-color:var(--navy2);margin-top:26px}
+a.card{display:flex;align-items:center;gap:12px;background:#fff;border:2.5px solid var(--green-d);padding:14px 17px;margin-bottom:11px;text-decoration:none;color:inherit;box-shadow:4px 4px 0 rgba(15,122,45,.9);transition:transform .1s,box-shadow .1s}
+a.card:hover{transform:translate(-2px,-2px);box-shadow:6px 6px 0 var(--gold-d)}
+a.card:active{transform:translate(1px,1px);box-shadow:2px 2px 0 rgba(15,122,45,.9)}
+.ct{min-width:0}
+.ct .t{font-weight:800;font-size:15.5px;color:var(--ink)}
+.ct .d{font-size:12.5px;color:var(--soft);margin-top:2px;font-weight:500}
+.arrow{margin-left:auto;flex-shrink:0;color:var(--gold-d);font-size:17px;font-weight:900}
+.due{display:inline-block;margin-left:8px;padding:1px 8px;background:var(--gold);color:var(--navy2);border:2px solid var(--green-d);font-size:11.5px;font-weight:900;vertical-align:middle;white-space:nowrap}
+.due.over{background:#e8e2d4;color:var(--soft);border-color:#b9b19d}
+.note{background:#fff;border:2.5px solid var(--green-d);border-left:10px solid var(--gold);padding:13px 16px;font-size:13px;color:var(--soft);margin-top:24px;font-weight:500}
 .note b{color:var(--green-d)}
-footer{text-align:center;font-size:12px;color:#8a94a3;padding:20px 0 30px}
-footer b{color:var(--green-d)}
+footer{text-align:center;font-size:12.5px;font-weight:800;color:var(--green-d);padding:24px 0 30px}
+@media(max-width:480px){
+  .wrap{padding:22px 14px 10px}
+  .head{box-shadow:6px 6px 0 var(--gold);padding:18px 20px}
+  .head h1{font-size:23px}
+}
 </style>
 </head>
 <body>
-<header>
-  <div class="en">HONAM HIGH SCHOOL · SCIENCE DEPT · 2026</div>
-  <h1>과학과 <span style="font-size:15px;font-weight:700;color:var(--gold)">2026학년도</span></h1>
-  <p>이 주소 하나만 기억하시면 됩니다</p>
-</header>
-<main>
-  <div class="sec">선생님용</div>
+<div class="wrap">
+  <div class="head">
+    <div class="en">HONAM HIGH SCHOOL · SCIENCE DEPT</div>
+    <h1>과학과<small>2026학년도</small></h1>
+    <p>이 주소 하나만 기억하시면 됩니다</p>
+  </div>
+
+  <div><span class="sec">선생님용</span></div>
   <a class="card" href="https://zeroyoung-collab.github.io/science-archive/">
-    <div class="ic n">📚</div>
     <div class="ct"><div class="t">과학과 활동 아카이브</div>
     <div class="d">소감문 · SSI · 통합과학 · KENTECH 활동 기록</div></div>
-    <div class="arrow">›</div>
+    <div class="arrow">→</div>
   </a>
   <a class="card" href="https://zeroyoung-collab.github.io/science-archive/vote/admin.html">
-    <div class="ic n">📊</div>
     <div class="ct"><div class="t">SSI 투표 현황판</div>
     <div class="d">탐구보고서 투표 실시간 집계</div></div>
-    <div class="arrow">›</div>
+    <div class="arrow">→</div>
   </a>
 
-  <div class="sec">학생 배포용</div>
+  <div><span class="sec n">학생 배포용</span></div>
   <a class="card" href="https://zeroyoung-collab.github.io/science-archive/vote/">
-    <div class="ic">🗳️</div>
     <div class="ct"><div class="t">SSI 탐구보고서 투표 <span class="due" id="due-vote"></span></div>
     <div class="d">전교생·선생님 투표 (1인 최대 4팀 복수 선택) — <b style="color:var(--green-d)">8/31(월) 10시 ~ 9/18(금) 10시</b></div></div>
-    <div class="arrow">›</div>
+    <div class="arrow">→</div>
   </a>
   <a class="card" href="https://stupendous-pavlova-4932ca.netlify.app/">
-    <div class="ic">⚗️</div>
     <div class="ct"><div class="t">화학실험실 예약</div>
     <div class="d">실험실당 3명 선착순 예약</div></div>
-    <div class="arrow">›</div>
+    <div class="arrow">→</div>
   </a>
 
   <div class="note"><b>비밀번호 안내</b> — 선생님용 페이지는 공용 비밀번호(과학과 단체방 공지)를 입력하고 들어가시면 됩니다.</div>
-</main>
-<footer>호남고등학교 과학과 · 2026학년도 &nbsp;|&nbsp; 제작 · <b>호남고 조영신</b></footer>
+</div>
+<footer>호남고등학교 과학과 · 2026학년도 &nbsp;|&nbsp; 제작 · 호남고 조영신</footer>
 <script>
 (function(){
   const el = document.getElementById("due-vote");
