@@ -334,7 +334,7 @@ function answer(i, c){
   if((myDoc.ans||{})[i] !== undefined) return;
   const ms = Math.max(0, Date.now() - (state.qOpenAt || Date.now()));
   myDoc.ans = Object.assign({}, myDoc.ans, {[i]: {c, ms}});   // 즉시 잠금
-  save({ ["ans." + i]: {c, ms} });
+  save({ ans: { [i]: {c, ms} } });                             // setDoc(merge)는 점 경로 미지원 — 중첩 merge 사용
   render();
 }
 

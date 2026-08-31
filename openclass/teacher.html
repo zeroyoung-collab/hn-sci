@@ -263,42 +263,63 @@ function svgCompare(){
     ${panel(380, "현재", re2, "#d64545")}
   </svg>`;
 }
-/* 열수지 단계 다이어그램 */
+/* 열수지 단계 다이어그램 — 미래엔 교과서 그림 스타일(빨강=태양 복사, 파랑=지구 복사, 재복사=온실 효과) */
+function bundleArrows(x1,y1,x2,y2,col,w,n,gap){
+  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), ox=-dy/L*gap, oy=dx/L*gap;
+  let s="";
+  for(let k=0;k<n;k++){
+    const o=k-(n-1)/2;
+    s+=`<line x1="${(x1+ox*o).toFixed(1)}" y1="${(y1+oy*o).toFixed(1)}" x2="${(x2+ox*o).toFixed(1)}" y2="${(y2+oy*o).toFixed(1)}" stroke="${col}" stroke-width="${w}" marker-end="url(#ma)"/>`;
+  }
+  return s;
+}
 function svgBudget(step){
   const S = (n, html) => step >= n ? html : "";
   return `<svg viewBox="0 0 960 520">
     <defs>
-      <marker id="ma" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0L7,3.5L0,7z" fill="context-stroke"/></marker>
+      <marker id="ma" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0L6,3L0,6z" fill="context-stroke"/></marker>
       <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#eaf2fd"/><stop offset="1" stop-color="#f8fbff"/>
-      </linearGradient>
+        <stop offset="0" stop-color="#d8ebfd"/><stop offset="1" stop-color="#f6fafe"/></linearGradient>
+      <radialGradient id="sun"><stop offset="0" stop-color="#ffe173"/><stop offset=".65" stop-color="#ffc93c"/><stop offset="1" stop-color="#f59f00"/></radialGradient>
+      <linearGradient id="gnd" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#8fbe74"/><stop offset="1" stop-color="#679a4d"/></linearGradient>
     </defs>
-    <rect x="0" y="0" width="960" height="430" fill="url(#sky)"/>
-    <rect x="0" y="185" width="960" height="60" rx="10" fill="#cfe0f5" opacity=".75"/>
-    <text x="478" y="222" text-anchor="middle" font-size="19" font-weight="900" fill="#0B3E86">대기 · 구름 (온실 기체 포함)</text>
-    <rect x="0" y="430" width="960" height="90" fill="#8a6b48"/>
-    <text x="480" y="483" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">지표</text>
-    <circle cx="95" cy="75" r="52" fill="#F5B301"/>
-    <text x="95" y="83" text-anchor="middle" font-size="24" font-weight="900" fill="#7c5c00">태양</text>
+    <rect x="0" y="0" width="960" height="455" fill="url(#sky)"/>
+    <!-- 대기층 -->
+    <rect x="0" y="150" width="960" height="82" fill="#a9cdf0" opacity=".55"/>
+    <ellipse cx="250" cy="163" rx="52" ry="15" fill="#fff" opacity=".85"/>
+    <ellipse cx="300" cy="172" rx="40" ry="13" fill="#fff" opacity=".75"/>
+    <ellipse cx="600" cy="218" rx="48" ry="14" fill="#fff" opacity=".8"/>
+    <text x="948" y="178" text-anchor="end" font-size="20" font-weight="900" fill="#0B3E86">지구 대기</text>
+    <text x="948" y="200" text-anchor="end" font-size="14" font-weight="700" fill="#3f6ea8">(온실 기체 포함)</text>
+    <!-- 지표면 -->
+    <rect x="0" y="455" width="960" height="65" fill="url(#gnd)"/>
+    <rect x="0" y="500" width="960" height="20" fill="#8a6b48"/>
+    <text x="480" y="486" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">지표면</text>
+    <!-- 태양 -->
+    <circle cx="92" cy="78" r="55" fill="url(#sun)"/>
+    <text x="92" y="86" text-anchor="middle" font-size="22" font-weight="900" fill="#8a5a00">태양</text>
 
-    ${S(1,`<line x1="150" y1="105" x2="330" y2="420" stroke="#e8a800" stroke-width="14" marker-end="url(#ma)"/>
-      <text x="180" y="240" font-size="26" font-weight="900" fill="#c8920a">태양 복사 100</text>`)}
-    ${S(2,`<line x1="300" y1="330" x2="420" y2="80" stroke="#9db4d6" stroke-width="9" marker-end="url(#ma)"/>
-      <text x="400" y="120" font-size="24" font-weight="900" fill="#5b7cad">반사 30</text>
-      <text x="400" y="150" font-size="16" fill="#5b7cad">(구름·대기·지표)</text>`)}
-    ${S(3,`<circle cx="480" cy="215" r="40" fill="#1f6fd6"/>
-      <text x="480" y="208" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">대기 흡수</text>
-      <text x="480" y="231" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">25</text>`)}
-    ${S(4,`<circle cx="620" cy="415" r="46" fill="#1A9A3E"/>
-      <text x="620" y="408" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">지표 흡수</text>
-      <text x="620" y="433" text-anchor="middle" font-size="24" font-weight="900" fill="#fff">45</text>`)}
-    ${S(5,`<line x1="760" y1="420" x2="760" y2="60" stroke="#d64545" stroke-width="10" stroke-dasharray="14 8" marker-end="url(#ma)"/>
-      <text x="770" y="120" font-size="23" font-weight="900" fill="#d64545">지구 복사(적외선)</text>
-      <line x1="860" y1="245" x2="860" y2="415" stroke="#c8920a" stroke-width="8" marker-end="url(#ma)"/>
-      <text x="868" y="330" font-size="20" font-weight="900" fill="#c8920a">재복사</text>
-      <text x="868" y="355" font-size="16" fill="#c8920a">(온실효과)</text>`)}
-    ${S(6,`<rect x="270" y="20" width="420" height="46" rx="10" fill="#0B3E86"/>
-      <text x="480" y="51" text-anchor="middle" font-size="24" font-weight="900" fill="#fff">흡수 70  =  방출 70  →  복사 평형!</text>`)}
+    ${S(1, bundleArrows(150,112, 335,445, "#e2483d", 5, 3, 15) + `
+      <text x="120" y="320" font-size="25" font-weight="900" fill="#c92f24">태양 복사</text>
+      <text x="120" y="350" font-size="25" font-weight="900" fill="#c92f24">에너지 100</text>`)}
+    ${S(2, bundleArrows(320,360, 445,58, "#f08c3a", 4.5, 2, 13) + `
+      <text x="452" y="88" font-size="23" font-weight="900" fill="#d8752a">반사 30</text>
+      <text x="452" y="112" font-size="15" font-weight="700" fill="#d8752a">(구름·대기·지표)</text>`)}
+    ${S(3,`<circle cx="530" cy="191" r="38" fill="#1f6fd6"/>
+      <text x="530" y="185" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">대기 흡수</text>
+      <text x="530" y="209" text-anchor="middle" font-size="21" font-weight="900" fill="#fff">25</text>`)}
+    ${S(4,`<circle cx="620" cy="447" r="42" fill="#1A9A3E"/>
+      <text x="620" y="441" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">지표 흡수</text>
+      <text x="620" y="466" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">45</text>`)}
+    ${S(5, bundleArrows(724,442, 724,52, "#2e6fd0", 4.5, 3, 14) + `
+      <text x="700" y="34" font-size="21" font-weight="900" fill="#2456a8">지구 복사 에너지(적외선)</text>`
+      + bundleArrows(838,448, 858,240, "#5f8fd6", 3.5, 2, 10)
+      + bundleArrows(888,238, 908,446, "#2e6fd0", 3.5, 2, 10) + `
+      <text x="835" y="300" font-size="19" font-weight="900" fill="#2456a8">온실 효과</text>
+      <text x="835" y="322" font-size="14" font-weight="700" fill="#2456a8">(재복사)</text>`)}
+    ${S(6,`<rect x="255" y="14" width="430" height="46" rx="10" fill="#0B3E86"/>
+      <text x="470" y="45" text-anchor="middle" font-size="23" font-weight="900" fill="#fff">흡수 70  =  방출 70  →  복사 평형!</text>`)}
   </svg>`;
 }
 
@@ -506,14 +527,14 @@ QUIZ.forEach((q, i) => {
     space(){
       const revealed = (state.ans || {})[i] !== undefined;
       if(!state.qOpen && !revealed){ setState({qIndex:i, qOpen:true, qOpenAt:Date.now()}); return true; }
-      if(state.qOpen && !revealed){ setState({qOpen:false, ["ans."+i]: q.ans}); return true; }
+      if(state.qOpen && !revealed){ setState({qOpen:false, ans:{[i]: q.ans}}); return true; }
       return false;
     },
     acts(){
       const revealed = (state.ans || {})[i] !== undefined;
       return [
         ["문제 열기 (Space)", "gold", () => setState({qIndex:i, qOpen:true, qOpenAt:Date.now()}), state.qOpen || revealed],
-        ["정답 공개 (Space)", "green", () => setState({qOpen:false, ["ans."+i]: q.ans}), revealed || !state.qOpen],
+        ["정답 공개 (Space)", "green", () => setState({qOpen:false, ans:{[i]: q.ans}}), revealed || !state.qOpen],
       ];
     } });
 });
@@ -661,7 +682,7 @@ document.addEventListener("keydown", e => {
   }
   else if(e.key === "f" || e.key === "F"){ document.documentElement.requestFullscreen?.(); }
 });
-go(0);
+go(Math.min(slides.length-1, Math.max(0, +(new URLSearchParams(location.search).get("slide") || 0))));
 </script>
 </body>
 </html>
