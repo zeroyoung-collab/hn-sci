@@ -81,6 +81,29 @@ textarea:focus{ border-color:var(--navy); }
 .votegrid button.on{ border-color:var(--gold); background:#fffaf0; }
 .votegrid button:disabled{ opacity:.4; }
 
+/* 열수지 퍼즐 (모둠 보드) */
+body.puzzle main{ max-width:920px; }
+.leaderToggle{ width:100%; font:inherit; font-size:14px; font-weight:900; padding:12px 0; margin-top:2px;
+  border:2px solid var(--line); border-radius:10px; background:#fff; color:var(--soft); }
+.leaderToggle.on{ border-color:var(--gold-d); background:#fffaf0; color:var(--gold-d); }
+.pzwrap{ position:relative; width:100%; height:0; padding-bottom:54.17%; margin-top:10px;
+  border:2px solid var(--line); border-radius:12px; overflow:hidden; background:#dcebfa; }
+.pzwrap #pzSvg{ position:absolute; inset:0; }
+.pzwrap #pzSvg svg{ width:100%; height:100%; display:block; }
+.pzwrap canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none;
+  -webkit-user-select:none; user-select:none; }
+.pztools{ display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+.pztools button{ font:inherit; font-size:12.5px; font-weight:900; padding:9px 12px; border-radius:9px;
+  border:2px solid var(--line); background:#fff; color:var(--soft); }
+#penPink.on{ border-color:#e2547e; color:#e2547e; background:#fdf0f4; }
+#penGold.on{ border-color:#e09b00; color:#e09b00; background:#fff8e8; }
+.pzvals{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.pzvals label{ margin:10px 0 4px; font-size:11px; }
+.pzvals input{ width:100%; font:inherit; font-size:20px; font-weight:900; text-align:center;
+  padding:10px 4px; border:2px solid var(--line); border-radius:10px; outline:none; }
+.pzvals input:focus{ border-color:var(--navy); }
+.savedot{ font-size:11.5px; color:var(--green); font-weight:700; margin-top:8px; }
+
 footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; padding:8px 0 12px; }
 .conn{ position:fixed; top:10px; right:12px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:12px; }
 .conn.on{ background:#e7f5ec; color:#136e2e; } .conn.off{ background:#fde8e8; color:#a02b2b; }
@@ -103,6 +126,8 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
     <input type="text" id="inName" maxlength="10" placeholder="예) 김호남">
     <label>모둠</label>
     <div class="teamgrid" id="teamGrid"></div>
+    <label>모둠 태블릿(팀장 기기)인가요?</label>
+    <button class="leaderToggle" id="btnLeader" type="button">👑 이 기기를 팀장 보드로 쓸게요</button>
     <button class="big" id="btnJoin">입장하기</button>
   </section>
 
@@ -120,6 +145,39 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
     <div class="predval"><span id="predNum">30</span><small> / 100</small></div>
     <input type="range" id="predRange" min="0" max="100" value="30">
     <button class="big gold" id="btnPredict">제출하기</button>
+  </section>
+
+  <!-- 열수지 퍼즐 (모둠 보드) -->
+  <section id="vPuzzle" class="card hidden">
+    <h2>열수지 퍼즐 — 태양 에너지 100의 행방을 찾아라</h2>
+    <p class="desc"><b>MISSION</b> — 빈칸 (가)~(다)를 채우고, 지구에서 <b>나가는 에너지 화살표</b>(지구 복사·재복사)를 손가락으로 그림 위에 직접 그리세요. 단서는 하나: <b>들어온 양과 나간 양은 반드시 같다!</b></p>
+    <div id="pzClaim" class="hidden">
+      <button class="big gold" id="btnClaim" style="margin-top:0">👑 이 기기를 팀장 보드로 쓰기</button>
+    </div>
+    <div class="pzwrap" id="pzWrap">
+      <div id="pzSvg"></div>
+      <canvas id="pzCanvas"></canvas>
+    </div>
+    <p class="desc hidden" id="pzViewNote" style="margin:8px 0 0">👀 우리 모둠 팀장 보드를 실시간으로 보는 중 — 태블릿에 모여 함께 토의하세요!</p>
+    <div id="pzEdit">
+      <div class="pztools">
+        <button id="penPink" class="on" type="button">🖊 지구 복사 펜</button>
+        <button id="penGold" type="button">🖊 태양 복사 펜</button>
+        <button id="penUndo" type="button">↩ 되돌리기</button>
+        <button id="penClear" type="button">전체 지우기</button>
+      </div>
+      <div class="pzvals">
+        <div><label>(가) 반사</label><input type="text" inputmode="numeric" maxlength="3" id="pz_ga"></div>
+        <div><label>(나) 대기·구름 흡수</label><input type="text" inputmode="numeric" maxlength="3" id="pz_na"></div>
+        <div><label>(다) 지표 흡수</label><input type="text" inputmode="numeric" maxlength="3" id="pz_da"></div>
+      </div>
+      <label>② 흡수한 양 = 방출하는 양, 이 상태를 뭐라고 할까?</label>
+      <input type="text" id="pzTerm" maxlength="15" placeholder="○○ ○○(이)라고 한다">
+      <label>③ [모둠 토의] 온실 기체가 늘어나면 어떤 화살표가 굵어지고, 기온은 어떻게 될까?</label>
+      <textarea id="pzTalk" maxlength="120" style="min-height:70px" placeholder="예) 재복사 화살표가 굵어져서 …"></textarea>
+      <p class="desc" style="margin:10px 0 0; font-size:12px">HINT 1 · (가)는 수업 처음에 다 같이 예측했던 바로 그 값! &nbsp;HINT 2 · 세 값을 모두 더하면 반드시 100. &nbsp;HINT 3 · 온실 기체는 '들어오는 빛'이 아니라 '나가는 적외선'을 붙잡는다.</p>
+      <p class="savedot" id="pzSaved">입력하면 자동 저장됩니다</p>
+    </div>
   </section>
 
   <!-- 퀴즈 -->
@@ -197,8 +255,9 @@ const QMETA = [
 const BONUS = 100, BONUS_MS = 20000;
 
 const $ = id => document.getElementById(id);
-const views = ["vJoin","vLobby","vPredict","vQuiz","vSentence","vVote","vEnd"];
-function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v)); }
+const views = ["vJoin","vLobby","vPredict","vPuzzle","vQuiz","vSentence","vVote","vEnd"];
+function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v));
+  document.body.classList.toggle("puzzle", v === "vPuzzle"); }
 
 let uid = localStorage.getItem("och_uid");
 if(!uid){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem("och_uid", uid); }
@@ -215,16 +274,19 @@ for(let i=1;i<=5;i++){
   b.onclick = () => { team = i; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===i-1)); };
   tg.appendChild(b);
 }
-if(me){ $("inName").value = me.name; team = me.team; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1)); }
+let leaderSel = false;
+$("btnLeader").onclick = () => { leaderSel = !leaderSel; $("btnLeader").classList.toggle("on", leaderSel); };
+if(me){ $("inName").value = me.name; team = me.team; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1));
+  leaderSel = !!me.leader; $("btnLeader").classList.toggle("on", leaderSel); }
 
 $("btnJoin").onclick = async () => {
   const name = $("inName").value.trim();
   if(!name){ alert("이름을 입력하세요"); return; }
   if(!team){ alert("모둠을 선택하세요"); return; }
-  me = {name, team};
+  me = {name, team, leader: leaderSel};
   localStorage.setItem("och_me", JSON.stringify(me));
   try{
-    await setDoc(doc(db, COL, "stu_"+uid), { name, team, joinedAt: serverTimestamp() }, {merge:true});
+    await setDoc(doc(db, COL, "stu_"+uid), { name, team, leader: leaderSel, joinedAt: serverTimestamp() }, {merge:true});
     joined = true;
     $("meLine").innerHTML = `1학년 5반 · <b>${team}모둠 ${name}</b>`;
     render();
@@ -273,6 +335,7 @@ function render(){
   const ph = state.phase || "lobby";
   if(ph === "lobby"){ show("vLobby"); }
   else if(ph === "predict"){ renderPredict(); }
+  else if(ph === "puzzle"){ renderPuzzle(); }
   else if(ph === "quiz"){ renderQuiz(); }
   else if(ph === "sentence"){ renderSentence(); }
   else if(ph === "vote"){ renderVote(); }
@@ -289,6 +352,173 @@ function renderPredict(){
   const done = myDoc.predict !== undefined;
   $("btnPredict").disabled = done || !state.predictOpen;
   $("btnPredict").textContent = done ? `제출 완료 (${myDoc.predict})` : (state.predictOpen ? "제출하기" : "잠시 후 열립니다");
+}
+
+/* ── 열수지 퍼즐 (모둠 보드) ── */
+let pen = "#e2547e", strokes = [], drawing = null;
+let pzDoc = {}, pzUnsub = null, pzInit = false, pzSaveT = null;
+const isLeader = () => !!(me && me.leader);
+const pzCv = $("pzCanvas"), pzCtx = pzCv.getContext("2d");
+
+function pzArrow(x1,y1,x2,y2,w,fill,stroke){
+  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L, px=-uy, py=ux;
+  const hl=Math.min(w*1.7, L*.4), hw=w*2.1, bx=x2-ux*hl, by=y2-uy*hl, h=w/2;
+  const P=(x,y)=>`${x.toFixed(1)},${y.toFixed(1)}`;
+  return `<polygon points="${P(x1+px*h,y1+py*h)} ${P(bx+px*h,by+py*h)} ${P(bx+px*hw/2,by+py*hw/2)} ${P(x2,y2)} ${P(bx-px*hw/2,by-py*hw/2)} ${P(bx-px*h,by-py*h)} ${P(x1-px*h,y1-py*h)}" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round" opacity=".95"/>`;
+}
+function pzCloud(cx,cy,s=1){
+  return `<g fill="#fff" opacity=".95">
+    <ellipse cx="${cx}" cy="${cy}" rx="${34*s}" ry="${15*s}"/>
+    <ellipse cx="${cx-22*s}" cy="${cy+4*s}" rx="${20*s}" ry="${11*s}"/>
+    <ellipse cx="${cx+24*s}" cy="${cy+5*s}" rx="${22*s}" ry="${12*s}"/>
+    <ellipse cx="${cx+2*s}" cy="${cy-9*s}" rx="${20*s}" ry="${12*s}"/></g>`;
+}
+function pzValBox(x,y,label,val){
+  const has = val !== undefined && String(val).trim() !== "";
+  return `<g><rect x="${x}" y="${y}" width="158" height="58" rx="10" fill="#fff" stroke="#c8920a" stroke-width="2"/>
+    <text x="${x+79}" y="${y+21}" text-anchor="middle" font-size="14" font-weight="900" fill="#c8920a">${label}</text>
+    <text x="${x+79}" y="${y+48}" text-anchor="middle" font-size="24" font-weight="900" fill="${has?"#0B3E86":"#b9c4d4"}">${has?val:"?"}</text></g>`;
+}
+function pzSVG(v){
+  v = v || {};
+  const SOL="#ffc93c", SOLS="#e09b00";
+  return `<svg viewBox="0 0 960 520" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="pzatm" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#aecfee"/><stop offset="1" stop-color="#dcebfa"/></linearGradient>
+      <linearGradient id="pzspc" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#101b36"/><stop offset="1" stop-color="#2b4573"/></linearGradient>
+    </defs>
+    <rect x="0" y="0" width="960" height="70" fill="url(#pzspc)"/>
+    <g fill="#fff" opacity=".8"><circle cx="250" cy="18" r="1.5"/><circle cx="320" cy="50" r="1.2"/><circle cx="560" cy="14" r="1.5"/><circle cx="905" cy="56" r="1.2"/></g>
+    <rect x="0" y="70" width="960" height="370" fill="url(#pzatm)"/>
+    <rect x="0" y="440" width="960" height="46" fill="#cdbf9f"/>
+    <rect x="0" y="486" width="960" height="34" fill="#b3a184"/>
+    <line x1="0" y1="70" x2="960" y2="70" stroke="#8fb2d6" stroke-width="1.5"/>
+    <line x1="0" y1="440" x2="960" y2="440" stroke="#a4906d" stroke-width="1.5"/>
+    <rect x="12" y="22" width="58" height="30" rx="15" fill="#5b7cad"/><text x="41" y="43" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">우주</text>
+    <rect x="12" y="240" width="58" height="30" rx="15" fill="#3f6ea8"/><text x="41" y="261" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">대기</text>
+    <rect x="12" y="463" width="58" height="30" rx="15" fill="#7a674a"/><text x="41" y="484" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">지표</text>
+    ${pzArrow(400,46,400,428,34,SOL,SOLS)}
+    <text x="400" y="30" text-anchor="middle" font-size="21" font-weight="900" fill="#fff">태양 복사 100</text>
+    ${pzArrow(330,296,185,62,20,SOL,SOLS)}
+    ${pzCloud(520,272,1.3)}
+    ${pzArrow(418,242,500,276,12,SOL,SOLS)}
+    ${pzValBox(40,84,"(가) 반사", v.ga)}
+    ${pzValBox(548,316,"(나) 대기·구름 흡수", v.na)}
+    ${pzValBox(322,446,"(다) 지표 흡수", v.da)}
+    <rect x="660" y="84" width="284" height="216" rx="14" fill="#fff" opacity=".22"/>
+    <rect x="660" y="84" width="284" height="216" rx="14" fill="none" stroke="#d64577" stroke-width="2.5" stroke-dasharray="8 6"/>
+    <text x="802" y="116" text-anchor="middle" font-size="17" font-weight="900" fill="#d64577">🖊 나가는 에너지</text>
+    <text x="802" y="144" text-anchor="middle" font-size="13.5" font-weight="700" fill="#a04565">지구 복사(적외선)와 재복사 화살표를</text>
+    <text x="802" y="164" text-anchor="middle" font-size="13.5" font-weight="700" fill="#a04565">손가락으로 그림 위에 그려 보세요</text>
+  </svg>`;
+}
+function pzDrawStroke(c, s, W, H){
+  const p = s.p || []; if(p.length < 4) return;
+  c.strokeStyle = s.c; c.fillStyle = s.c; c.lineWidth = (s.w||10)*W/960;
+  c.lineCap = "round"; c.lineJoin = "round"; c.beginPath();
+  for(let i=0;i<p.length;i+=2){ const x=p[i]*W, y=p[i+1]*H; i ? c.lineTo(x,y) : c.moveTo(x,y); }
+  c.stroke();
+  const n=p.length, x2=p[n-2]*W, y2=p[n-1]*H;
+  let ix=n-4; while(ix>1 && Math.hypot(p[ix]*W-x2, p[ix+1]*H-y2) < 14*W/960) ix-=2;
+  const a=Math.atan2(y2-p[ix+1]*H, x2-p[ix]*W), hl=26*W/960;
+  c.beginPath(); c.moveTo(x2,y2);
+  c.lineTo(x2-hl*Math.cos(a-.5), y2-hl*Math.sin(a-.5));
+  c.lineTo(x2-hl*Math.cos(a+.5), y2-hl*Math.sin(a+.5));
+  c.closePath(); c.fill();
+}
+function pzRedraw(){
+  const W = pzCv.width, H = pzCv.height;
+  pzCtx.clearRect(0,0,W,H);
+  strokes.forEach(s => pzDrawStroke(pzCtx, s, W, H));
+  if(drawing) pzDrawStroke(pzCtx, drawing, W, H);
+}
+function pzResize(){
+  const w = $("pzWrap").clientWidth; if(!w) return;
+  const W = Math.round(w*2), H = Math.round(W*520/960);
+  if(pzCv.width !== W || pzCv.height !== H){ pzCv.width = W; pzCv.height = H; }
+  pzRedraw();
+}
+window.addEventListener("resize", () => { if(!$("vPuzzle").classList.contains("hidden")) pzResize(); });
+
+function pzAddPt(e){
+  const r = pzCv.getBoundingClientRect();
+  const nx = Math.min(1, Math.max(0, (e.clientX - r.left)/r.width));
+  const ny = Math.min(1, Math.max(0, (e.clientY - r.top)/r.height));
+  const p = drawing.p;
+  if(p.length >= 400) return;
+  if(p.length >= 2 && Math.hypot(nx-p[p.length-2], ny-p[p.length-1]) < 0.006) return;
+  p.push(+nx.toFixed(4), +ny.toFixed(4));
+}
+pzCv.addEventListener("pointerdown", e => {
+  if(!isLeader()) return;
+  e.preventDefault();
+  drawing = {c:pen, w:10, p:[]};
+  pzAddPt(e);
+  try{ pzCv.setPointerCapture(e.pointerId); }catch(_){}
+});
+pzCv.addEventListener("pointermove", e => { if(!drawing) return; e.preventDefault(); pzAddPt(e); pzRedraw(); });
+const pzEnd = e => {
+  if(!drawing) return;
+  if(drawing.p.length >= 6) strokes.push(drawing);
+  drawing = null; pzRedraw(); pzSave({strokes});
+};
+pzCv.addEventListener("pointerup", pzEnd);
+pzCv.addEventListener("pointercancel", pzEnd);
+
+$("penPink").onclick = () => { pen = "#e2547e"; $("penPink").classList.add("on"); $("penGold").classList.remove("on"); };
+$("penGold").onclick = () => { pen = "#e09b00"; $("penGold").classList.add("on"); $("penPink").classList.remove("on"); };
+$("penUndo").onclick = () => { strokes.pop(); pzRedraw(); pzSave({strokes}); };
+$("penClear").onclick = () => { if(!confirm("그린 화살표를 모두 지울까요?")) return; strokes = []; pzRedraw(); pzSave({strokes}); };
+
+function pzSave(partial){
+  if(!isLeader() || !me) return;
+  setDoc(doc(db, COL, "puzzle_"+me.team),
+    Object.assign({team:me.team, leaderName:me.name, ts:Date.now()}, partial), {merge:true})
+    .then(() => { $("pzSaved").textContent = "✓ 실시간 저장됨 — 선생님 화면과 연동 중"; })
+    .catch(e => { $("pzSaved").textContent = "저장 오류: " + e.message; });
+}
+function pzVals(){
+  return { ga:$("pz_ga").value.trim(), na:$("pz_na").value.trim(), da:$("pz_da").value.trim(),
+    term:$("pzTerm").value.trim(), talk:$("pzTalk").value.trim() };
+}
+["pz_ga","pz_na","pz_da","pzTerm","pzTalk"].forEach(id => {
+  $(id).oninput = () => {
+    if(["pz_ga","pz_na","pz_da"].includes(id)) $("pzSvg").innerHTML = pzSVG(pzVals());
+    clearTimeout(pzSaveT);
+    pzSaveT = setTimeout(() => pzSave(pzVals()), 600);
+  };
+});
+function pzLoadFromDoc(){
+  strokes = pzDoc.strokes || [];
+  $("pz_ga").value = pzDoc.ga || ""; $("pz_na").value = pzDoc.na || ""; $("pz_da").value = pzDoc.da || "";
+  $("pzTerm").value = pzDoc.term || ""; $("pzTalk").value = pzDoc.talk || "";
+}
+function subPuzzle(){
+  if(pzUnsub || !me || !me.team) return;
+  pzUnsub = onSnapshot(doc(db, COL, "puzzle_"+me.team), s => {
+    pzDoc = s.data() || {};
+    if(isLeader() && !pzInit){ pzInit = true; pzLoadFromDoc(); }
+    if((state.phase||"") === "puzzle") renderPuzzle();
+  });
+}
+$("btnClaim").onclick = () => {
+  me.leader = true; localStorage.setItem("och_me", JSON.stringify(me));
+  save({leader:true});
+  pzInit = true; pzLoadFromDoc();
+  renderPuzzle();
+};
+function renderPuzzle(){
+  show("vPuzzle");
+  subPuzzle();
+  const lead = isLeader();
+  $("pzClaim").classList.toggle("hidden", lead);
+  $("pzEdit").classList.toggle("hidden", !lead);
+  $("pzViewNote").classList.toggle("hidden", lead);
+  if(!lead){ strokes = pzDoc.strokes || []; drawing = null; }
+  $("pzSvg").innerHTML = pzSVG(lead ? pzVals() : pzDoc);
+  requestAnimationFrame(pzResize);
 }
 
 /* 퀴즈 */

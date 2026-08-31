@@ -138,6 +138,25 @@ h2.mid{ font-size:5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02e
 .sumbox small{ display:block; font-size:2vh; font-weight:700; color:var(--soft); margin-top:.8vh; }
 .sumarrow{ font-size:5vh; font-weight:900; color:var(--gold-d); }
 
+/* 모둠 보드 (열수지 퍼즐) */
+.pzgrid{ flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:1.5vh 1vw; min-height:0; margin-top:1vh; }
+.pzcard{ border:.3vh solid var(--line); border-radius:1.2vh; padding:1vh 1.2vh; cursor:pointer;
+  display:flex; flex-direction:column; min-height:0; overflow:hidden; background:#fff; }
+.pzcard:hover{ border-color:var(--navy); }
+.pzcard h4{ display:flex; align-items:center; gap:.6vw; font-size:2vh; color:var(--navy); margin-bottom:.6vh; }
+.pzcard h4 .sp{ flex:1; }
+.pzcard .meta{ font-size:1.5vh; color:var(--soft); font-weight:700; }
+.pzcard.note{ cursor:default; background:var(--lt); border-style:dashed; font-size:2vh; line-height:1.8;
+  color:var(--soft); font-weight:500; justify-content:center; padding:1.5vh 2vh; }
+.pzfit{ position:relative; width:100%; height:0; padding-bottom:54.17%; overflow:hidden; border-radius:.8vh; }
+.pzsvgbox{ position:absolute; inset:0; }
+.pzsvgbox svg{ width:100%; height:100%; display:block; }
+.pzfit canvas{ position:absolute; inset:0; width:100%; height:100%; }
+.pzans{ background:var(--lt); border-left:.6vh solid var(--gold); border-radius:.8vh;
+  padding:1.4vh 1.8vh; font-size:2.7vh; line-height:1.55; font-weight:700; }
+.pzans b{ display:block; font-size:1.8vh; color:var(--navy); margin-bottom:.4vh; }
+.dim2{ color:#a8b2c0; font-weight:500; }
+
 /* 퇴장권 피드 */
 .exits{ flex:1; overflow:hidden; display:flex; flex-direction:column; gap:1vh; margin-top:1vh; }
 .exline{ font-size:2.6vh; font-weight:500; }
@@ -344,8 +363,71 @@ function svgBudget(step){
   </svg>`;
 }
 
+/* ── 모둠 보드(열수지 퍼즐) 렌더 — 학생 앱과 동일 좌표계(viewBox 960×520, 획 좌표 0~1 정규화) ── */
+function pzValBox(x,y,label,val){
+  const has = val !== undefined && String(val).trim() !== "";
+  return `<g><rect x="${x}" y="${y}" width="158" height="58" rx="10" fill="#fff" stroke="#c8920a" stroke-width="2"/>
+    <text x="${x+79}" y="${y+21}" text-anchor="middle" font-size="14" font-weight="900" fill="#c8920a">${label}</text>
+    <text x="${x+79}" y="${y+48}" text-anchor="middle" font-size="24" font-weight="900" fill="${has?"#0B3E86":"#b9c4d4"}">${has?val:"?"}</text></g>`;
+}
+function pzSVG(v){
+  v = v || {};
+  const SOL="#ffc93c", SOLS="#e09b00";
+  return `<svg viewBox="0 0 960 520" preserveAspectRatio="xMidYMid meet">
+    <defs>
+      <linearGradient id="pzatm" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#aecfee"/><stop offset="1" stop-color="#dcebfa"/></linearGradient>
+      <linearGradient id="pzspc" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#101b36"/><stop offset="1" stop-color="#2b4573"/></linearGradient>
+    </defs>
+    <rect x="0" y="0" width="960" height="70" fill="url(#pzspc)"/>
+    <g fill="#fff" opacity=".8"><circle cx="250" cy="18" r="1.5"/><circle cx="320" cy="50" r="1.2"/><circle cx="560" cy="14" r="1.5"/><circle cx="905" cy="56" r="1.2"/></g>
+    <rect x="0" y="70" width="960" height="370" fill="url(#pzatm)"/>
+    <rect x="0" y="440" width="960" height="46" fill="#cdbf9f"/>
+    <rect x="0" y="486" width="960" height="34" fill="#b3a184"/>
+    <line x1="0" y1="70" x2="960" y2="70" stroke="#8fb2d6" stroke-width="1.5"/>
+    <line x1="0" y1="440" x2="960" y2="440" stroke="#a4906d" stroke-width="1.5"/>
+    <rect x="12" y="22" width="58" height="30" rx="15" fill="#5b7cad"/><text x="41" y="43" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">우주</text>
+    <rect x="12" y="240" width="58" height="30" rx="15" fill="#3f6ea8"/><text x="41" y="261" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">대기</text>
+    <rect x="12" y="463" width="58" height="30" rx="15" fill="#7a674a"/><text x="41" y="484" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">지표</text>
+    ${fatArrow(400,46,400,428,34,SOL,SOLS)}
+    <text x="400" y="30" text-anchor="middle" font-size="21" font-weight="900" fill="#fff">태양 복사 100</text>
+    ${fatArrow(330,296,185,62,20,SOL,SOLS)}
+    ${cloudShape(520,272,1.3)}
+    ${fatArrow(418,242,500,276,12,SOL,SOLS)}
+    ${pzValBox(40,84,"(가) 반사", v.ga)}
+    ${pzValBox(548,316,"(나) 대기·구름 흡수", v.na)}
+    ${pzValBox(322,446,"(다) 지표 흡수", v.da)}
+    <rect x="660" y="84" width="284" height="216" rx="14" fill="#fff" opacity=".22"/>
+    <rect x="660" y="84" width="284" height="216" rx="14" fill="none" stroke="#d64577" stroke-width="2.5" stroke-dasharray="8 6"/>
+    <text x="802" y="116" text-anchor="middle" font-size="17" font-weight="900" fill="#d64577">🖊 나가는 에너지</text>
+    <text x="802" y="144" text-anchor="middle" font-size="13.5" font-weight="700" fill="#a04565">지구 복사(적외선)와 재복사 화살표를</text>
+    <text x="802" y="164" text-anchor="middle" font-size="13.5" font-weight="700" fill="#a04565">손가락으로 그림 위에 그려 보세요</text>
+  </svg>`;
+}
+function pzStrokesDraw(cv, strokes){
+  const wrap = cv.parentElement, w = wrap.clientWidth; if(!w) return;
+  const W = Math.round(w*2), H = Math.round(W*520/960);
+  cv.width = W; cv.height = H;
+  const c = cv.getContext("2d");
+  (strokes||[]).forEach(s => {
+    const p = s.p || []; if(p.length < 4) return;
+    c.strokeStyle = s.c; c.fillStyle = s.c; c.lineWidth = (s.w||10)*W/960;
+    c.lineCap = "round"; c.lineJoin = "round"; c.beginPath();
+    for(let i=0;i<p.length;i+=2){ const x=p[i]*W, y=p[i+1]*H; i ? c.lineTo(x,y) : c.moveTo(x,y); }
+    c.stroke();
+    const n=p.length, x2=p[n-2]*W, y2=p[n-1]*H;
+    let ix=n-4; while(ix>1 && Math.hypot(p[ix]*W-x2, p[ix+1]*H-y2) < 14*W/960) ix-=2;
+    const a=Math.atan2(y2-p[ix+1]*H, x2-p[ix]*W), hl=26*W/960;
+    c.beginPath(); c.moveTo(x2,y2);
+    c.lineTo(x2-hl*Math.cos(a-.5), y2-hl*Math.sin(a-.5));
+    c.lineTo(x2-hl*Math.cos(a+.5), y2-hl*Math.sin(a+.5));
+    c.closePath(); c.fill();
+  });
+}
+
 /* ── 실시간 데이터 ── */
-let state = {}, students = [];   // students: [{id,name,team,predict,ans,sentence,sentenceTs,vote,exit}]
+let state = {}, students = [], puzzles = {};   // puzzles: {team: {ga,na,da,term,talk,strokes,leaderName}}
 const stage = document.getElementById("stage");
 const actsEl = document.getElementById("acts");
 
@@ -359,8 +441,11 @@ onSnapshot(doc(db, COL, "state"), s => {
   document.getElementById("hudConn").textContent = "연결 오류";
 });
 onSnapshot(collection(db, COL), snap => {
-  students = [];
-  snap.forEach(d => { if(d.id.startsWith("stu_")){ const v = d.data(); if(v.name) students.push({id:d.id, ...v}); } });
+  students = []; puzzles = {};
+  snap.forEach(d => {
+    if(d.id.startsWith("stu_")){ const v = d.data(); if(v.name) students.push({id:d.id, ...v}); }
+    else if(d.id.startsWith("puzzle_")){ const v = d.data(); if(v.team) puzzles[v.team] = v; }
+  });
   document.getElementById("hudN").textContent = students.length;
   render();
 });
@@ -407,7 +492,7 @@ slide(() => `
       <div class="joined">
         <div class="cnt">접속 <b>${students.length}</b> / 20명</div>
         <div class="teamsrow">${[1,2,3,4,5].map(t => `
-          <div class="teambox"><h4>${t}모둠</h4>${students.filter(s=>s.team===t).map(s=>`<span>${s.name}</span>`).join("")}</div>`).join("")}
+          <div class="teambox"><h4>${t}모둠</h4>${students.filter(s=>s.team===t).map(s=>`<span>${s.leader?"👑":""}${s.name}</span>`).join("")}</div>`).join("")}
         </div>
       </div>
     </div>
@@ -471,20 +556,21 @@ slide(() => `
     space(){ if(budgetStep < 6){ budgetStep++; render(); return true; } return false; },
     acts(){ return [["다음 단계 ▶ (Space)", "navy", () => { if(budgetStep<6){ budgetStep++; render(); } }]]; } });
 
-/* 4 활동지 미션 */
+/* 4 모둠 미션 (태블릿 보드) */
 slide(() => {
   const m = String(Math.floor(timerSec/60)), s = String(timerSec%60).padStart(2,"0");
   return `
   <div class="kicker">개념 구성 ② — 모둠 미션</div>
-  <h2 class="mid">활동지 「열수지 퍼즐」</h2>
+  <h2 class="mid">열수지 퍼즐 — 팀장 태블릿으로!</h2>
   <div class="rule"></div>
   <div class="goals" style="font-size:3.2vh">
-    <p>· 모둠 활동지의 <b>빈칸 수치</b>와 <b>에너지 화살표</b>를 완성하세요.</p>
+    <p>· 팀장 태블릿 보드에 <b>빈칸 (가)~(다)</b>를 채우고, <b>나가는 에너지 화살표</b>를 손가락으로 그리세요.</p>
+    <p>· 모둠원 폰에도 우리 보드가 <b>실시간</b>으로 보여요 — 함께 토의하며 완성!</p>
     <p>· 힌트: 들어온 것(100)과 나간 것의 합은 반드시 같아야 합니다.</p>
-    <p>· 완성한 모둠은 손을 들어 주세요 — 한 모둠이 발표합니다.</p>
   </div>
   <div style="margin:auto;text-align:center;font-size:16vh;font-weight:900;color:${timerSec<=60?"var(--red)":"var(--navy)"}">${m}:${s}</div>`;
-}, { acts(){ return [
+}, { enter(){ setState({phase:"puzzle"}); },
+    acts(){ return [
       [timerOn ? "타이머 정지" : "타이머 시작", timerOn ? "ghost" : "gold", () => {
         timerOn = !timerOn;
         if(timerOn){ timerId = setInterval(() => { if(timerSec>0){ timerSec--; render(); } else { clearInterval(timerId); timerOn=false; } }, 1000); }
@@ -493,7 +579,49 @@ slide(() => {
       ["5분 리셋", "ghost", () => { timerSec = 300; clearInterval(timerId); timerOn = false; render(); }],
     ]; } });
 
-/* 5 열수지 정답 */
+/* 5 모둠 보드 실시간 현황 + 발표 */
+let presTeam = 0;
+slide(() => {
+  if(!presTeam){
+    return `
+    <div class="kicker">모둠 미션 — 실시간 현황</div>
+    <h2 class="mid" style="margin-bottom:.5vh">모둠 보드 한눈에 보기 <span style="font-size:2.2vh;color:var(--soft)">— 모둠을 누르면 발표 화면으로 커집니다</span></h2>
+    <div class="pzgrid">${[1,2,3,4,5].map(t => {
+      const p = puzzles[t] || {};
+      const filled = ["ga","na","da"].filter(k => p[k] && String(p[k]).trim() !== "").length;
+      return `
+      <div class="pzcard" data-t="${t}">
+        <h4>${t}모둠 ${p.leaderName ? `<span class="meta">👑 ${p.leaderName}</span>` : ""}<span class="sp"></span>
+          <span class="meta">빈칸 ${filled}/3 · 화살표 ${(p.strokes||[]).length}개</span></h4>
+        <div class="pzfit"><div class="pzsvgbox">${pzSVG(p)}</div><canvas class="pzcv" data-t="${t}"></canvas></div>
+      </div>`;}).join("")}
+      <div class="pzcard note">📡 팀장 태블릿과 <b>실시간 연동</b> 중입니다.<br>획 하나, 숫자 하나가 바로바로 나타나요.<br><br>발표할 모둠을 <b>클릭</b>하세요!</div>
+    </div>`;
+  }
+  const p = puzzles[presTeam] || {};
+  return `
+  <div class="kicker">모둠 발표 — 열수지 퍼즐</div>
+  <h2 class="mid" style="margin-bottom:1vh">${presTeam}모둠의 보드 ${p.leaderName ? `<span style="font-size:2.6vh;color:var(--gold-d)">👑 팀장 ${p.leaderName}</span>` : ""}</h2>
+  <div style="flex:1;display:flex;gap:2vw;min-height:0;align-items:center">
+    <div style="flex:1.7;max-width:125vh"><div class="pzfit"><div class="pzsvgbox">${pzSVG(p)}</div><canvas class="pzcv" data-t="${presTeam}"></canvas></div></div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:1.6vh;min-width:0">
+      <div class="pzans"><b>② 흡수량 = 방출량, 이 상태는?</b>${p.term || "<span class='dim2'>아직 입력 전…</span>"}</div>
+      <div class="pzans"><b>③ 온실 기체가 늘어나면?</b>${p.talk || "<span class='dim2'>아직 입력 전…</span>"}</div>
+      <div style="font-size:2vh;color:var(--soft);font-weight:700">📡 실시간 연동 — 발표 중에 고치면 바로 반영됩니다</div>
+    </div>
+  </div>`;
+},
+{ enter(){ setState({phase:"puzzle"}); },
+  after(){
+    document.querySelectorAll(".pzcard[data-t]").forEach(el => el.onclick = () => { presTeam = +el.dataset.t; render(); });
+    document.querySelectorAll("canvas.pzcv").forEach(cv => pzStrokesDraw(cv, (puzzles[+cv.dataset.t]||{}).strokes));
+  },
+  acts(){ return [
+    ["◀ 전체 보기", "ghost", () => { presTeam = 0; render(); }, !presTeam],
+    ...[1,2,3,4,5].map(t => [`${t}모둠 발표`, presTeam===t ? "gold" : "navy", () => { presTeam = t; render(); }, false])
+  ]; } });
+
+/* 6 열수지 정답 */
 slide(() => `
   <div class="kicker">개념 구성 ③ — 정답 확인</div>
   <h2 class="mid">흡수 70 = 방출 70, <span style="color:var(--green)">복사 평형</span></h2>
@@ -685,6 +813,7 @@ function render(){
     b.textContent = label; b.className = cls; b.disabled = !!disabled; b.onclick = fn;
     actsEl.appendChild(b);
   });
+  if(s.after) s.after();
 }
 function go(n){
   if(n < 0 || n >= slides.length) return;
