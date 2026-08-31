@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>히트 버짓 챌린지 — 1학년 5반</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B3E86; --navy2:#092f66; --gold:#F5B301; --gold-d:#c8920a;
+  --green:#1A9A3E; --red:#d64545; --ink:#141a24; --soft:#3d4652; --line:#b9c4d4; --lt:#eef3fa;
+}
+*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; }
+body{ font-family:'Noto Sans KR',sans-serif; color:var(--ink); background:#f4f7fb; word-break:keep-all;
+  display:flex; flex-direction:column; overflow-x:hidden; }
+header{ background:linear-gradient(135deg,var(--navy),var(--navy2)); color:#fff; padding:14px 18px 12px; flex-shrink:0; }
+header .tag{ font-size:11px; font-weight:700; color:var(--gold); letter-spacing:.12em; }
+header h1{ font-size:19px; font-weight:900; letter-spacing:-.02em; }
+header .me{ font-size:12px; font-weight:500; opacity:.9; margin-top:2px; }
+header .me b{ color:var(--gold); }
+main{ flex:1; overflow-y:auto; padding:20px 18px 30px; max-width:480px; width:100%; margin:0 auto; }
+.hidden{ display:none !important; }
+
+.card{ background:#fff; border:2px solid var(--line); border-radius:14px; padding:20px 18px; }
+.card h2{ font-size:17px; font-weight:900; color:var(--navy2); margin-bottom:6px; }
+.card p.desc{ font-size:13px; color:var(--soft); line-height:1.6; margin-bottom:14px; }
+
+label{ display:block; font-size:12px; font-weight:700; color:var(--navy); margin:12px 0 5px; }
+input[type=text]{ width:100%; font:inherit; font-size:16px; font-weight:700; padding:12px 14px;
+  border:2px solid var(--line); border-radius:10px; outline:none; }
+input[type=text]:focus{ border-color:var(--navy); }
+.teamgrid{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+.teamgrid button{ font:inherit; font-size:13px; font-weight:900; padding:13px 0; border-radius:10px;
+  border:2px solid var(--line); background:#fff; color:var(--soft); }
+.teamgrid button.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
+
+.big{ display:block; width:100%; font:inherit; font-size:17px; font-weight:900; color:#fff;
+  background:var(--navy); border:none; border-radius:12px; padding:16px 0; margin-top:18px; }
+.big:disabled{ background:#9fb0c6; }
+.big.gold{ background:var(--gold); color:var(--navy2); }
+
+.wait{ text-align:center; padding:44px 10px; }
+.wait .dot{ font-size:40px; }
+.wait h2{ font-size:18px; font-weight:900; color:var(--navy2); margin-top:10px; }
+.wait p{ font-size:13px; color:var(--soft); margin-top:6px; line-height:1.6; }
+
+/* 예측 */
+.predval{ text-align:center; font-size:52px; font-weight:900; color:var(--navy); margin:10px 0 4px; }
+.predval small{ font-size:18px; color:var(--soft); font-weight:700; }
+input[type=range]{ width:100%; margin:8px 0 4px; accent-color:var(--navy); height:34px; }
+
+/* 퀴즈 */
+.qhead{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.qhead .qno{ font-size:22px; font-weight:900; color:var(--navy); }
+.qhead .rd{ font-size:11px; font-weight:700; color:var(--gold-d); background:#fdf3d7; padding:3px 10px; border-radius:20px; }
+.qhint{ font-size:13px; color:var(--soft); text-align:center; margin-bottom:14px; line-height:1.55; }
+.oxgrid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.oxgrid button{ font:inherit; font-size:56px; font-weight:900; padding:28px 0; border-radius:16px; border:none; color:#fff; }
+.oxO{ background:#1f6fd6; } .oxX{ background:var(--red); }
+.mcgrid{ display:grid; gap:10px; }
+.mcgrid button{ font:inherit; font-size:19px; font-weight:900; padding:18px 0; border-radius:12px; border:none; color:#fff; }
+.mc0{ background:#1f6fd6; } .mc1{ background:var(--green); } .mc2{ background:var(--gold-d); } .mc3{ background:#7a4fc9; }
+button:disabled{ opacity:.45; }
+.locked{ text-align:center; padding:26px 8px; }
+.locked .mark{ font-size:46px; font-weight:900; }
+.locked h3{ font-size:17px; font-weight:900; margin-top:6px; }
+.locked p{ font-size:13px; color:var(--soft); margin-top:6px; }
+.ok{ color:var(--green); } .no{ color:var(--red); }
+.scorebar{ margin-top:16px; background:var(--lt); border-radius:10px; padding:10px 14px;
+  display:flex; justify-content:space-between; font-size:13px; font-weight:700; color:var(--navy2); }
+
+/* 문장/투표 */
+textarea{ width:100%; font:inherit; font-size:15px; font-weight:500; line-height:1.6; padding:12px 14px;
+  border:2px solid var(--line); border-radius:10px; outline:none; min-height:96px; resize:none; }
+textarea:focus{ border-color:var(--navy); }
+.votegrid{ display:grid; gap:10px; }
+.votegrid button{ font:inherit; text-align:left; font-size:13.5px; font-weight:500; line-height:1.55;
+  padding:13px 14px; border-radius:12px; border:2px solid var(--line); background:#fff; color:var(--ink); }
+.votegrid button b{ display:block; font-size:12px; font-weight:900; color:var(--navy); margin-bottom:3px; }
+.votegrid button.on{ border-color:var(--gold); background:#fffaf0; }
+.votegrid button:disabled{ opacity:.4; }
+
+footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; padding:8px 0 12px; }
+.conn{ position:fixed; top:10px; right:12px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:12px; }
+.conn.on{ background:#e7f5ec; color:#136e2e; } .conn.off{ background:#fde8e8; color:#a02b2b; }
+</style>
+</head>
+<body>
+<div id="conn" class="conn off">연결 중…</div>
+<header>
+  <div class="tag">통합과학2 · 지구의 열수지</div>
+  <h1>히트 버짓 챌린지</h1>
+  <div class="me" id="meLine">호남고등학교 1학년 5반</div>
+</header>
+<main>
+
+  <!-- 입장 -->
+  <section id="vJoin" class="card">
+    <h2>수업 입장</h2>
+    <p class="desc">이름을 쓰고 모둠을 고른 뒤 입장하세요.</p>
+    <label>이름</label>
+    <input type="text" id="inName" maxlength="10" placeholder="예) 김호남">
+    <label>모둠</label>
+    <div class="teamgrid" id="teamGrid"></div>
+    <button class="big" id="btnJoin">입장하기</button>
+  </section>
+
+  <!-- 대기 -->
+  <section id="vLobby" class="wait hidden">
+    <div class="dot">🌏</div>
+    <h2>입장 완료!</h2>
+    <p>수업이 시작되면 화면이 자동으로 바뀝니다.<br>현재 <b id="lobbyN">0</b>명 접속 중</p>
+  </section>
+
+  <!-- 예측 -->
+  <section id="vPredict" class="card hidden">
+    <h2>예측해 보세요</h2>
+    <p class="desc">태양이 지구에 보낸 에너지를 <b>100</b>이라 하면,<br>흡수되지 못하고 <b>우주로 반사되어 돌아가는 양</b>은?</p>
+    <div class="predval"><span id="predNum">30</span><small> / 100</small></div>
+    <input type="range" id="predRange" min="0" max="100" value="30">
+    <button class="big gold" id="btnPredict">제출하기</button>
+  </section>
+
+  <!-- 퀴즈 -->
+  <section id="vQuiz" class="hidden">
+    <div class="card">
+      <div class="qhead"><span class="qno" id="qNo">Q1</span><span class="rd" id="qRound">ROUND 1 · OX</span></div>
+      <p class="qhint">문제는 <b>화면</b>을 보세요! 폰에서는 답만 고릅니다.</p>
+      <div id="qButtons"></div>
+      <div id="qLocked" class="locked hidden"></div>
+    </div>
+    <div class="scorebar"><span>내 점수</span><span id="myScore">0점</span></div>
+  </section>
+
+  <!-- 모둠 문장 -->
+  <section id="vSentence" class="card hidden">
+    <h2>모둠 미션</h2>
+    <p class="desc"><b>"지구 온난화를 열수지로 설명하는 한 문장"</b>을 모둠에서 토의해 제출하세요. (모둠에서 한 명만 제출해도 됩니다 · 다시 제출하면 덮어써요)</p>
+    <textarea id="inSentence" maxlength="80" placeholder="예) 온실 기체가 늘어나면 …"></textarea>
+    <button class="big" id="btnSentence">우리 모둠 문장 제출</button>
+    <p class="desc" id="sentDone" style="margin-top:10px"></p>
+  </section>
+
+  <!-- 투표 -->
+  <section id="vVote" class="card hidden">
+    <h2>베스트 문장 투표</h2>
+    <p class="desc">우리 모둠을 <b>제외한</b> 모둠 중 가장 잘 설명한 문장에 투표하세요. (1인 1표)</p>
+    <div class="votegrid" id="voteGrid"></div>
+  </section>
+
+  <!-- 종료/퇴장권 -->
+  <section id="vEnd" class="card hidden">
+    <h2>오늘 수업 어땠나요?</h2>
+    <p class="desc">소감이나 궁금한 점을 한 줄 남기면 퇴장권 완료!</p>
+    <div class="scorebar" style="margin:0 0 14px"><span>내 최종 점수</span><span id="endScore">0점</span></div>
+    <textarea id="inExit" maxlength="60" placeholder="예) 온실효과가 원래 자연 현상인 게 신기했다"></textarea>
+    <button class="big" id="btnExit">퇴장권 제출</button>
+    <p class="desc" id="exitDone" style="margin-top:10px"></p>
+  </section>
+
+</main>
+<footer>제작 · 호남고 조영신</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBotwjsJxit4SbOzXVVOov37Po97AieoxM",
+  authDomain: "sangdam-b97c1.firebaseapp.com",
+  projectId: "sangdam-b97c1",
+  storageBucket: "sangdam-b97c1.firebasestorage.app",
+  messagingSenderId: "389048360844",
+  appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
+};
+const COL = "pw_openclass_heat";
+const db = getFirestore(initializeApp(firebaseConfig));
+
+/* 문항 메타(유형·배점만 — 정답은 교사 화면에만 있음) */
+const QMETA = [
+  {type:"ox", base:100, round:"ROUND 1 · OX"},
+  {type:"ox", base:100, round:"ROUND 1 · OX"},
+  {type:"ox", base:100, round:"ROUND 1 · OX"},
+  {type:"ox", base:100, round:"ROUND 1 · OX"},
+  {type:"mc", base:100, round:"ROUND 2 · 선다형"},
+  {type:"mc", base:100, round:"ROUND 2 · 선다형"},
+  {type:"mc", base:100, round:"ROUND 2 · 선다형"},
+  {type:"mc", base:100, round:"ROUND 2 · 선다형"},
+  {type:"mc", base:200, round:"ROUND 3 · 자료 해석"},
+  {type:"mc", base:200, round:"ROUND 3 · 자료 해석"},
+];
+const BONUS = 100, BONUS_MS = 20000;
+
+const $ = id => document.getElementById(id);
+const views = ["vJoin","vLobby","vPredict","vQuiz","vSentence","vVote","vEnd"];
+function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v)); }
+
+let uid = localStorage.getItem("och_uid");
+if(!uid){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem("och_uid", uid); }
+let me = JSON.parse(localStorage.getItem("och_me") || "null");   // {name, team}
+let myDoc = {};           // 서버에 저장된 내 데이터
+let state = {};           // 진행 상태
+let team = 0, joined = false;
+
+/* ── 입장 ── */
+const tg = $("teamGrid");
+for(let i=1;i<=5;i++){
+  const b = document.createElement("button");
+  b.textContent = i + "모둠";
+  b.onclick = () => { team = i; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===i-1)); };
+  tg.appendChild(b);
+}
+if(me){ $("inName").value = me.name; team = me.team; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1)); }
+
+$("btnJoin").onclick = async () => {
+  const name = $("inName").value.trim();
+  if(!name){ alert("이름을 입력하세요"); return; }
+  if(!team){ alert("모둠을 선택하세요"); return; }
+  me = {name, team};
+  localStorage.setItem("och_me", JSON.stringify(me));
+  try{
+    await setDoc(doc(db, COL, "stu_"+uid), { name, team, joinedAt: serverTimestamp() }, {merge:true});
+    joined = true;
+    $("meLine").innerHTML = `1학년 5반 · <b>${team}모둠 ${name}</b>`;
+    render();
+  }catch(e){ alert("접속 오류: 선생님께 알려주세요\n" + e.message); }
+};
+
+/* ── 실시간 구독 ── */
+onSnapshot(doc(db, COL, "state"), snap => {
+  state = snap.data() || {};
+  $("conn").className = "conn on"; $("conn").textContent = "실시간 연결됨";
+  render();
+}, err => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
+
+onSnapshot(doc(db, COL, "stu_"+uid), snap => { myDoc = snap.data() || {}; render(); });
+
+let lobbyCount = 0;
+onSnapshot(collection(db, COL), snap => {
+  let n = 0; snap.forEach(d => { if(d.id.startsWith("stu_") && d.data().name) n++; });
+  lobbyCount = n; $("lobbyN").textContent = n;
+});
+
+async function save(data){
+  try{ await setDoc(doc(db, COL, "stu_"+uid), data, {merge:true}); }
+  catch(e){ alert("전송 오류: " + e.message); }
+}
+
+/* ── 점수 계산(공개된 정답 기준) ── */
+function calcScore(){
+  const ans = myDoc.ans || {}, revealed = state.ans || {};
+  let s = 0;
+  Object.keys(revealed).forEach(k => {
+    const a = ans[k];
+    if(a && a.c === revealed[k]){
+      const q = QMETA[+k] || {base:100};
+      s += q.base + Math.round(BONUS * Math.max(0, 1 - (a.ms||BONUS_MS)/BONUS_MS));
+    }
+  });
+  return s;
+}
+
+/* ── 렌더 ── */
+function render(){
+  if(!joined && !(me && myDoc.name)){ show("vJoin"); return; }
+  if(me && myDoc.name && !joined){ joined = true; $("meLine").innerHTML = `1학년 5반 · <b>${me.team}모둠 ${me.name}</b>`; }
+
+  const ph = state.phase || "lobby";
+  if(ph === "lobby"){ show("vLobby"); }
+  else if(ph === "predict"){ renderPredict(); }
+  else if(ph === "quiz"){ renderQuiz(); }
+  else if(ph === "sentence"){ renderSentence(); }
+  else if(ph === "vote"){ renderVote(); }
+  else if(ph === "end"){ renderEnd(); }
+}
+
+/* 예측 */
+$("predRange").oninput = e => $("predNum").textContent = e.target.value;
+$("btnPredict").onclick = () => {
+  save({ predict: +$("predRange").value });
+};
+function renderPredict(){
+  show("vPredict");
+  const done = myDoc.predict !== undefined;
+  $("btnPredict").disabled = done || !state.predictOpen;
+  $("btnPredict").textContent = done ? `제출 완료 (${myDoc.predict})` : (state.predictOpen ? "제출하기" : "잠시 후 열립니다");
+}
+
+/* 퀴즈 */
+function renderQuiz(){
+  show("vQuiz");
+  const i = state.qIndex ?? 0, q = QMETA[i];
+  $("qNo").textContent = "Q" + (i+1);
+  $("qRound").textContent = q.round;
+  $("myScore").textContent = calcScore() + "점";
+
+  const myAns = (myDoc.ans || {})[i];
+  const revealed = (state.ans || {})[i];
+  const btns = $("qButtons"), lock = $("qLocked");
+
+  if(myAns !== undefined || !state.qOpen){
+    btns.classList.add("hidden"); lock.classList.remove("hidden");
+    if(myAns === undefined){
+      lock.innerHTML = `<div class="mark">⏳</div><h3>대기 중</h3><p>화면의 문제를 읽어 두세요!</p>`;
+    } else if(revealed === undefined){
+      lock.innerHTML = `<div class="mark">✓</div><h3>제출 완료!</h3><p>정답 공개를 기다리세요…</p>`;
+    } else if(myAns.c === revealed){
+      const q2 = QMETA[i];
+      const pts = q2.base + Math.round(BONUS * Math.max(0, 1 - (myAns.ms||BONUS_MS)/BONUS_MS));
+      lock.innerHTML = `<div class="mark ok">O</div><h3 class="ok">정답! +${pts}점</h3><p>속도 보너스 포함</p>`;
+    } else {
+      lock.innerHTML = `<div class="mark no">X</div><h3 class="no">아쉬워요</h3><p>해설을 잘 들어 두면 2차 지필에 나와요!</p>`;
+    }
+    return;
+  }
+
+  lock.classList.add("hidden"); btns.classList.remove("hidden");
+  if(q.type === "ox"){
+    btns.className = "oxgrid";
+    btns.innerHTML = `<button class="oxO">O</button><button class="oxX">X</button>`;
+    [...btns.children].forEach((b,c) => b.onclick = () => answer(i, c));
+  } else {
+    btns.className = "mcgrid";
+    btns.innerHTML = ["①","②","③","④"].map((s,c)=>`<button class="mc${c}">${s}</button>`).join("");
+    [...btns.children].forEach((b,c) => b.onclick = () => answer(i, c));
+  }
+}
+function answer(i, c){
+  if((myDoc.ans||{})[i] !== undefined) return;
+  const ms = Math.max(0, Date.now() - (state.qOpenAt || Date.now()));
+  myDoc.ans = Object.assign({}, myDoc.ans, {[i]: {c, ms}});   // 즉시 잠금
+  save({ ["ans." + i]: {c, ms} });
+  render();
+}
+
+/* 모둠 문장 */
+$("btnSentence").onclick = () => {
+  const t = $("inSentence").value.trim();
+  if(!t){ alert("문장을 입력하세요"); return; }
+  save({ sentence: t, sentenceTs: Date.now() });
+  $("sentDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 화면에서 확인하세요.";
+};
+function renderSentence(){ show("vSentence"); }
+
+/* 투표 */
+function renderVote(){
+  show("vVote");
+  const g = $("voteGrid");
+  const sents = state.sentences || {};   // {1:"...",2:"..."}
+  g.innerHTML = "";
+  for(let t=1;t<=5;t++){
+    if(!sents[t]) continue;
+    const b = document.createElement("button");
+    b.innerHTML = `<b>${t}모둠</b>${sents[t]}`;
+    if(t === me.team){ b.disabled = true; b.innerHTML += " (우리 모둠)"; }
+    if(myDoc.vote === t) b.classList.add("on");
+    b.onclick = () => { save({ vote: t }); };
+    g.appendChild(b);
+  }
+  if(myDoc.vote) [...g.children].forEach(b => b.disabled = true);
+}
+
+/* 종료 */
+$("btnExit").onclick = () => {
+  const t = $("inExit").value.trim();
+  if(!t){ alert("한 줄만 남겨 주세요!"); return; }
+  save({ exit: t });
+  $("exitDone").innerHTML = "<b style='color:var(--green)'>퇴장권 제출 완료! 수고했어요 🌏</b>";
+};
+function renderEnd(){ show("vEnd"); $("endScore").textContent = calcScore() + "점"; }
+</script>
+</body>
+</html>

@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>히트 버짓 챌린지 — 교사 진행 화면</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --navy:#0B3E86; --navy2:#092f66; --gold:#F5B301; --gold-d:#c8920a;
+  --green:#1A9A3E; --red:#d64545; --ink:#141a24; --soft:#3d4652; --line:#b9c4d4; --lt:#eef3fa;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+html,body{ height:100%; overflow:hidden; }
+body{ font-family:'Noto Sans KR',sans-serif; color:var(--ink); background:#0d1524; word-break:keep-all; }
+
+/* 잠금 */
+#gate{ position:fixed; inset:0; background:#0d1524; z-index:99; display:flex; align-items:center; justify-content:center; }
+#gate .box{ text-align:center; color:#fff; }
+#gate input{ font:inherit; font-size:18px; padding:10px 16px; border-radius:10px; border:none; text-align:center; margin-top:14px; }
+
+/* 슬라이드 */
+.slide{ position:absolute; inset:0; display:none; flex-direction:column; background:#fff; padding:4.5vh 5vw; }
+.slide.on{ display:flex; }
+.kicker{ font-size:2vh; font-weight:700; color:var(--gold-d); letter-spacing:.14em; margin-bottom:1vh; }
+h1.big{ font-size:7.5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02em; line-height:1.2; }
+h2.mid{ font-size:5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02em; margin-bottom:2.5vh; }
+.rule{ height:.7vh; width:18vh; background:linear-gradient(90deg,var(--gold),var(--green)); border-radius:4px; margin:2.5vh 0; }
+
+/* 하단 진행바 */
+#hud{ position:fixed; left:0; right:0; bottom:0; height:5.2vh; background:#0d1524; color:#8fa2c0;
+  display:flex; align-items:center; gap:2vw; padding:0 1.6vw; font-size:1.9vh; z-index:50; }
+#hud .sp{ flex:1; }
+#hud b{ color:#fff; }
+#hud .live{ color:#5fd08a; font-weight:700; }
+#hud .dead{ color:#e07f7f; font-weight:700; }
+.slide{ bottom:5.2vh; }
+
+/* 액션 버튼 */
+.acts{ position:fixed; right:1.6vw; bottom:7.5vh; display:flex; flex-direction:column; gap:1vh; z-index:60; }
+.acts button{ font:inherit; font-size:2.1vh; font-weight:900; padding:1.4vh 2.4vh; border-radius:1.2vh;
+  border:none; background:var(--navy); color:#fff; cursor:pointer; box-shadow:0 .4vh 1.2vh rgba(0,0,0,.25); }
+.acts button.gold{ background:var(--gold); color:var(--navy2); }
+.acts button.green{ background:var(--green); }
+.acts button.ghost{ background:#e7ecf4; color:var(--soft); }
+.acts button:disabled{ opacity:.4; cursor:default; }
+
+/* 로비 */
+.lobbywrap{ flex:1; display:flex; gap:4vw; align-items:center; }
+.lobbyL{ flex:1.2; }
+.lobbyL .url{ font-size:2.6vh; font-weight:700; color:var(--navy); background:var(--lt); border-radius:1vh; padding:1.4vh 2vh; display:inline-block; margin-top:2vh; }
+.lobbyR{ flex:1; display:flex; flex-direction:column; align-items:center; gap:2vh; }
+#qr{ background:#fff; padding:1.5vh; border:.4vh solid var(--navy); border-radius:1.5vh; }
+#qr img, #qr canvas{ width:30vh !important; height:30vh !important; }
+.joined{ flex-shrink:0; margin-top:2vh; }
+.joined .cnt{ font-size:3vh; font-weight:900; color:var(--navy); margin-bottom:1vh; }
+.joined .cnt b{ font-size:5vh; color:var(--green); }
+.teamsrow{ display:grid; grid-template-columns:repeat(5,1fr); gap:1vw; }
+.teambox{ border:.25vh solid var(--line); border-radius:1vh; padding:1vh 1.2vh; min-height:11vh; }
+.teambox h4{ font-size:1.9vh; color:var(--navy); border-bottom:.2vh solid var(--line); padding-bottom:.6vh; margin-bottom:.7vh; }
+.teambox span{ display:inline-block; font-size:1.8vh; font-weight:700; background:var(--lt); border-radius:.6vh; padding:.2vh 1vh; margin:0 .4vh .5vh 0; }
+
+/* 예측 */
+.qbig{ font-size:4.6vh; font-weight:900; color:var(--ink); line-height:1.5; }
+.qbig b{ color:var(--navy); }
+#hist{ flex:1; display:flex; align-items:flex-end; gap:1vw; padding:3vh 2vw 0; }
+.hbar{ flex:1; display:flex; flex-direction:column; align-items:center; gap:.8vh; }
+.hbar .bar{ width:100%; background:var(--navy); border-radius:.8vh .8vh 0 0; min-height:.5vh; transition:height .4s; }
+.hbar.hot .bar{ background:var(--gold); }
+.hbar .lb{ font-size:1.8vh; font-weight:700; color:var(--soft); }
+.hbar .n{ font-size:2.2vh; font-weight:900; color:var(--navy); }
+.predmeta{ font-size:2.8vh; font-weight:700; color:var(--soft); margin-top:1.5vh; }
+.predmeta b{ color:var(--gold-d); font-size:3.4vh; }
+
+/* 목표/텍스트 슬라이드 */
+.goals{ font-size:3.6vh; line-height:2; font-weight:500; }
+.goals b{ color:var(--navy); font-weight:900; }
+.goals .num{ display:inline-block; width:4.6vh; height:4.6vh; line-height:4.6vh; text-align:center;
+  background:var(--navy); color:#fff; border-radius:50%; font-weight:900; margin-right:1.6vh; font-size:2.6vh; }
+
+/* SVG 영역 */
+.svgwrap{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; }
+.svgwrap svg{ max-width:100%; max-height:100%; }
+
+/* 퀴즈 */
+.qhead2{ display:flex; align-items:center; gap:1.5vw; margin-bottom:1.5vh; }
+.qhead2 .qn{ font-size:5vh; font-weight:900; color:var(--navy); }
+.qhead2 .qr2{ font-size:2vh; font-weight:900; color:var(--gold-d); background:#fdf3d7; padding:.6vh 1.6vh; border-radius:3vh; }
+.qhead2 .pts{ font-size:2vh; font-weight:700; color:var(--soft); }
+.qtext{ font-size:4.2vh; font-weight:900; line-height:1.45; color:var(--ink); }
+.qbody{ flex:1; display:flex; gap:3vw; margin-top:2.5vh; min-height:0; }
+.choices{ flex:1; display:flex; flex-direction:column; gap:1.6vh; justify-content:center; }
+.choice{ font-size:3.2vh; font-weight:700; padding:1.8vh 2.4vh; border-radius:1.4vh; border:.35vh solid var(--line); background:#fff; display:flex; align-items:center; gap:1.6vh; }
+.choice .cn{ flex-shrink:0; width:5vh; height:5vh; border-radius:1vh; color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:2.8vh; }
+.c0 .cn{ background:#1f6fd6; } .c1 .cn{ background:var(--green); } .c2 .cn{ background:var(--gold-d); } .c3 .cn{ background:#7a4fc9; }
+.choice.ans{ border-color:var(--green); background:#e9f7ee; }
+.choice.dim{ opacity:.35; }
+.oxrow{ flex:1; display:flex; gap:3vw; align-items:center; justify-content:center; }
+.oxbig{ width:26vh; height:26vh; border-radius:3vh; color:#fff; display:flex; align-items:center; justify-content:center; font-size:16vh; font-weight:900; opacity:.9; }
+.oxbig.o{ background:#1f6fd6; } .oxbig.x{ background:var(--red); }
+.oxbig.dim{ opacity:.22; }
+.oxbig.ans{ outline:1.2vh solid var(--gold); }
+.qside{ flex:1; display:flex; flex-direction:column; min-height:0; }
+.qstatus{ font-size:2.6vh; font-weight:700; color:var(--soft); margin-top:auto; padding-top:1.5vh; }
+.qstatus b{ font-size:4vh; color:var(--navy); }
+.expl{ display:none; background:var(--lt); border-left:.7vh solid var(--gold); border-radius:.8vh;
+  padding:1.6vh 2vh; font-size:2.5vh; line-height:1.6; margin-top:1.5vh; }
+.expl.on{ display:block; }
+.expl b{ color:var(--navy); }
+
+/* 리더보드 */
+.lb2{ flex:1; display:flex; gap:4vw; min-height:0; }
+.lbcol{ flex:1; display:flex; flex-direction:column; gap:1.2vh; }
+.lbcol h3{ font-size:2.6vh; color:var(--navy); border-bottom:.3vh solid var(--navy); padding-bottom:.8vh; margin-bottom:.5vh; }
+.lbrow{ display:flex; align-items:center; gap:1.2vw; font-size:2.8vh; font-weight:700; }
+.lbrow .rk{ width:4.5vh; height:4.5vh; border-radius:50%; background:var(--lt); color:var(--navy);
+  display:flex; align-items:center; justify-content:center; font-weight:900; font-size:2.2vh; flex-shrink:0; }
+.lbrow:nth-child(2) .rk{ background:var(--gold); color:#fff; }
+.lbrow .nm{ width:16vh; }
+.lbrow .barw{ flex:1; background:#eef1f6; border-radius:.8vh; height:3.6vh; }
+.lbrow .bar2{ height:100%; background:var(--navy); border-radius:.8vh; min-width:1vh; transition:width .5s; }
+.lbrow .sc{ width:11vh; text-align:right; color:var(--navy); font-weight:900; }
+.lbrow.team .bar2{ background:var(--green); }
+
+/* 문장/투표 */
+.sents{ flex:1; display:flex; flex-direction:column; gap:1.6vh; justify-content:center; }
+.sent{ display:flex; align-items:center; gap:1.6vw; border:.3vh solid var(--line); border-radius:1.4vh; padding:1.8vh 2.2vh; }
+.sent .tno{ flex-shrink:0; font-size:2.4vh; font-weight:900; color:#fff; background:var(--navy); border-radius:1vh; padding:.8vh 1.6vh; }
+.sent .tx{ flex:1; font-size:3vh; font-weight:700; line-height:1.5; }
+.sent .vt{ flex-shrink:0; font-size:2.6vh; font-weight:900; color:var(--gold-d); }
+.sent.best{ border-color:var(--gold); background:#fffaf0; }
+.sent.empty .tx{ color:#a8b2c0; font-weight:500; }
+
+/* 정리 */
+.sumflow{ flex:1; display:flex; align-items:center; justify-content:center; gap:2vw; }
+.sumbox{ text-align:center; border:.4vh solid var(--navy); border-radius:1.6vh; padding:3vh 2.5vh; font-size:3vh; font-weight:900; color:var(--navy2); line-height:1.5; }
+.sumbox small{ display:block; font-size:2vh; font-weight:700; color:var(--soft); margin-top:.8vh; }
+.sumarrow{ font-size:5vh; font-weight:900; color:var(--gold-d); }
+
+/* 퇴장권 피드 */
+.exits{ flex:1; overflow:hidden; display:flex; flex-direction:column; gap:1vh; margin-top:1vh; }
+.exline{ font-size:2.6vh; font-weight:500; }
+.exline b{ color:var(--navy); font-weight:900; margin-right:1vh; }
+</style>
+</head>
+<body>
+
+<div id="gate"><div class="box">
+  <div style="font-size:22px;font-weight:900">히트 버짓 챌린지 · 교사 화면</div>
+  <input type="password" id="gatePw" placeholder="비밀번호"><br>
+  <div style="font-size:12px;opacity:.6;margin-top:10px">Enter로 입장</div>
+</div></div>
+
+<div id="stage"></div>
+
+<div class="acts" id="acts"></div>
+
+<div id="hud">
+  <span id="hudConn" class="dead">연결 중…</span>
+  <span>접속 <b id="hudN">0</b>명</span>
+  <span class="sp"></span>
+  <span>←/→ 슬라이드 · Space 진행</span>
+  <span><b id="hudPg">1</b> / <span id="hudTot">?</span></span>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBotwjsJxit4SbOzXVVOov37Po97AieoxM",
+  authDomain: "sangdam-b97c1.firebaseapp.com",
+  projectId: "sangdam-b97c1",
+  storageBucket: "sangdam-b97c1.firebasestorage.app",
+  messagingSenderId: "389048360844",
+  appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
+};
+const COL = "pw_openclass_heat";
+const STUDENT_URL = "https://zeroyoung-collab.github.io/hn-sci/openclass/";
+const db = getFirestore(initializeApp(firebaseConfig));
+
+/* ── 게이트 ── */
+document.getElementById("gatePw").addEventListener("keydown", e => {
+  if(e.key === "Enter" && e.target.value === "honam1234"){ document.getElementById("gate").remove(); }
+});
+if(new URLSearchParams(location.search).get("pw") === "honam1234"){ document.getElementById("gate").remove(); }
+
+/* ── 문항(정답·해설 포함 — 이 파일에만 존재) ── */
+const QUIZ = [
+  {type:"ox", base:100, text:"지구는 태양에서 받는 에너지만큼 우주로 내보내고 있어서, 평균 기온이 거의 일정하게 유지된다.", ans:0,
+   expl:"<b>정답 O — 복사 평형.</b> 흡수량 = 방출량이라 온도가 (거의) 일정하다. 이 균형이 오늘 수업의 핵심!"},
+  {type:"ox", base:100, text:"온실효과는 인간 활동이 만들어 낸 현상이다.", ans:1,
+   expl:"<b>정답 X.</b> 온실효과 자체는 수십억 년 된 <b>자연 현상</b>. 문제는 인간 활동이 이를 <b>'강화'</b>한 것이다."},
+  {type:"ox", base:100, text:"태양 복사 에너지 100 중 약 30은 흡수되지 못하고 그대로 우주로 반사된다.", ans:0,
+   expl:"<b>정답 O.</b> 구름·대기·지표에서 약 30이 반사된다(반사율 = 알베도). 도입에서 예측한 바로 그 값!"},
+  {type:"ox", base:100, text:"온실효과가 아예 없다면 지구 평균 기온은 지금보다 높아질 것이다.", ans:1,
+   expl:"<b>정답 X.</b> 온실효과가 없으면 평균 기온은 약 <b>−18℃</b>. 온실효과 덕분에 현재 약 15℃가 유지된다."},
+  {type:"mc", base:100, text:"태양 복사 에너지 100 중 지표가 흡수하는 양은?", ch:["25","30","45","70"], ans:2,
+   expl:"<b>정답 ③ 45.</b> 반사 30 + 대기·구름 흡수 25 + <b>지표 흡수 45</b> = 100. 흡수 합계는 70."},
+  {type:"mc", base:100, text:"다음 중 온실 기체가 <u>아닌</u> 것은?", ch:["이산화 탄소","메테인","수증기","질소"], ans:3,
+   expl:"<b>정답 ④ 질소.</b> 대기의 78%를 차지하지만 지구 복사(적외선)를 거의 흡수하지 못한다. 수증기도 강력한 온실 기체라는 점 주의!"},
+  {type:"mc", base:100, text:"지구가 우주로 내보내는 '지구 복사 에너지'는 주로 어떤 형태일까?", ch:["가시광선","적외선","자외선","X선"], ans:1,
+   expl:"<b>정답 ② 적외선.</b> 온도가 낮은 지구는 파장이 긴 적외선으로 방출한다. (태양 복사 = 주로 가시광선)"},
+  {type:"mc", base:100, text:"온실 기체가 하는 일로 옳은 것은?", ch:["태양 복사를 모두 반사한다","지구 복사를 흡수했다가 일부를 지표로 재복사한다","지표의 반사율을 높인다","태양 복사가 지표에 도달하지 못하게 막는다"], ans:1,
+   expl:"<b>정답 ②.</b> 온실 기체는 나가는 <b>적외선을 붙잡아 재복사</b>한다. 담요처럼 '나가는 열'을 잡는 것이지, 들어오는 빛을 막는 게 아니다."},
+  {type:"mc", base:200, text:"[자료] 하와이 마우나로아에서 관측한 대기 중 CO₂ 농도이다. 농도가 계속 증가하는 주된 원인은?", ch:["화산 활동 증가","화석 연료 사용","태양 활동 강화","지구 자전 속도 변화"], ans:1, svg:"keeling",
+   expl:"<b>정답 ② 화석 연료 사용.</b> 산업화 이후 가파른 증가. 톱니 모양은 계절에 따른 <b>식물 광합성</b>(여름에 CO₂ 흡수) 때문!"},
+  {type:"mc", base:200, text:"[자료] 대기 중 온실 기체가 증가한 직후, 새로운 평형에 도달하기 전까지 지구에서 일어나는 일은?", ch:["흡수량 > 방출량이 되어 기온이 오른다","방출량 > 흡수량이 되어 기온이 내린다","반사율이 커져 기온이 내린다","아무 변화가 없다"], ans:0, svg:"compare",
+   expl:"<b>정답 ①.</b> 재복사가 늘어 우주로 나가는 양이 잠시 줄면 <b>흡수 > 방출</b> → 기온 상승 → 더 높은 온도에서 새 평형. 이것이 지구 온난화의 메커니즘이다."},
+];
+const BONUS = 100, BONUS_MS = 20000;
+
+/* ── SVG 자료 ── */
+function svgKeeling(){
+  let pts = "", x0=90, y0=330, w=640, h=250;
+  for(let i=0;i<=65;i++){
+    const t = i/65;
+    const ppm = 315 + t*t*38 + t*75;                    // 완만→가속 증가
+    const season = 3.2*Math.sin(i*3.1);                  // 톱니(계절 변동)
+    const x = x0 + t*w, y = y0 - ((ppm+season-310)/120)*h;
+    pts += `${x.toFixed(1)},${y.toFixed(1)} `;
+  }
+  return `<svg viewBox="0 0 800 400">
+    <line x1="80" y1="340" x2="750" y2="340" stroke="#3d4652" stroke-width="2.5"/>
+    <line x1="80" y1="340" x2="80" y2="40" stroke="#3d4652" stroke-width="2.5"/>
+    <text x="70" y="345" text-anchor="end" font-size="17" fill="#3d4652">310</text>
+    <text x="70" y="240" text-anchor="end" font-size="17" fill="#3d4652">350</text>
+    <text x="70" y="135" text-anchor="end" font-size="17" fill="#3d4652">390</text>
+    <text x="70" y="50" text-anchor="end" font-size="17" fill="#3d4652">430</text>
+    <text x="30" y="200" font-size="18" fill="#0B3E86" font-weight="900" transform="rotate(-90 30 200)">CO₂ 농도 (ppm)</text>
+    <text x="90" y="368" font-size="17" fill="#3d4652">1960</text>
+    <text x="400" y="368" font-size="17" fill="#3d4652">1990</text>
+    <text x="700" y="368" font-size="17" fill="#3d4652">2025</text>
+    <polyline points="${pts}" fill="none" stroke="#d64545" stroke-width="3.5"/>
+    <text x="420" y="80" font-size="19" fill="#d64545" font-weight="900">계속 증가 + 톱니 모양</text>
+  </svg>`;
+}
+function svgCompare(){
+  const panel = (x, title, re, col) => `
+    <g transform="translate(${x},0)">
+      <text x="170" y="34" text-anchor="middle" font-size="21" font-weight="900" fill="${col}">${title}</text>
+      <rect x="20" y="290" width="300" height="26" rx="6" fill="#8a6b48"/>
+      <text x="170" y="309" text-anchor="middle" font-size="14" fill="#fff" font-weight="700">지표</text>
+      <rect x="20" y="110" width="300" height="34" rx="8" fill="#cfe0f5" opacity=".9"/>
+      <text x="170" y="133" text-anchor="middle" font-size="14" fill="#0B3E86" font-weight="700">온실 기체 ${title==="현재"?"↑ 증가":""}</text>
+      <line x1="90" y1="285" x2="90" y2="60" stroke="#d64545" stroke-width="5" marker-end="url(#arr)"/>
+      <text x="90" y="50" text-anchor="middle" font-size="14" fill="#d64545" font-weight="700">우주로 방출</text>
+      ${re}
+    </g>`;
+  const re1 = `<line x1="230" y1="150" x2="230" y2="275" stroke="#c8920a" stroke-width="4" marker-end="url(#arr2)"/>
+    <text x="230" y="170" text-anchor="middle" font-size="13" fill="#c8920a" font-weight="700">재복사</text>`;
+  const re2 = `<line x1="215" y1="150" x2="215" y2="275" stroke="#c8920a" stroke-width="7" marker-end="url(#arr2)"/>
+    <line x1="255" y1="150" x2="255" y2="275" stroke="#c8920a" stroke-width="7" marker-end="url(#arr2)"/>
+    <text x="235" y="170" text-anchor="middle" font-size="13" fill="#c8920a" font-weight="900">재복사 증가!</text>`;
+  return `<svg viewBox="0 0 720 340">
+    <defs>
+      <marker id="arr" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="#d64545"/></marker>
+      <marker id="arr2" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto"><path d="M0,0L8,4L0,8z" fill="#c8920a"/></marker>
+    </defs>
+    ${panel(10, "과거", re1, "#3d4652")}
+    ${panel(380, "현재", re2, "#d64545")}
+  </svg>`;
+}
+/* 열수지 단계 다이어그램 */
+function svgBudget(step){
+  const S = (n, html) => step >= n ? html : "";
+  return `<svg viewBox="0 0 960 520">
+    <defs>
+      <marker id="ma" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0L7,3.5L0,7z" fill="context-stroke"/></marker>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#eaf2fd"/><stop offset="1" stop-color="#f8fbff"/>
+      </linearGradient>
+    </defs>
+    <rect x="0" y="0" width="960" height="430" fill="url(#sky)"/>
+    <rect x="0" y="185" width="960" height="60" rx="10" fill="#cfe0f5" opacity=".75"/>
+    <text x="478" y="222" text-anchor="middle" font-size="19" font-weight="900" fill="#0B3E86">대기 · 구름 (온실 기체 포함)</text>
+    <rect x="0" y="430" width="960" height="90" fill="#8a6b48"/>
+    <text x="480" y="483" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">지표</text>
+    <circle cx="95" cy="75" r="52" fill="#F5B301"/>
+    <text x="95" y="83" text-anchor="middle" font-size="24" font-weight="900" fill="#7c5c00">태양</text>
+
+    ${S(1,`<line x1="150" y1="105" x2="330" y2="420" stroke="#e8a800" stroke-width="14" marker-end="url(#ma)"/>
+      <text x="180" y="240" font-size="26" font-weight="900" fill="#c8920a">태양 복사 100</text>`)}
+    ${S(2,`<line x1="300" y1="330" x2="420" y2="80" stroke="#9db4d6" stroke-width="9" marker-end="url(#ma)"/>
+      <text x="400" y="120" font-size="24" font-weight="900" fill="#5b7cad">반사 30</text>
+      <text x="400" y="150" font-size="16" fill="#5b7cad">(구름·대기·지표)</text>`)}
+    ${S(3,`<circle cx="480" cy="215" r="40" fill="#1f6fd6"/>
+      <text x="480" y="208" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">대기 흡수</text>
+      <text x="480" y="231" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">25</text>`)}
+    ${S(4,`<circle cx="620" cy="415" r="46" fill="#1A9A3E"/>
+      <text x="620" y="408" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">지표 흡수</text>
+      <text x="620" y="433" text-anchor="middle" font-size="24" font-weight="900" fill="#fff">45</text>`)}
+    ${S(5,`<line x1="760" y1="420" x2="760" y2="60" stroke="#d64545" stroke-width="10" stroke-dasharray="14 8" marker-end="url(#ma)"/>
+      <text x="770" y="120" font-size="23" font-weight="900" fill="#d64545">지구 복사(적외선)</text>
+      <line x1="860" y1="245" x2="860" y2="415" stroke="#c8920a" stroke-width="8" marker-end="url(#ma)"/>
+      <text x="868" y="330" font-size="20" font-weight="900" fill="#c8920a">재복사</text>
+      <text x="868" y="355" font-size="16" fill="#c8920a">(온실효과)</text>`)}
+    ${S(6,`<rect x="270" y="20" width="420" height="46" rx="10" fill="#0B3E86"/>
+      <text x="480" y="51" text-anchor="middle" font-size="24" font-weight="900" fill="#fff">흡수 70  =  방출 70  →  복사 평형!</text>`)}
+  </svg>`;
+}
+
+/* ── 실시간 데이터 ── */
+let state = {}, students = [];   // students: [{id,name,team,predict,ans,sentence,sentenceTs,vote,exit}]
+const stage = document.getElementById("stage");
+const actsEl = document.getElementById("acts");
+
+onSnapshot(doc(db, COL, "state"), s => {
+  state = s.data() || {};
+  document.getElementById("hudConn").className = "live";
+  document.getElementById("hudConn").textContent = "● 실시간";
+  render();
+}, () => {
+  document.getElementById("hudConn").className = "dead";
+  document.getElementById("hudConn").textContent = "연결 오류";
+});
+onSnapshot(collection(db, COL), snap => {
+  students = [];
+  snap.forEach(d => { if(d.id.startsWith("stu_")){ const v = d.data(); if(v.name) students.push({id:d.id, ...v}); } });
+  document.getElementById("hudN").textContent = students.length;
+  render();
+});
+const setState = data => setDoc(doc(db, COL, "state"), data, {merge:true});
+
+/* ── 점수 ── */
+function scoreOf(st){
+  const revealed = state.ans || {}; let s = 0;
+  Object.keys(revealed).forEach(k => {
+    const a = (st.ans||{})[k];
+    if(a && a.c === revealed[k]) s += QUIZ[+k].base + Math.round(BONUS * Math.max(0, 1 - (a.ms||BONUS_MS)/BONUS_MS));
+  });
+  return s;
+}
+function teamScores(){
+  const t = {1:0,2:0,3:0,4:0,5:0};
+  students.forEach(s => { if(s.team) t[s.team] = (t[s.team]||0) + scoreOf(s); });
+  return t;
+}
+function latestSentences(){
+  const best = {};
+  students.forEach(s => {
+    if(s.sentence && s.team && (!best[s.team] || (s.sentenceTs||0) > best[s.team].ts))
+      best[s.team] = {text:s.sentence, ts:s.sentenceTs||0};
+  });
+  const out = {}; Object.keys(best).forEach(k => out[k] = best[k].text);
+  return out;
+}
+
+/* ── 슬라이드 정의 ── */
+let cur = 0, budgetStep = 0, timerSec = 300, timerOn = false, timerId = null;
+const slides = [];
+const slide = (fn, opts={}) => slides.push({fn, ...opts});
+
+/* 0 로비 */
+slide(() => `
+  <div class="kicker">통합과학2 · Ⅱ. 환경과 에너지 · 호남고등학교 1학년 5반</div>
+  <h1 class="big">지구의 열수지와<br>지구 온난화</h1>
+  <div class="rule"></div>
+  <div class="lobbywrap">
+    <div class="lobbyL">
+      <div style="font-size:3.2vh;font-weight:900;color:var(--navy)">📱 폰으로 접속하세요</div>
+      <div class="url">${STUDENT_URL.replace("https://","")}</div>
+      <div class="joined">
+        <div class="cnt">접속 <b>${students.length}</b> / 20명</div>
+        <div class="teamsrow">${[1,2,3,4,5].map(t => `
+          <div class="teambox"><h4>${t}모둠</h4>${students.filter(s=>s.team===t).map(s=>`<span>${s.name}</span>`).join("")}</div>`).join("")}
+        </div>
+      </div>
+    </div>
+    <div class="lobbyR"><div id="qr"></div><div style="font-size:2vh;color:var(--soft);font-weight:700">QR을 찍으면 바로 열려요</div></div>
+  </div>`,
+  { enter(){ setState({phase:"lobby"}); setTimeout(() => {
+      const el = document.getElementById("qr");
+      if(el && window.QRCode){ el.innerHTML=""; new QRCode(el, {text:STUDENT_URL, width:280, height:280, correctLevel:QRCode.CorrectLevel.M}); }
+    }, 50); },
+    acts(){ return [
+      ["전체 초기화(리허설용)", "ghost", async () => {
+        if(!confirm("모든 학생 데이터와 진행 상태를 삭제합니다. 계속할까요?")) return;
+        const snap = await getDocs(collection(db, COL));
+        for(const d of snap.docs) await deleteDoc(d.ref);
+        await setDoc(doc(db, COL, "state"), {phase:"lobby"});
+        alert("초기화 완료");
+      }]
+    ]; } });
+
+/* 1 예측 */
+slide(() => {
+  const preds = students.filter(s => s.predict !== undefined).map(s => s.predict);
+  const bins = Array(10).fill(0);
+  preds.forEach(p => bins[Math.min(9, Math.floor(p/10))]++);
+  const mx = Math.max(1, ...bins);
+  const avg = preds.length ? (preds.reduce((a,b)=>a+b,0)/preds.length).toFixed(0) : "-";
+  return `
+  <div class="kicker">생각 열기 · 예측</div>
+  <div class="qbig">태양이 지구에 보낸 에너지를 <b>100</b>이라 하면,<br>흡수되지 못하고 <b>우주로 반사되어 돌아가는 양</b>은 얼마일까?</div>
+  <div id="hist">${bins.map((n,i) => `
+    <div class="hbar ${state.predictReveal && i===3 ? "hot":""}">
+      <div class="n">${n||""}</div>
+      <div class="bar" style="height:${(n/mx*32)}vh"></div>
+      <div class="lb">${i*10}~${i*10+9}</div>
+    </div>`).join("")}
+  </div>
+  <div class="predmeta">제출 ${preds.length}명 · 우리 반 평균 <b>${avg}</b>${state.predictReveal ? ` &nbsp;→&nbsp; 실제 값은 약 <b style="color:var(--green)">30</b>! 수업 끝에 다시 확인합니다` : ""}</div>`;
+}, { enter(){ setState({phase:"predict"}); },
+     acts(){ return [
+       [state.predictOpen ? "제출 마감" : "제출 열기", state.predictOpen ? "ghost" : "gold", () => setState({predictOpen: !state.predictOpen})],
+       ["정답 공개 (30)", "green", () => setState({predictOpen:false, predictReveal:true})],
+     ]; } });
+
+/* 2 학습목표 */
+slide(() => `
+  <div class="kicker">오늘의 목표</div>
+  <h2 class="mid">이 수업이 끝나면, 여러분은</h2>
+  <div class="rule"></div>
+  <div class="goals">
+    <p><span class="num">1</span>태양 에너지 100이 <b>반사·흡수되는 비율</b>을 근거로<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;지구의 <b>복사 평형(열수지)</b>을 설명할 수 있다.</p>
+    <p style="margin-top:3vh"><span class="num">2</span>온실효과가 <b>강화</b>되면 무슨 일이 생기는지,<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>지구 온난화의 원리</b>를 한 문장으로 표현할 수 있다.</p>
+  </div>
+  <div style="margin-top:auto;font-size:2.4vh;color:var(--soft);font-weight:700">※ 오늘 배우는 내용은 2차 지필평가 범위의 출발점입니다.</div>`);
+
+/* 3 열수지 다이어그램 */
+slide(() => `
+  <div class="kicker">개념 구성 ① — 에너지의 행방</div>
+  <h2 class="mid">태양 에너지 100은 어디로 갈까? <span style="font-size:2.4vh;color:var(--soft)">(Space를 눌러 단계 진행 ${budgetStep}/6)</span></h2>
+  <div class="svgwrap">${svgBudget(budgetStep)}</div>`,
+  { enter(){ budgetStep = 0; },
+    space(){ if(budgetStep < 6){ budgetStep++; render(); return true; } return false; },
+    acts(){ return [["다음 단계 ▶ (Space)", "navy", () => { if(budgetStep<6){ budgetStep++; render(); } }]]; } });
+
+/* 4 활동지 미션 */
+slide(() => {
+  const m = String(Math.floor(timerSec/60)), s = String(timerSec%60).padStart(2,"0");
+  return `
+  <div class="kicker">개념 구성 ② — 모둠 미션</div>
+  <h2 class="mid">활동지 「열수지 퍼즐」</h2>
+  <div class="rule"></div>
+  <div class="goals" style="font-size:3.2vh">
+    <p>· 모둠 활동지의 <b>빈칸 수치</b>와 <b>에너지 화살표</b>를 완성하세요.</p>
+    <p>· 힌트: 들어온 것(100)과 나간 것의 합은 반드시 같아야 합니다.</p>
+    <p>· 완성한 모둠은 손을 들어 주세요 — 한 모둠이 발표합니다.</p>
+  </div>
+  <div style="margin:auto;text-align:center;font-size:16vh;font-weight:900;color:${timerSec<=60?"var(--red)":"var(--navy)"}">${m}:${s}</div>`;
+}, { acts(){ return [
+      [timerOn ? "타이머 정지" : "타이머 시작", timerOn ? "ghost" : "gold", () => {
+        timerOn = !timerOn;
+        if(timerOn){ timerId = setInterval(() => { if(timerSec>0){ timerSec--; render(); } else { clearInterval(timerId); timerOn=false; } }, 1000); }
+        else clearInterval(timerId);
+      }],
+      ["5분 리셋", "ghost", () => { timerSec = 300; clearInterval(timerId); timerOn = false; render(); }],
+    ]; } });
+
+/* 5 열수지 정답 */
+slide(() => `
+  <div class="kicker">개념 구성 ③ — 정답 확인</div>
+  <h2 class="mid">흡수 70 = 방출 70, <span style="color:var(--green)">복사 평형</span></h2>
+  <div class="svgwrap">${svgBudget(6)}</div>
+  <div style="font-size:2.6vh;font-weight:700;color:var(--soft);margin-top:1vh">
+    ✔ 온실효과(재복사)는 <b style="color:var(--navy)">원래 있던 자연 현상</b> — 덕분에 지구 평균 기온이 약 15℃로 유지된다. 문제는 이것이 <b style="color:var(--red)">강화</b>될 때!</div>`);
+
+/* 6 퀴즈 인트로 */
+slide(() => `
+  <div class="kicker">GAME</div>
+  <h1 class="big" style="font-size:9vh">히트 버짓 챌린지 🔥</h1>
+  <div class="rule"></div>
+  <div class="goals" style="font-size:3.4vh">
+    <p>· <b>ROUND 1</b> — OX 속도전 (4문제 · 100점)</p>
+    <p>· <b>ROUND 2</b> — 선다형 (4문제 · 100점)</p>
+    <p>· <b>ROUND 3</b> — 자료 해석 (2문제 · <b style="color:var(--gold-d)">200점</b>)</p>
+    <p style="margin-top:2.5vh;font-size:2.8vh;color:var(--soft)">정답 + <b>빠를수록 보너스</b>(최대 +100) · 개인 점수와 모둠 점수를 함께 집계합니다</p>
+  </div>`,
+  { enter(){ setState({phase:"quiz", qIndex:0, qOpen:false}); } });
+
+/* 7~16 문항 */
+QUIZ.forEach((q, i) => {
+  slide(() => {
+    const answered = students.filter(s => (s.ans||{})[i] !== undefined).length;
+    const revealed = (state.ans || {})[i] !== undefined;
+    const correct = students.filter(s => { const a=(s.ans||{})[i]; return a && a.c === q.ans; }).length;
+    const round = i<4 ? "ROUND 1 · OX" : i<8 ? "ROUND 2 · 선다형" : "ROUND 3 · 자료 해석";
+    let body;
+    if(q.type === "ox"){
+      body = `<div class="oxrow">
+        <div class="oxbig o ${revealed ? (q.ans===0?"ans":"dim"):""}">O</div>
+        <div class="oxbig x ${revealed ? (q.ans===1?"ans":"dim"):""}">X</div>
+      </div>`;
+    } else {
+      body = `<div class="choices">${q.ch.map((c,ci) => `
+        <div class="choice c${ci} ${revealed ? (ci===q.ans?"ans":"dim"):""}"><span class="cn">${"①②③④"[ci]}</span>${c}</div>`).join("")}
+      </div>`;
+      if(q.svg) body = `<div class="qbody"><div class="qside"><div class="svgwrap">${q.svg==="keeling"?svgKeeling():svgCompare()}</div></div>${body}</div>`;
+    }
+    return `
+    <div class="qhead2"><span class="qn">Q${i+1}</span><span class="qr2">${round}</span><span class="pts">${q.base}점 + 속도 보너스</span></div>
+    <div class="qtext">${q.text}</div>
+    ${body}
+    <div class="expl ${revealed?"on":""}">${q.expl}</div>
+    <div class="qstatus">${
+      revealed ? `정답률 <b>${answered? Math.round(correct/Math.max(1,answered)*100):0}%</b> (${correct}/${answered}명)` :
+      state.qOpen && state.qIndex===i ? `응답 <b>${answered}</b> / ${students.length}명` :
+      "[문제 열기]를 누르면 학생 폰에 버튼이 나타납니다"
+    }</div>`;
+  },
+  { enter(){ setState({phase:"quiz", qIndex:i, qOpen:false}); },
+    space(){
+      const revealed = (state.ans || {})[i] !== undefined;
+      if(!state.qOpen && !revealed){ setState({qIndex:i, qOpen:true, qOpenAt:Date.now()}); return true; }
+      if(state.qOpen && !revealed){ setState({qOpen:false, ["ans."+i]: q.ans}); return true; }
+      return false;
+    },
+    acts(){
+      const revealed = (state.ans || {})[i] !== undefined;
+      return [
+        ["문제 열기 (Space)", "gold", () => setState({qIndex:i, qOpen:true, qOpenAt:Date.now()}), state.qOpen || revealed],
+        ["정답 공개 (Space)", "green", () => setState({qOpen:false, ["ans."+i]: q.ans}), revealed || !state.qOpen],
+      ];
+    } });
+});
+
+/* 17 리더보드 */
+slide(() => {
+  const ppl = students.map(s => ({name:s.name, team:s.team, sc:scoreOf(s)})).sort((a,b)=>b.sc-a.sc).slice(0,5);
+  const ts = teamScores(); const mxT = Math.max(1, ...Object.values(ts));
+  const mxP = Math.max(1, ...ppl.map(p=>p.sc));
+  return `
+  <div class="kicker">중간 결산</div>
+  <h2 class="mid">🏆 리더보드</h2>
+  <div class="lb2">
+    <div class="lbcol"><h3>개인 TOP 5</h3>${ppl.map((p,r) => `
+      <div class="lbrow"><span class="rk">${r+1}</span><span class="nm">${p.name}</span>
+      <span class="barw"><span class="bar2" style="width:${p.sc/mxP*100}%"></span></span><span class="sc">${p.sc}</span></div>`).join("")}
+    </div>
+    <div class="lbcol"><h3>모둠 점수</h3>${[1,2,3,4,5].sort((a,b)=>ts[b]-ts[a]).map((t,r) => `
+      <div class="lbrow team"><span class="rk">${r+1}</span><span class="nm">${t}모둠</span>
+      <span class="barw"><span class="bar2" style="width:${ts[t]/mxT*100}%"></span></span><span class="sc">${ts[t]}</span></div>`).join("")}
+    </div>
+  </div>`;
+});
+
+/* 18 모둠 문장 + 투표 */
+slide(() => {
+  const sents = state.phase === "vote" ? (state.sentences || {}) : latestSentences();
+  const votes = {1:0,2:0,3:0,4:0,5:0};
+  students.forEach(s => { if(s.vote) votes[s.vote] = (votes[s.vote]||0)+1; });
+  const mxV = Math.max(...Object.values(votes));
+  return `
+  <div class="kicker">동료 피드백</div>
+  <h2 class="mid">"지구 온난화를 열수지로 설명하는 한 문장"</h2>
+  <div class="sents">${[1,2,3,4,5].map(t => `
+    <div class="sent ${state.voteDone && votes[t]===mxV && mxV>0 ? "best":""} ${sents[t]?"":"empty"}">
+      <span class="tno">${t}모둠</span>
+      <span class="tx">${sents[t] || "아직 제출 전…"}</span>
+      ${state.phase==="vote" ? `<span class="vt">${votes[t]}표</span>` : ""}
+    </div>`).join("")}
+  </div>`;
+},
+{ enter(){ setState({phase:"sentence"}); },
+  acts(){ return [
+    ["투표 시작", "gold", () => setState({phase:"vote", sentences:latestSentences()}), state.phase==="vote"],
+    ["베스트 발표", "green", () => setState({voteDone:true}), state.phase!=="vote"],
+  ]; } });
+
+/* 19 정리 */
+slide(() => {
+  const preds = students.filter(s => s.predict !== undefined).map(s => s.predict);
+  const avg = preds.length ? (preds.reduce((a,b)=>a+b,0)/preds.length).toFixed(0) : "-";
+  return `
+  <div class="kicker">정리 — 오늘의 핵심 구조</div>
+  <h2 class="mid">지구 온난화 = 열수지의 균형이 흔들리는 것</h2>
+  <div class="sumflow">
+    <div class="sumbox">온실 기체 증가<small>화석 연료 사용</small></div><span class="sumarrow">→</span>
+    <div class="sumbox">재복사 증가<small>적외선을 더 많이 붙잡음</small></div><span class="sumarrow">→</span>
+    <div class="sumbox" style="border-color:var(--red);color:var(--red)">흡수 &gt; 방출<small>평형이 잠시 깨짐</small></div><span class="sumarrow">→</span>
+    <div class="sumbox">더 높은 온도에서<br>새로운 평형<small>평균 기온 상승</small></div>
+  </div>
+  <div style="font-size:2.8vh;font-weight:700;color:var(--soft)">
+    ✔ 도입 질문의 답 — 반사되는 양은 <b style="color:var(--navy)">30</b> (우리 반 예측 평균 ${avg}) · 나머지 70은 흡수된 뒤 결국 우주로 방출된다.<br>
+    ✔ 다음 시간 — 온난화가 일으키는 현상(<b style="color:var(--navy)">엘니뇨 · 사막화</b>)과 대처 방안 <b style="color:var(--red)">(2차 지필평가 범위)</b></div>`;
+});
+
+/* 20 마무리 */
+slide(() => {
+  const ts = teamScores();
+  const win = [1,2,3,4,5].sort((a,b)=>ts[b]-ts[a])[0];
+  const exits = students.filter(s => s.exit);
+  return `
+  <div class="kicker">수고했어요!</div>
+  <h2 class="mid">오늘의 우승 — <span style="color:var(--gold-d)">${win}모둠 (${ts[win]}점)</span></h2>
+  <div style="font-size:2.6vh;font-weight:700;color:var(--soft)">폰에 <b>퇴장권</b>(소감·질문 한 줄)을 제출하면 끝! &nbsp;제출 ${exits.length}/${students.length}명</div>
+  <div class="exits">${exits.slice(-12).map(s => `<div class="exline"><b>${s.team}모둠 ${s.name}</b>${s.exit}</div>`).join("")}</div>`;
+},
+{ enter(){ setState({phase:"end"}); } });
+
+/* ── 렌더/네비 ── */
+document.getElementById("hudTot").textContent = slides.length;
+function render(){
+  const s = slides[cur];
+  stage.innerHTML = `<div class="slide on">${s.fn()}</div>`;
+  document.getElementById("hudPg").textContent = cur+1;
+  actsEl.innerHTML = "";
+  (s.acts ? s.acts() : []).forEach(([label, cls, fn, disabled]) => {
+    const b = document.createElement("button");
+    b.textContent = label; b.className = cls; b.disabled = !!disabled; b.onclick = fn;
+    actsEl.appendChild(b);
+  });
+}
+function go(n){
+  if(n < 0 || n >= slides.length) return;
+  cur = n;
+  const s = slides[cur];
+  if(s.enter) s.enter();
+  render();
+}
+document.addEventListener("keydown", e => {
+  if(document.getElementById("gate")) return;
+  if(e.key === "ArrowRight" || e.key === "PageDown") go(cur+1);
+  else if(e.key === "ArrowLeft" || e.key === "PageUp") go(cur-1);
+  else if(e.key === " "){ e.preventDefault();
+    const s = slides[cur];
+    if(!(s.space && s.space())) go(cur+1);
+  }
+  else if(e.key === "f" || e.key === "F"){ document.documentElement.requestFullscreen?.(); }
+});
+go(0);
+</script>
+</body>
+</html>
