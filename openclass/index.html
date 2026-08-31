@@ -133,19 +133,22 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
     <div class="scorebar"><span>내 점수</span><span id="myScore">0점</span></div>
   </section>
 
-  <!-- 모둠 문장 -->
+  <!-- 모둠 논증 (지구공학 딜레마) -->
   <section id="vSentence" class="card hidden">
-    <h2>모둠 미션</h2>
-    <p class="desc"><b>"지구 온난화를 열수지로 설명하는 한 문장"</b>을 모둠에서 토의해 제출하세요. (모둠에서 한 명만 제출해도 됩니다 · 다시 제출하면 덮어써요)</p>
-    <textarea id="inSentence" maxlength="80" placeholder="예) 온실 기체가 늘어나면 …"></textarea>
-    <button class="big" id="btnSentence">우리 모둠 문장 제출</button>
+    <h2>모둠 미션 — 지구에 양산을 씌운다면?</h2>
+    <p class="desc">성층권에 반사 입자를 뿌려 <b>반사율을 인위적으로 높이는 지구공학</b>, 해야 할까요? 모둠의 <b>입장</b>을 고르고 <b>근거 한 문장</b>을 제출하세요. (모둠에서 한 명만 제출 · 다시 제출하면 덮어써요)</p>
+    <label>우리 모둠의 입장</label>
+    <div class="teamgrid" id="stanceGrid" style="grid-template-columns:repeat(3,1fr)"></div>
+    <label>근거 한 문장 (오늘 배운 열수지 개념이 들어가면 최고!)</label>
+    <textarea id="inSentence" maxlength="90" placeholder="예) 반사가 늘면 흡수가 줄어 기온은 내려가지만 …"></textarea>
+    <button class="big" id="btnSentence">우리 모둠 논증 제출</button>
     <p class="desc" id="sentDone" style="margin-top:10px"></p>
   </section>
 
   <!-- 투표 -->
   <section id="vVote" class="card hidden">
-    <h2>베스트 문장 투표</h2>
-    <p class="desc">우리 모둠을 <b>제외한</b> 모둠 중 가장 잘 설명한 문장에 투표하세요. (1인 1표)</p>
+    <h2>가장 설득력 있는 근거는?</h2>
+    <p class="desc">우리 모둠을 <b>제외한</b> 모둠 중, 입장과 관계없이 <b>근거가 가장 탄탄한 논증</b>에 투표하세요. (1인 1표)</p>
     <div class="votegrid" id="voteGrid"></div>
   </section>
 
@@ -335,11 +338,21 @@ function answer(i, c){
   render();
 }
 
-/* 모둠 문장 */
+/* 모둠 논증 (지구공학 딜레마) */
+let stance = "";
+const STANCES = ["찬성","반대","조건부"];
+const sg = $("stanceGrid");
+STANCES.forEach(s => {
+  const b = document.createElement("button");
+  b.textContent = s;
+  b.onclick = () => { stance = s; [...sg.children].forEach(c => c.classList.toggle("on", c.textContent === s)); };
+  sg.appendChild(b);
+});
 $("btnSentence").onclick = () => {
   const t = $("inSentence").value.trim();
-  if(!t){ alert("문장을 입력하세요"); return; }
-  save({ sentence: t, sentenceTs: Date.now() });
+  if(!stance){ alert("입장을 먼저 골라 주세요"); return; }
+  if(!t){ alert("근거를 입력하세요"); return; }
+  save({ stance, sentence: t, sentenceTs: Date.now() });
   $("sentDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 화면에서 확인하세요.";
 };
 function renderSentence(){ show("vSentence"); }
@@ -348,12 +361,13 @@ function renderSentence(){ show("vSentence"); }
 function renderVote(){
   show("vVote");
   const g = $("voteGrid");
-  const sents = state.sentences || {};   // {1:"...",2:"..."}
+  const sents = state.sentences || {};   // {1:{stance,text}, ...}
   g.innerHTML = "";
   for(let t=1;t<=5;t++){
-    if(!sents[t]) continue;
+    const s = sents[t];
+    if(!s || !s.text) continue;
     const b = document.createElement("button");
-    b.innerHTML = `<b>${t}모둠</b>${sents[t]}`;
+    b.innerHTML = `<b>${t}모둠 · ${s.stance || ""}</b>${s.text}`;
     if(t === me.team){ b.disabled = true; b.innerHTML += " (우리 모둠)"; }
     if(myDoc.vote === t) b.classList.add("on");
     b.onclick = () => { save({ vote: t }); };

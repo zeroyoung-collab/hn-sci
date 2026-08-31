@@ -342,9 +342,9 @@ function latestSentences(){
   const best = {};
   students.forEach(s => {
     if(s.sentence && s.team && (!best[s.team] || (s.sentenceTs||0) > best[s.team].ts))
-      best[s.team] = {text:s.sentence, ts:s.sentenceTs||0};
+      best[s.team] = {text:s.sentence, stance:s.stance||"", ts:s.sentenceTs||0};
   });
-  const out = {}; Object.keys(best).forEach(k => out[k] = best[k].text);
+  const out = {}; Object.keys(best).forEach(k => out[k] = {text:best[k].text, stance:best[k].stance});
   return out;
 }
 
@@ -538,22 +538,61 @@ slide(() => {
   </div>`;
 });
 
-/* 18 모둠 문장 + 투표 */
+/* 18 지구공학 딜레마 제시 */
+slide(() => `
+  <div class="kicker">정답 없는 문제 — SSI 논증</div>
+  <h2 class="mid">지구에 양산을 씌운다면? <span style="font-size:2.6vh;color:var(--soft)">— 지구공학(태양 복사 관리)</span></h2>
+  <div style="display:flex; gap:3vw; flex:1; min-height:0; align-items:center">
+    <div class="svgwrap" style="flex:1.1">
+      <svg viewBox="0 0 560 400">
+        <defs><marker id="mg" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0L7,3.5L0,7z" fill="context-stroke"/></marker></defs>
+        <rect x="0" y="0" width="560" height="330" fill="#eaf2fd"/>
+        <rect x="0" y="330" width="560" height="70" fill="#8a6b48"/>
+        <text x="280" y="372" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">지표</text>
+        <rect x="0" y="90" width="560" height="34" fill="#d9c2e8" opacity=".85"/>
+        <text x="280" y="112" text-anchor="middle" font-size="14" font-weight="900" fill="#5e3a7d">성층권에 뿌린 인공 반사 입자</text>
+        <circle cx="70" cy="45" r="34" fill="#F5B301"/>
+        <line x1="105" y1="70" x2="230" y2="320" stroke="#e8a800" stroke-width="10" marker-end="url(#mg)"/>
+        <line x1="200" y1="235" x2="300" y2="40" stroke="#5b7cad" stroke-width="14" marker-end="url(#mg)"/>
+        <text x="310" y="60" font-size="18" font-weight="900" fill="#5b7cad">반사 30 → 32?</text>
+        <text x="310" y="84" font-size="13" fill="#5b7cad">화살표를 인위적으로 굵게!</text>
+      </svg>
+    </div>
+    <div style="flex:1">
+      <div class="goals" style="font-size:2.7vh; line-height:1.75">
+        <p>· 1991년 피나투보 화산 폭발 → 지구 평균 기온이 실제로 약 <b>0.5℃ 하강</b></p>
+        <p>· 이를 흉내 내 <b>반사율을 높이면</b> 온난화를 빠르고 싸게 상쇄할 수 있다는 계산</p>
+        <p style="margin-top:1.5vh">그런데 —</p>
+        <p>· 강수 패턴 교란, 오존층 영향은?</p>
+        <p>· 중단하는 순간 기온 <b>급반등</b>(터미네이션 쇼크)</p>
+        <p>· <b>지구 온도조절기의 결정권</b>은 누가 갖나?</p>
+      </div>
+      <div style="margin-top:2.5vh; background:var(--lt); border-left:.7vh solid var(--gold); padding:1.6vh 2vh; font-size:2.5vh; font-weight:700; color:var(--navy2)">
+        모둠 미션 — 입장(찬성·반대·조건부)을 정하고, <b>열수지 개념을 근거로</b> 한 문장 논증을 제출하라!</div>
+    </div>
+  </div>`);
+
+/* 19 모둠 논증 + 투표 */
 slide(() => {
   const sents = state.phase === "vote" ? (state.sentences || {}) : latestSentences();
   const votes = {1:0,2:0,3:0,4:0,5:0};
   students.forEach(s => { if(s.vote) votes[s.vote] = (votes[s.vote]||0)+1; });
   const mxV = Math.max(...Object.values(votes));
+  const stCol = {"찬성":"var(--green)","반대":"var(--red)","조건부":"var(--gold-d)"};
   return `
-  <div class="kicker">동료 피드백</div>
-  <h2 class="mid">"지구 온난화를 열수지로 설명하는 한 문장"</h2>
-  <div class="sents">${[1,2,3,4,5].map(t => `
-    <div class="sent ${state.voteDone && votes[t]===mxV && mxV>0 ? "best":""} ${sents[t]?"":"empty"}">
+  <div class="kicker">SSI 논증 — 모둠 입장과 근거</div>
+  <h2 class="mid">지구공학, 해야 할까?</h2>
+  <div class="sents">${[1,2,3,4,5].map(t => {
+    const s = sents[t] || {};
+    return `
+    <div class="sent ${state.voteDone && votes[t]===mxV && mxV>0 ? "best":""} ${s.text?"":"empty"}">
       <span class="tno">${t}모둠</span>
-      <span class="tx">${sents[t] || "아직 제출 전…"}</span>
+      ${s.stance ? `<span class="tno" style="background:${stCol[s.stance]||"var(--navy)"}">${s.stance}</span>` : ""}
+      <span class="tx">${s.text || "아직 제출 전…"}</span>
       ${state.phase==="vote" ? `<span class="vt">${votes[t]}표</span>` : ""}
-    </div>`).join("")}
-  </div>`;
+    </div>`;}).join("")}
+  </div>
+  <div style="flex-shrink:0; font-size:2.2vh; font-weight:700; color:var(--soft)">투표 기준 — 입장이 아니라 <b>근거의 설득력</b>! (열수지 개념이 정확히 쓰였는가)</div>`;
 },
 { enter(){ setState({phase:"sentence"}); },
   acts(){ return [
