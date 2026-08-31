@@ -263,64 +263,70 @@ function svgCompare(){
     ${panel(380, "현재", re2, "#d64545")}
   </svg>`;
 }
-/* 열수지 단계 다이어그램 — 미래엔 교과서 그림 스타일(빨강=태양 복사, 파랑=지구 복사, 재복사=온실 효과) */
-function bundleArrows(x1,y1,x2,y2,col,w,n,gap){
-  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), ox=-dy/L*gap, oy=dx/L*gap;
-  let s="";
-  for(let k=0;k<n;k++){
-    const o=k-(n-1)/2;
-    s+=`<line x1="${(x1+ox*o).toFixed(1)}" y1="${(y1+oy*o).toFixed(1)}" x2="${(x2+ox*o).toFixed(1)}" y2="${(y2+oy*o).toFixed(1)}" stroke="${col}" stroke-width="${w}" marker-end="url(#ma)"/>`;
-  }
-  return s;
+/* 열수지 단계 다이어그램 — 미래엔 교과서 84쪽 그림 그대로(우주/대기/지표 3단 띠, 노랑=태양 복사, 분홍=지구 복사) */
+function fatArrow(x1,y1,x2,y2,w,fill,stroke){
+  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L, px=-uy, py=ux;
+  const hl=Math.min(w*1.7, L*.4), hw=w*2.1, bx=x2-ux*hl, by=y2-uy*hl, h=w/2;
+  const P=(x,y)=>`${x.toFixed(1)},${y.toFixed(1)}`;
+  return `<polygon points="${P(x1+px*h,y1+py*h)} ${P(bx+px*h,by+py*h)} ${P(bx+px*hw/2,by+py*hw/2)} ${P(x2,y2)} ${P(bx-px*hw/2,by-py*hw/2)} ${P(bx-px*h,by-py*h)} ${P(x1-px*h,y1-py*h)}" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round" opacity=".95"/>`;
+}
+function cloudShape(cx,cy,s=1){
+  return `<g fill="#fff" opacity=".95">
+    <ellipse cx="${cx}" cy="${cy}" rx="${34*s}" ry="${15*s}"/>
+    <ellipse cx="${cx-22*s}" cy="${cy+4*s}" rx="${20*s}" ry="${11*s}"/>
+    <ellipse cx="${cx+24*s}" cy="${cy+5*s}" rx="${22*s}" ry="${12*s}"/>
+    <ellipse cx="${cx+2*s}" cy="${cy-9*s}" rx="${20*s}" ry="${12*s}"/></g>`;
 }
 function svgBudget(step){
   const S = (n, html) => step >= n ? html : "";
+  const SOL="#ffc93c", SOLS="#e09b00", RAD="#f2729b", RADS="#d64577";
   return `<svg viewBox="0 0 960 520">
     <defs>
-      <marker id="ma" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0L6,3L0,6z" fill="context-stroke"/></marker>
-      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#d8ebfd"/><stop offset="1" stop-color="#f6fafe"/></linearGradient>
-      <radialGradient id="sun"><stop offset="0" stop-color="#ffe173"/><stop offset=".65" stop-color="#ffc93c"/><stop offset="1" stop-color="#f59f00"/></radialGradient>
-      <linearGradient id="gnd" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#8fbe74"/><stop offset="1" stop-color="#679a4d"/></linearGradient>
+      <linearGradient id="atm" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#aecfee"/><stop offset="1" stop-color="#dcebfa"/></linearGradient>
     </defs>
-    <rect x="0" y="0" width="960" height="455" fill="url(#sky)"/>
-    <!-- 대기층 -->
-    <rect x="0" y="150" width="960" height="82" fill="#a9cdf0" opacity=".55"/>
-    <ellipse cx="250" cy="163" rx="52" ry="15" fill="#fff" opacity=".85"/>
-    <ellipse cx="300" cy="172" rx="40" ry="13" fill="#fff" opacity=".75"/>
-    <ellipse cx="600" cy="218" rx="48" ry="14" fill="#fff" opacity=".8"/>
-    <text x="948" y="178" text-anchor="end" font-size="20" font-weight="900" fill="#0B3E86">지구 대기</text>
-    <text x="948" y="200" text-anchor="end" font-size="14" font-weight="700" fill="#3f6ea8">(온실 기체 포함)</text>
-    <!-- 지표면 -->
-    <rect x="0" y="455" width="960" height="65" fill="url(#gnd)"/>
-    <rect x="0" y="500" width="960" height="20" fill="#8a6b48"/>
-    <text x="480" y="486" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">지표면</text>
-    <!-- 태양 -->
-    <circle cx="92" cy="78" r="55" fill="url(#sun)"/>
-    <text x="92" y="86" text-anchor="middle" font-size="22" font-weight="900" fill="#8a5a00">태양</text>
+    <!-- 영역 띠: 우주 / 대기 / 지표 -->
+    <rect x="0" y="0" width="960" height="70" fill="#eef4fb"/>
+    <rect x="0" y="70" width="960" height="370" fill="url(#atm)"/>
+    <rect x="0" y="440" width="960" height="46" fill="#cdbf9f"/>
+    <rect x="0" y="486" width="960" height="34" fill="#b3a184"/>
+    <line x1="0" y1="70" x2="960" y2="70" stroke="#8fb2d6" stroke-width="1.5"/>
+    <line x1="0" y1="440" x2="960" y2="440" stroke="#a4906d" stroke-width="1.5"/>
+    <rect x="14" y="22" width="58" height="30" rx="15" fill="#5b7cad"/><text x="43" y="43" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">우주</text>
+    <rect x="14" y="240" width="58" height="30" rx="15" fill="#3f6ea8"/><text x="43" y="261" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">대기</text>
+    <rect x="14" y="465" width="58" height="30" rx="15" fill="#7a674a"/><text x="43" y="486" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">지표</text>
+    ${cloudShape(452,286)}${cloudShape(600,306,.9)}${cloudShape(742,250,.95)}
 
-    ${S(1, bundleArrows(150,112, 335,445, "#e2483d", 5, 3, 15) + `
-      <text x="120" y="320" font-size="25" font-weight="900" fill="#c92f24">태양 복사</text>
-      <text x="120" y="350" font-size="25" font-weight="900" fill="#c92f24">에너지 100</text>`)}
-    ${S(2, bundleArrows(320,360, 445,58, "#f08c3a", 4.5, 2, 13) + `
-      <text x="452" y="88" font-size="23" font-weight="900" fill="#d8752a">반사 30</text>
-      <text x="452" y="112" font-size="15" font-weight="700" fill="#d8752a">(구름·대기 25 + 지표 5)</text>`)}
-    ${S(3,`<circle cx="530" cy="191" r="38" fill="#1f6fd6"/>
-      <text x="530" y="185" text-anchor="middle" font-size="13" font-weight="900" fill="#fff">대기·구름 흡수</text>
-      <text x="530" y="209" text-anchor="middle" font-size="21" font-weight="900" fill="#fff">20</text>`)}
-    ${S(4,`<circle cx="620" cy="447" r="42" fill="#1A9A3E"/>
-      <text x="620" y="441" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">지표 흡수</text>
-      <text x="620" y="466" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">50</text>`)}
-    ${S(5, bundleArrows(724,442, 724,52, "#2e6fd0", 4.5, 3, 14) + `
-      <text x="690" y="34" font-size="21" font-weight="900" fill="#2456a8">지구 복사 에너지(적외선) 70</text>
-      <text x="694" y="255" text-anchor="end" font-size="15" font-weight="700" fill="#2456a8">= 대기·구름 방출 58 + 지표 방출 12</text>`
-      + bundleArrows(838,448, 858,240, "#5f8fd6", 3.5, 2, 10)
-      + bundleArrows(888,238, 908,446, "#2e6fd0", 3.5, 2, 10) + `
-      <text x="835" y="300" font-size="19" font-weight="900" fill="#2456a8">온실 효과</text>
-      <text x="835" y="322" font-size="14" font-weight="700" fill="#2456a8">(재복사)</text>`)}
-    ${S(6,`<rect x="255" y="14" width="430" height="46" rx="10" fill="#0B3E86"/>
-      <text x="470" y="45" text-anchor="middle" font-size="23" font-weight="900" fill="#fff">흡수 70  =  방출 70  →  복사 평형!</text>`)}
+    ${S(1, fatArrow(480,46, 480,428, 34, SOL, SOLS) + `
+      <text x="480" y="30" text-anchor="middle" font-size="21" font-weight="900" fill="#1c2f45">태양 복사 100</text>`)}
+    ${S(2, fatArrow(452,278, 268,56, 18, SOL, SOLS)
+         + fatArrow(178,430, 152,58, 8, SOL, SOLS) + `
+      <text x="120" y="30" font-size="20" font-weight="900" fill="#1c2f45">반사 30</text>
+      <text x="322" y="155" font-size="19" font-weight="900" fill="#b06a00">25</text>
+      <text x="126" y="250" font-size="19" font-weight="900" fill="#b06a00">5</text>`)}
+    ${S(3, fatArrow(500,255, 566,296, 13, SOL, SOLS) + `
+      <text x="612" y="342" text-anchor="middle" font-size="21" font-weight="900" fill="#b06a00">20</text>
+      <text x="612" y="364" text-anchor="middle" font-size="14" font-weight="700" fill="#8a6a2a">대기·구름 흡수</text>`)}
+    ${S(4,`
+      <text x="480" y="408" text-anchor="middle" font-size="22" font-weight="900" fill="#7a4a00">50</text>
+      <text x="480" y="474" text-anchor="middle" font-size="16" font-weight="900" fill="#3d2f18">지표 흡수</text>`)}
+    ${S(5, fatArrow(690,252, 690,426, 22, RAD, RADS)
+         + fatArrow(800,428, 800,246, 26, RAD, RADS)
+         + fatArrow(742,232, 742,58, 17, RAD, RADS)
+         + fatArrow(922,428, 922,58, 8, RAD, RADS) + `
+      <text x="708" y="345" font-size="20" font-weight="900" fill="#b02d55">94</text>
+      <text x="668" y="240" text-anchor="end" font-size="14" font-weight="700" fill="#b02d55">재복사(온실 효과)</text>
+      <text x="822" y="345" font-size="20" font-weight="900" fill="#b02d55">132</text>
+      <text x="764" y="140" font-size="19" font-weight="900" fill="#b02d55">58</text>
+      <text x="934" y="250" font-size="19" font-weight="900" fill="#b02d55">12</text>
+      <text x="826" y="30" text-anchor="middle" font-size="20" font-weight="900" fill="#b02d55">지구 복사 70</text>
+      <polyline points="716,46 716,40 936,40 936,46" fill="none" stroke="#b02d55" stroke-width="2"/>
+      <text x="690" y="474" text-anchor="middle" font-size="14.5" font-weight="900" fill="#3d2f18">대기 복사 흡수</text>
+      <text x="800" y="474" text-anchor="middle" font-size="14.5" font-weight="900" fill="#3d2f18">지표 방출</text>`)}
+    ${S(6,`<rect x="196" y="285" width="240" height="76" rx="12" fill="#0B3E86"/>
+      <text x="316" y="317" text-anchor="middle" font-size="21" font-weight="900" fill="#fff">흡수 70 = 방출 70</text>
+      <text x="316" y="347" text-anchor="middle" font-size="19" font-weight="900" fill="#F5B301">→ 복사 평형!</text>
+      <text x="480" y="510" text-anchor="middle" font-size="13.5" font-weight="700" fill="#fff">각 영역도 유입 = 유출 — 지표 144 · 대기 152 · 우주 100 (미래엔 교과서 84쪽)</text>`)}
   </svg>`;
 }
 
