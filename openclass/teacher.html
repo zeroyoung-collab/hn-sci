@@ -197,8 +197,8 @@ const QUIZ = [
    expl:"<b>정답 O.</b> 구름·대기·지표에서 약 30이 반사된다(반사율 = 알베도). 도입에서 예측한 바로 그 값!"},
   {type:"ox", base:100, text:"온실효과가 아예 없다면 지구 평균 기온은 지금보다 높아질 것이다.", ans:1,
    expl:"<b>정답 X.</b> 온실효과가 없으면 평균 기온은 약 <b>−18℃</b>. 온실효과 덕분에 현재 약 15℃가 유지된다."},
-  {type:"mc", base:100, text:"태양 복사 에너지 100 중 지표가 흡수하는 양은?", ch:["25","30","45","70"], ans:2,
-   expl:"<b>정답 ③ 45.</b> 반사 30 + 대기·구름 흡수 25 + <b>지표 흡수 45</b> = 100. 흡수 합계는 70."},
+  {type:"mc", base:100, text:"태양 복사 에너지 100 중 지표가 흡수하는 양은?", ch:["20","30","50","70"], ans:2,
+   expl:"<b>정답 ③ 50.</b> 반사 30 + 대기·구름 흡수 20 + <b>지표 흡수 50</b> = 100. 흡수 합계는 70. (미래엔 교과서 84쪽)"},
   {type:"mc", base:100, text:"다음 중 온실 기체가 <u>아닌</u> 것은?", ch:["이산화 탄소","메테인","수증기","질소"], ans:3,
    expl:"<b>정답 ④ 질소.</b> 대기의 78%를 차지하지만 지구 복사(적외선)를 거의 흡수하지 못한다. 수증기도 강력한 온실 기체라는 점 주의!"},
   {type:"mc", base:100, text:"지구가 우주로 내보내는 '지구 복사 에너지'는 주로 어떤 형태일까?", ch:["가시광선","적외선","자외선","X선"], ans:1,
@@ -305,15 +305,16 @@ function svgBudget(step){
       <text x="120" y="350" font-size="25" font-weight="900" fill="#c92f24">에너지 100</text>`)}
     ${S(2, bundleArrows(320,360, 445,58, "#f08c3a", 4.5, 2, 13) + `
       <text x="452" y="88" font-size="23" font-weight="900" fill="#d8752a">반사 30</text>
-      <text x="452" y="112" font-size="15" font-weight="700" fill="#d8752a">(구름·대기·지표)</text>`)}
+      <text x="452" y="112" font-size="15" font-weight="700" fill="#d8752a">(구름·대기 25 + 지표 5)</text>`)}
     ${S(3,`<circle cx="530" cy="191" r="38" fill="#1f6fd6"/>
-      <text x="530" y="185" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">대기 흡수</text>
-      <text x="530" y="209" text-anchor="middle" font-size="21" font-weight="900" fill="#fff">25</text>`)}
+      <text x="530" y="185" text-anchor="middle" font-size="13" font-weight="900" fill="#fff">대기·구름 흡수</text>
+      <text x="530" y="209" text-anchor="middle" font-size="21" font-weight="900" fill="#fff">20</text>`)}
     ${S(4,`<circle cx="620" cy="447" r="42" fill="#1A9A3E"/>
       <text x="620" y="441" text-anchor="middle" font-size="15" font-weight="900" fill="#fff">지표 흡수</text>
-      <text x="620" y="466" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">45</text>`)}
+      <text x="620" y="466" text-anchor="middle" font-size="22" font-weight="900" fill="#fff">50</text>`)}
     ${S(5, bundleArrows(724,442, 724,52, "#2e6fd0", 4.5, 3, 14) + `
-      <text x="700" y="34" font-size="21" font-weight="900" fill="#2456a8">지구 복사 에너지(적외선)</text>`
+      <text x="690" y="34" font-size="21" font-weight="900" fill="#2456a8">지구 복사 에너지(적외선) 70</text>
+      <text x="694" y="255" text-anchor="end" font-size="15" font-weight="700" fill="#2456a8">= 대기·구름 방출 58 + 지표 방출 12</text>`
       + bundleArrows(838,448, 858,240, "#5f8fd6", 3.5, 2, 10)
       + bundleArrows(888,238, 908,446, "#2e6fd0", 3.5, 2, 10) + `
       <text x="835" y="300" font-size="19" font-weight="900" fill="#2456a8">온실 효과</text>
