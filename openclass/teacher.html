@@ -284,9 +284,15 @@ function svgBudget(step){
     <defs>
       <linearGradient id="atm" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="#aecfee"/><stop offset="1" stop-color="#dcebfa"/></linearGradient>
+      <linearGradient id="spc" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#101b36"/><stop offset="1" stop-color="#2b4573"/></linearGradient>
     </defs>
     <!-- 영역 띠: 우주 / 대기 / 지표 -->
-    <rect x="0" y="0" width="960" height="70" fill="#eef4fb"/>
+    <rect x="0" y="0" width="960" height="70" fill="url(#spc)"/>
+    <g fill="#fff" opacity=".8">
+      <circle cx="90" cy="14" r="1.5"/><circle cx="215" cy="50" r="1.2"/><circle cx="345" cy="14" r="1.5"/>
+      <circle cx="555" cy="52" r="1.2"/><circle cx="640" cy="16" r="1.5"/><circle cx="905" cy="60" r="1.2"/>
+    </g>
     <rect x="0" y="70" width="960" height="370" fill="url(#atm)"/>
     <rect x="0" y="440" width="960" height="46" fill="#cdbf9f"/>
     <rect x="0" y="486" width="960" height="34" fill="#b3a184"/>
@@ -298,10 +304,10 @@ function svgBudget(step){
     ${cloudShape(452,286)}${cloudShape(600,306,.9)}${cloudShape(742,250,.95)}
 
     ${S(1, fatArrow(480,46, 480,428, 34, SOL, SOLS) + `
-      <text x="480" y="30" text-anchor="middle" font-size="21" font-weight="900" fill="#1c2f45">태양 복사 100</text>`)}
+      <text x="480" y="30" text-anchor="middle" font-size="21" font-weight="900" fill="#fff">태양 복사 100</text>`)}
     ${S(2, fatArrow(452,278, 268,56, 18, SOL, SOLS)
          + fatArrow(178,430, 152,58, 8, SOL, SOLS) + `
-      <text x="120" y="30" font-size="20" font-weight="900" fill="#1c2f45">반사 30</text>
+      <text x="120" y="30" font-size="20" font-weight="900" fill="#fff">반사 30</text>
       <text x="322" y="155" font-size="19" font-weight="900" fill="#b06a00">25</text>
       <text x="126" y="250" font-size="19" font-weight="900" fill="#b06a00">5</text>`)}
     ${S(3, fatArrow(500,255, 566,296, 13, SOL, SOLS) + `
@@ -319,8 +325,8 @@ function svgBudget(step){
       <text x="822" y="345" font-size="20" font-weight="900" fill="#b02d55">132</text>
       <text x="764" y="140" font-size="19" font-weight="900" fill="#b02d55">58</text>
       <text x="934" y="250" font-size="19" font-weight="900" fill="#b02d55">12</text>
-      <text x="826" y="30" text-anchor="middle" font-size="20" font-weight="900" fill="#b02d55">지구 복사 70</text>
-      <polyline points="716,46 716,40 936,40 936,46" fill="none" stroke="#b02d55" stroke-width="2"/>
+      <text x="826" y="30" text-anchor="middle" font-size="20" font-weight="900" fill="#ffa8c4">지구 복사 70</text>
+      <polyline points="716,46 716,40 936,40 936,46" fill="none" stroke="#ffa8c4" stroke-width="2"/>
       <text x="690" y="474" text-anchor="middle" font-size="14.5" font-weight="900" fill="#3d2f18">대기 복사 흡수</text>
       <text x="800" y="474" text-anchor="middle" font-size="14.5" font-weight="900" fill="#3d2f18">지표 방출</text>`)}
     ${S(6,`<rect x="196" y="285" width="240" height="76" rx="12" fill="#0B3E86"/>
