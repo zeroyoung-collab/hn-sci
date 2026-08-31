@@ -301,13 +301,13 @@ function svgBudget(step){
     <rect x="14" y="22" width="58" height="30" rx="15" fill="#5b7cad"/><text x="43" y="43" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">우주</text>
     <rect x="14" y="240" width="58" height="30" rx="15" fill="#3f6ea8"/><text x="43" y="261" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">대기</text>
     <rect x="14" y="465" width="58" height="30" rx="15" fill="#7a674a"/><text x="43" y="486" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">지표</text>
-    ${cloudShape(452,286)}${cloudShape(600,306,.9)}${cloudShape(742,250,.95)}
+    ${cloudShape(452,286,1.4)}${cloudShape(600,306,1.2)}${cloudShape(742,250,1.1)}
 
     ${S(1, fatArrow(480,46, 480,428, 34, SOL, SOLS) + `
       <text x="480" y="30" text-anchor="middle" font-size="21" font-weight="900" fill="#fff">태양 복사 100</text>`)}
     ${S(2, fatArrow(452,278, 268,56, 18, SOL, SOLS)
          + fatArrow(178,430, 152,58, 8, SOL, SOLS)
-         + cloudShape(452,286) + `
+         + cloudShape(452,286,1.4) + `
       <g stroke="#ffb703" stroke-width="3.5" stroke-linecap="round">
         <line x1="444" y1="254" x2="436" y2="240"/><line x1="458" y1="248" x2="456" y2="231"/><line x1="472" y1="254" x2="481" y2="240"/>
       </g>
@@ -318,7 +318,7 @@ function svgBudget(step){
       <text x="322" y="155" font-size="19" font-weight="900" fill="#b06a00">25</text>
       <text x="126" y="250" font-size="19" font-weight="900" fill="#b06a00">5</text>`)}
     ${S(3, fatArrow(500,255, 566,296, 13, SOL, SOLS)
-         + cloudShape(600,306,.9) + `
+         + cloudShape(600,306,1.2) + `
       <text x="612" y="342" text-anchor="middle" font-size="21" font-weight="900" fill="#b06a00">20</text>
       <text x="612" y="364" text-anchor="middle" font-size="14" font-weight="700" fill="#8a6a2a">대기·구름 흡수</text>`)}
     ${S(4,`
