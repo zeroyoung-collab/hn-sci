@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<!-- iPad / iOS 홈화면 앱 지원 -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="출석체크">
+<title>출석체크</title>
+<style>
+  :root{
+    --navy:#12355b; --navy2:#1c4a7a; --gold:#c8a24a; --green:#2e7d5b;
+    --ink:#1a2230; --muted:#6b7688; --line:#e3e7ee; --bg:#f4f6fa; --card:#ffffff;
+    --ok:#2e7d5b; --okbg:#e7f4ee; --warn:#b5462f;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",-apple-system,system-ui,sans-serif;
+    background:var(--bg); color:var(--ink);
+    word-break:keep-all; line-height:1.5;
+    min-height:100vh;
+    -webkit-text-size-adjust:100%; text-size-adjust:100%;
+    -webkit-font-smoothing:antialiased;
+    overscroll-behavior-y:none; touch-action:manipulation;
+  }
+  button{touch-action:manipulation; font-family:inherit;}
+  .wrap{
+    max-width:560px; margin:0 auto;
+    padding:calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(80px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
+  }
+  header.app{
+    display:flex; align-items:center; gap:12px;
+    padding:18px 18px; border-radius:16px;
+    background:linear-gradient(135deg,var(--navy),var(--navy2));
+    color:#fff; box-shadow:0 6px 22px rgba(18,53,91,.22);
+    position:relative;
+  }
+  header.app .badge{
+    width:44px; height:44px; border-radius:12px; flex:0 0 auto;
+    background:rgba(255,255,255,.14); display:grid; place-items:center;
+    font-size:22px;
+  }
+  header.app h1{font-size:18px; margin:0; font-weight:800; letter-spacing:-.02em;}
+  header.app .sub{font-size:12.5px; opacity:.82; margin-top:2px;}
+  .gear{
+    position:absolute; top:12px; right:12px; width:34px; height:34px;
+    border-radius:9px; border:none; background:rgba(255,255,255,.16); color:#fff;
+    font-size:16px; cursor:pointer;
+  }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:16px;
+    padding:18px; margin-top:14px; box-shadow:0 2px 10px rgba(20,30,50,.04);
+  }
+  .step-label{font-size:13px; font-weight:700; color:var(--muted); margin:0 0 10px; letter-spacing:.02em;}
+  .step-label b{color:var(--navy);}
+  .grid{display:grid; gap:10px;}
+  .grid.g3{grid-template-columns:repeat(3,1fr);}
+  .grid.g4{grid-template-columns:repeat(4,1fr);}
+  .grid.g2{grid-template-columns:repeat(2,1fr);}
+  .chip{
+    appearance:none; border:1.5px solid var(--line); background:#fff; color:var(--ink);
+    border-radius:12px; padding:14px 8px; font-size:16px; font-weight:700; cursor:pointer;
+    transition:.12s; min-height:52px;
+  }
+  .chip:active{transform:scale(.97);}
+  .chip.sel{border-color:var(--navy); background:var(--navy); color:#fff; box-shadow:0 4px 12px rgba(18,53,91,.25);}
+  .chip.done{border-color:var(--ok); background:var(--okbg); color:var(--ok);}
+  .chip.done::after{content:" ✓"; font-weight:900;}
+  .chip .no{font-size:12px; color:var(--muted); font-weight:600; display:block;}
+  .chip.sel .no{color:rgba(255,255,255,.8);}
+  .chip.done .no{color:var(--ok);}
+  .studentbtn{text-align:left; padding:14px 14px;}
+  .studentbtn .nm{font-size:16px;}
+  .primary{
+    width:100%; border:none; border-radius:14px; padding:18px; font-size:19px; font-weight:800;
+    color:#fff; background:linear-gradient(135deg,var(--green),#25664a); cursor:pointer;
+    box-shadow:0 6px 18px rgba(46,125,91,.3); margin-top:16px;
+  }
+  .primary:disabled{background:#cbd2dd; box-shadow:none; cursor:not-allowed;}
+  .primary:active:not(:disabled){transform:translateY(1px);}
+  .hint{font-size:13px; color:var(--muted); text-align:center; margin-top:12px;}
+  .empty{text-align:center; padding:36px 10px; color:var(--muted);}
+  .empty .ico{font-size:40px; margin-bottom:10px;}
+  /* 학번 키패드 */
+  .kp{padding:20px 18px 24px;}
+  .disp{display:flex; justify-content:center; gap:10px; margin:8px 0 4px;}
+  .disp .dg{width:54px; height:66px; border:2px solid var(--line); border-radius:12px; display:grid; place-items:center;
+    font-size:30px; font-weight:800; color:#c3cad6; background:#fafbfd;}
+  .disp .dg.f{border-color:var(--navy); color:var(--navy); background:#fff;}
+  .kinfo{text-align:center; font-size:16px; font-weight:700; min-height:24px; margin:12px 0 16px;}
+  .kinfo.muted{color:var(--muted); font-weight:600;}
+  .kinfo.ok{color:var(--navy);}
+  .kinfo.done{color:var(--ok);}
+  .kinfo.warn{color:var(--warn);}
+  .pad{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  .key{border:1.5px solid var(--line); background:#fff; border-radius:14px; padding:20px 0; font-size:25px; font-weight:800;
+    color:var(--ink); cursor:pointer; transition:.1s;}
+  .key:active{transform:scale(.95); background:#f2f5fa;}
+  .kdel{color:var(--warn); font-size:22px;}
+  .kok{background:linear-gradient(135deg,var(--green),#25664a); color:#fff; border:none; font-size:20px;}
+  .kok:disabled{background:#cbd2dd; cursor:not-allowed;}
+  /* 완료 화면 */
+  .done-screen{text-align:center; padding:30px 16px;}
+  .done-screen .mark{
+    width:96px; height:96px; border-radius:50%; margin:0 auto 18px;
+    background:var(--okbg); display:grid; place-items:center; font-size:52px; color:var(--ok);
+    animation:pop .35s ease;
+  }
+  @keyframes pop{0%{transform:scale(.4); opacity:0;}100%{transform:scale(1); opacity:1;}}
+  .done-screen h2{font-size:26px; margin:0 0 6px; color:var(--navy);}
+  .done-screen .who{font-size:18px; font-weight:700;}
+  .done-screen .time{font-size:14px; color:var(--muted); margin-top:8px;}
+  .ghost{
+    width:100%; border:1.5px solid var(--line); background:#fff; color:var(--navy);
+    border-radius:14px; padding:15px; font-size:16px; font-weight:700; cursor:pointer; margin-top:14px;
+  }
+  /* 관리자 */
+  .modal-bg{position:fixed; inset:0; background:rgba(15,22,35,.55); display:none; z-index:50; padding:16px; overflow:auto;}
+  .modal-bg.on{display:block;}
+  .modal{max-width:620px; margin:24px auto; background:#fff; border-radius:18px; padding:20px;}
+  .modal h2{margin:0 0 4px; font-size:18px; color:var(--navy);}
+  .tabs{display:flex; gap:6px; margin:14px 0;}
+  .tab{flex:1; padding:10px; border:1px solid var(--line); background:#fff; border-radius:10px; font-weight:700; cursor:pointer; font-size:14px; color:var(--muted);}
+  .tab.on{background:var(--navy); color:#fff; border-color:var(--navy);}
+  .panel{display:none;} .panel.on{display:block;}
+  label.f{display:block; font-size:13px; font-weight:700; color:var(--muted); margin:12px 0 5px;}
+  input.t,textarea.t{width:100%; border:1.5px solid var(--line); border-radius:10px; padding:11px 12px; font-size:15px; font-family:inherit;}
+  textarea.t{min-height:180px; resize:vertical; line-height:1.55;}
+  .fmt{background:#f7f9fc; border:1px dashed var(--line); border-radius:10px; padding:10px 12px; font-size:12.5px; color:var(--muted); margin-top:8px; white-space:pre-line;}
+  .btnrow{display:flex; gap:8px; margin-top:14px; flex-wrap:wrap;}
+  .btn{border:none; border-radius:10px; padding:12px 16px; font-size:14px; font-weight:700; cursor:pointer;}
+  .btn.p{background:var(--navy); color:#fff;} .btn.g{background:#eef1f6; color:var(--navy);}
+  .btn.d{background:#fbecea; color:var(--warn);}
+  .stat{display:flex; gap:10px; margin:12px 0;}
+  .stat .box{flex:1; background:#f7f9fc; border-radius:12px; padding:14px; text-align:center;}
+  .stat .box .n{font-size:26px; font-weight:800; color:var(--navy);}
+  .stat .box .l{font-size:12px; color:var(--muted);}
+  .clsrow{border:1px solid var(--line); border-radius:12px; padding:12px; margin-top:10px;}
+  .clsrow .head{display:flex; justify-content:space-between; font-weight:800; color:var(--navy); margin-bottom:8px;}
+  .clsrow .head .cnt{font-size:13px; color:var(--ok);}
+  .namelist{display:flex; flex-wrap:wrap; gap:6px;}
+  .tag{font-size:12.5px; padding:5px 9px; border-radius:20px; background:#eef1f6; color:var(--muted);}
+  .tag.on{background:var(--okbg); color:var(--ok); font-weight:700;}
+  .tag.on .tt{font-size:10.5px; opacity:.8; margin-left:3px;}
+  .foot{text-align:center; font-size:12px; color:#aab2c0; margin-top:26px;}
+  .toast{position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); opacity:0;
+    background:var(--ink); color:#fff; padding:12px 20px; border-radius:24px; font-size:14px; font-weight:600;
+    transition:.25s; z-index:80; pointer-events:none; max-width:90%;}
+  .toast.on{opacity:1; transform:translateX(-50%) translateY(0);}
+  .locktxt{font-size:12.5px; color:var(--muted); text-align:center; margin-top:8px;}
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <header class="app">
+    <div class="badge">✅</div>
+    <div>
+      <h1 id="evtName">출석체크</h1>
+      <div class="sub" id="evtSub">행사 출석 확인</div>
+    </div>
+    <button class="gear" id="gearBtn" title="관리자">⚙️</button>
+  </header>
+
+  <!-- 학생 선택 영역 -->
+  <div id="studentArea"></div>
+</div>
+
+<!-- 관리자 모달 -->
+<div class="modal-bg" id="adminBg">
+  <div class="modal">
+    <div id="loginView">
+      <h2>관리자 로그인</h2>
+      <label class="f">비밀번호</label>
+      <input class="t" type="password" id="pw" placeholder="비밀번호 입력">
+      <div class="locktxt">교사용 · 관리자 전용</div>
+      <div class="btnrow">
+        <button class="btn p" id="loginBtn">로그인</button>
+        <button class="btn g" id="loginCancel">닫기</button>
+      </div>
+    </div>
+
+    <div id="adminView" style="display:none;">
+      <h2>관리자</h2>
+      <div class="tabs">
+        <div class="tab on" data-tab="dash">📊 현황</div>
+        <div class="tab" data-tab="roster">👥 명단</div>
+        <div class="tab" data-tab="setting">⚙️ 설정</div>
+      </div>
+
+      <!-- 현황 -->
+      <div class="panel on" id="p-dash">
+        <div class="stat">
+          <div class="box"><div class="n" id="stChecked">0</div><div class="l">출석</div></div>
+          <div class="box"><div class="n" id="stTotal">0</div><div class="l">전체 명단</div></div>
+          <div class="box"><div class="n" id="stRate">0%</div><div class="l">출석률</div></div>
+        </div>
+        <div class="btnrow">
+          <button class="btn p" id="exportBtn">⬇ CSV 내보내기</button>
+          <button class="btn d" id="resetRecBtn">출석기록 초기화</button>
+        </div>
+        <div id="dashList"></div>
+      </div>
+
+      <!-- 명단 -->
+      <div class="panel" id="p-roster">
+        <label class="f">명단 붙여넣기</label>
+        <textarea class="t" id="rosterInput" placeholder="아래 형식 중 하나로 붙여넣으세요"></textarea>
+        <div class="fmt">📌 지원 형식 (섞어 써도 됩니다)
+
+[형식 A] 반 머리글 + 번호·이름
+1학년 3반
+1 김철수
+2 이영희
+
+[형식 B] 한 줄에 전부 (엑셀 복붙: 학년 반 번호 이름)
+1  3  1  김철수
+1  3  2  이영희
+
+[형식 C] 학번+이름
+1301 김철수
+1302 이영희</div>
+        <div class="btnrow">
+          <button class="btn g" id="previewBtn">미리보기</button>
+          <button class="btn p" id="saveRosterBtn">저장</button>
+        </div>
+        <div id="rosterPreview" style="margin-top:10px;"></div>
+      </div>
+
+      <!-- 설정 -->
+      <div class="panel" id="p-setting">
+        <label class="f">행사명</label>
+        <input class="t" id="setName" placeholder="예: 2026 과학의 날 특강">
+        <label class="f">날짜 / 부제</label>
+        <input class="t" id="setDate" placeholder="예: 2026-10-05 대강당">
+        <div class="btnrow">
+          <button class="btn p" id="saveSetBtn">저장</button>
+          <button class="btn g" id="adminClose">닫기</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="foot">제작 · 호남고 조영신</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
+
+/* 상담예약 공용 Firestore 재사용 (pw_* 규칙 허용) */
+const firebaseConfig = {
+  apiKey: "AIzaSyBotwjsJxit4SbOzXVVOov37Po97AieoxM",
+  authDomain: "sangdam-b97c1.firebaseapp.com",
+  projectId: "sangdam-b97c1",
+  storageBucket: "sangdam-b97c1.firebasestorage.app",
+  messagingSenderId: "389048360844",
+  appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+const CFG_COL = "pw_attend_v1";        // 설정+명단
+const CFG_DOC = "config";
+const REC_COL = "pw_attend_v1_recs";   // 출석기록 (docId = 학번키)
+const ADMIN_PW = "honam1234";
+
+/* ---------- 기본 명단 (2026 1·2학년, Firestore에 명단 없을 때 사용) ---------- */
+const SEED_ROSTER = {"1-1":[{"no":1,"name":"공서현"},{"no":2,"name":"김가은"},{"no":3,"name":"김경율"},{"no":4,"name":"김산"},{"no":5,"name":"김성현"},{"no":6,"name":"김소미"},{"no":7,"name":"김윤"},{"no":8,"name":"김지호"},{"no":9,"name":"김진원"},{"no":10,"name":"김태현"},{"no":11,"name":"박수진"},{"no":12,"name":"박시현"},{"no":13,"name":"박주현"},{"no":14,"name":"양경민"},{"no":15,"name":"양지원"},{"no":16,"name":"이서정"},{"no":17,"name":"장유빈"},{"no":18,"name":"정서율"},{"no":19,"name":"조정현"},{"no":20,"name":"최민준"},{"no":21,"name":"최효빈"}],"1-2":[{"no":1,"name":"강지율A"},{"no":2,"name":"강태림"},{"no":3,"name":"고경훈"},{"no":4,"name":"권담희"},{"no":5,"name":"기민성"},{"no":6,"name":"김정우"},{"no":7,"name":"김현수"},{"no":8,"name":"김형찬"},{"no":9,"name":"김희서"},{"no":10,"name":"박채현"},{"no":11,"name":"백강훈"},{"no":12,"name":"손창희"},{"no":13,"name":"유성훈"},{"no":14,"name":"윤고은"},{"no":15,"name":"은수진"},{"no":16,"name":"이도원"},{"no":17,"name":"이명준"},{"no":18,"name":"이지민"},{"no":19,"name":"이하윤"},{"no":20,"name":"임서하"},{"no":21,"name":"장한별"}],"1-3":[{"no":1,"name":"강태우"},{"no":2,"name":"권미혜"},{"no":3,"name":"김규서"},{"no":4,"name":"김도운"},{"no":5,"name":"김준성"},{"no":6,"name":"김지우"},{"no":7,"name":"김찬우"},{"no":8,"name":"박유빈"},{"no":9,"name":"박은석"},{"no":10,"name":"배관필"},{"no":11,"name":"설혜인"},{"no":12,"name":"양하윤"},{"no":13,"name":"오승현"},{"no":14,"name":"이세빈"},{"no":15,"name":"임영훈"},{"no":16,"name":"임주환"},{"no":17,"name":"장태성"},{"no":18,"name":"정서윤"},{"no":19,"name":"정윤서"},{"no":20,"name":"최수호"}],"1-4":[{"no":1,"name":"김도현"},{"no":2,"name":"김동준"},{"no":3,"name":"김민준"},{"no":4,"name":"김수호"},{"no":5,"name":"김이든"},{"no":6,"name":"박서연"},{"no":7,"name":"박현민"},{"no":8,"name":"방서희"},{"no":9,"name":"손상운"},{"no":10,"name":"송승영"},{"no":11,"name":"신서윤"},{"no":12,"name":"유승연"},{"no":13,"name":"유영웅"},{"no":14,"name":"유지우"},{"no":15,"name":"이가은"},{"no":16,"name":"이윤아"},{"no":17,"name":"이혜민"},{"no":18,"name":"장지혁"},{"no":19,"name":"정영훈"},{"no":20,"name":"천수민"}],"1-5":[{"no":1,"name":"강지율B"},{"no":2,"name":"권규하"},{"no":3,"name":"김명제"},{"no":4,"name":"김성재"},{"no":5,"name":"김예준"},{"no":6,"name":"김희주"},{"no":7,"name":"노경우"},{"no":8,"name":"노온유"},{"no":9,"name":"박서진"},{"no":10,"name":"박소빈"},{"no":11,"name":"박찬웅"},{"no":12,"name":"소하윤"},{"no":13,"name":"송민경"},{"no":14,"name":"유은혁"},{"no":15,"name":"윤여은"},{"no":16,"name":"이건호"},{"no":17,"name":"이하준"},{"no":18,"name":"전채우"},{"no":19,"name":"정인경"},{"no":20,"name":"조하율"},{"no":21,"name":"최세은"}],"1-6":[{"no":1,"name":"김민유"},{"no":2,"name":"김민재"},{"no":3,"name":"김서현"},{"no":4,"name":"김아현"},{"no":5,"name":"김태이"},{"no":6,"name":"김해인"},{"no":7,"name":"남재형"},{"no":8,"name":"박성율"},{"no":9,"name":"박성휘"},{"no":10,"name":"박재희"},{"no":11,"name":"백서우"},{"no":12,"name":"송원선"},{"no":13,"name":"신인성"},{"no":14,"name":"왕의현"},{"no":15,"name":"이강산"},{"no":16,"name":"이승민"},{"no":17,"name":"정아윤"},{"no":18,"name":"정효정"},{"no":19,"name":"최도윤"},{"no":20,"name":"현예은"}],"2-1":[{"no":1,"name":"강경승"},{"no":2,"name":"김동건"},{"no":3,"name":"나현준"},{"no":4,"name":"박웅"},{"no":5,"name":"백건후"},{"no":6,"name":"서연성"},{"no":7,"name":"서현민"},{"no":8,"name":"송채은"},{"no":9,"name":"아스나"},{"no":10,"name":"안상현"},{"no":11,"name":"유송현"},{"no":12,"name":"유호진"},{"no":13,"name":"이서진"},{"no":14,"name":"이용주"},{"no":15,"name":"장현수"},{"no":16,"name":"천광범"},{"no":17,"name":"최연아"},{"no":18,"name":"한희주"},{"no":19,"name":"홍지한"}],"2-2":[{"no":1,"name":"고요찬"},{"no":2,"name":"김예은"},{"no":3,"name":"노민준"},{"no":4,"name":"박도현"},{"no":5,"name":"박정현"},{"no":6,"name":"박진우"},{"no":7,"name":"백재빈"},{"no":8,"name":"서정준"},{"no":9,"name":"송이안"},{"no":10,"name":"송하랑"},{"no":11,"name":"양동주"},{"no":12,"name":"유시영"},{"no":13,"name":"이도윤"},{"no":14,"name":"이시후"},{"no":15,"name":"이지환"},{"no":16,"name":"이채령"},{"no":17,"name":"전서윤"},{"no":18,"name":"허지인"}],"2-3":[{"no":1,"name":"김도원"},{"no":2,"name":"김주용"},{"no":3,"name":"김지효"},{"no":4,"name":"김태현"},{"no":5,"name":"김해진"},{"no":6,"name":"김희현"},{"no":7,"name":"남우영"},{"no":8,"name":"문다후"},{"no":9,"name":"박광민"},{"no":10,"name":"박민성"},{"no":11,"name":"신승훈"},{"no":12,"name":"안지훈"},{"no":13,"name":"오하은"},{"no":14,"name":"이재영"},{"no":15,"name":"이태형"},{"no":16,"name":"이훈빈"},{"no":17,"name":"장희정"},{"no":18,"name":"정승아"},{"no":19,"name":"진수지"},{"no":20,"name":"최정엽"}],"2-4":[{"no":1,"name":"고채련"},{"no":2,"name":"고택영"},{"no":3,"name":"김민성"},{"no":4,"name":"김아현"},{"no":5,"name":"김예담"},{"no":6,"name":"김유빈"},{"no":7,"name":"김준겸"},{"no":8,"name":"김하은"},{"no":9,"name":"손용민"},{"no":10,"name":"송재혁"},{"no":11,"name":"양서준"},{"no":12,"name":"양수민"},{"no":13,"name":"오경민"},{"no":14,"name":"우민재"},{"no":15,"name":"유승엽"},{"no":16,"name":"이광호"},{"no":17,"name":"이혜원"},{"no":18,"name":"정은찬"},{"no":19,"name":"한효주"}],"2-5":[{"no":1,"name":"고시영"},{"no":2,"name":"김서윤"},{"no":3,"name":"김시현"},{"no":4,"name":"김신우"},{"no":5,"name":"김윤지"},{"no":6,"name":"김은우"},{"no":7,"name":"김하연"},{"no":8,"name":"남성진"},{"no":9,"name":"박민서"},{"no":10,"name":"박우주"},{"no":11,"name":"서호석"},{"no":12,"name":"송도원"},{"no":13,"name":"신왕명"},{"no":14,"name":"이덕기"},{"no":15,"name":"이산"},{"no":16,"name":"이준우"},{"no":17,"name":"이태민"},{"no":18,"name":"전해원"}],"2-6":[{"no":1,"name":"권율"},{"no":2,"name":"김한결"},{"no":3,"name":"문준"},{"no":4,"name":"박성연"},{"no":5,"name":"서유빈"},{"no":6,"name":"서은선"},{"no":7,"name":"송하율"},{"no":8,"name":"안예준"},{"no":9,"name":"양윤정"},{"no":10,"name":"이현성"},{"no":11,"name":"임성연"},{"no":13,"name":"정우성"},{"no":14,"name":"정은찬"},{"no":15,"name":"정이든"},{"no":17,"name":"탁현진"},{"no":18,"name":"한지인"},{"no":19,"name":"홍채원"}]};
+
+/* ---------- 상태 ---------- */
+let CONFIG = { eventName:"", eventDate:"", roster:SEED_ROSTER }; // roster: {"1-3":[{no,name}], ...}
+let RECS   = {};   // { "1-3-1": {grade,cls,no,name,ts} }
+let sel = { grade:null, cls:null };  // 학생 선택 진행상태
+
+const $ = s => document.querySelector(s);
+function toast(msg){ const t=$("#toast"); t.textContent=msg; t.classList.add("on"); setTimeout(()=>t.classList.remove("on"),2000); }
+function key(g,c,n){ return `${g}-${c}-${n}`; }
+function nowStr(){ const d=new Date(); const p=x=>String(x).padStart(2,"0"); return `${p(d.getHours())}:${p(d.getMinutes())}`; }
+
+/* ---------- Firestore 구독 ---------- */
+onSnapshot(doc(db, CFG_COL, CFG_DOC), snap=>{
+  if(snap.exists()){
+    const d = snap.data();
+    const hasRoster = d.roster && Object.keys(d.roster).length;
+    CONFIG = { eventName:d.eventName||"", eventDate:d.eventDate||"", roster: hasRoster ? d.roster : SEED_ROSTER };
+  } else {
+    CONFIG = { eventName:"", eventDate:"", roster:SEED_ROSTER };
+  }
+  renderHeader(); renderStudent(); renderDash();
+});
+onSnapshot(collection(db, REC_COL), snap=>{
+  RECS = {};
+  snap.forEach(s=> RECS[s.id] = s.data());
+  renderStudent(); renderDash();
+});
+
+/* ---------- 헤더 ---------- */
+function renderHeader(){
+  $("#evtName").textContent = CONFIG.eventName || "출석체크";
+  $("#evtSub").textContent  = CONFIG.eventDate || "행사 출석 확인";
+  document.title = CONFIG.eventName || "출석체크";
+}
+
+/* ---------- 학생 화면 (학번 직접 입력) ---------- */
+let typed = "";
+function findByCode(code){
+  if(!/^\d{4,5}$/.test(code)) return null;
+  const g=+code[0], c=+code.slice(1,code.length-2), no=+code.slice(-2);
+  const arr=CONFIG.roster[`${g}-${c}`]; if(!arr) return null;
+  const s=arr.find(x=>x.no===no); if(!s) return null;
+  return { g, c, no, name:s.name };
+}
+function rosterToText(roster){
+  return Object.keys(roster).sort().map(k=>{
+    const [g,c]=k.split("-");
+    const lines=roster[k].slice().sort((a,b)=>a.no-b.no).map(s=>`${s.no} ${s.name}`);
+    return `${g}학년 ${c}반\n`+lines.join("\n");
+  }).join("\n\n");
+}
+
+function renderStudent(){
+  const area = $("#studentArea");
+  if(area.dataset.mode === "done") return; // 완료화면 유지
+  if(Object.keys(CONFIG.roster).length === 0){
+    area.innerHTML = `<div class="card"><div class="empty"><div class="ico">🗒️</div>
+      명단 준비 중입니다.<br>잠시 후 다시 확인해 주세요.</div></div>`;
+    return;
+  }
+  const m = findByCode(typed);
+  const alreadyDone = m && !!RECS[key(m.g,m.c,m.no)];
+  let info, infoCls;
+  if(typed.length===0){ info="학번을 입력하세요"; infoCls="muted"; }
+  else if(typed.length<4){ info="숫자 4자리 학번"; infoCls="muted"; }
+  else if(!m){ info="명단에 없는 학번입니다"; infoCls="warn"; }
+  else if(alreadyDone){ info=`${m.name} · 이미 출석 완료`; infoCls="done"; }
+  else { info=`${m.g}학년 ${m.c}반 ${m.no}번 · ${m.name}`; infoCls="ok"; }
+
+  const disp=(typed||"").padEnd(4,"‧").split("").map(ch=>`<span class="dg ${/[0-9]/.test(ch)?'f':''}">${ch}</span>`).join("");
+  const keys=[1,2,3,4,5,6,7,8,9,"del",0,"ok"];
+  area.innerHTML = `<div class="card kp">
+    <p class="step-label" style="text-align:center"><b>학번</b>을 입력하고 <b>확인</b>을 누르세요</p>
+    <div class="disp">${disp}</div>
+    <div class="kinfo ${infoCls}">${escapeHtml(info)}</div>
+    <div class="pad">${keys.map(k=>{
+      if(k==="del") return `<button class="key kdel" data-k="del">⌫</button>`;
+      if(k==="ok")  return `<button class="key kok" data-k="ok" ${(m&&!alreadyDone)?'':'disabled'}>확인</button>`;
+      return `<button class="key" data-k="${k}">${k}</button>`;
+    }).join("")}</div>
+  </div>`;
+  area.querySelectorAll("[data-k]").forEach(b=> b.onclick=()=>onKey(b.dataset.k));
+}
+
+function onKey(k){
+  const area=$("#studentArea");
+  if(area.dataset.mode==="done") return;
+  if(k==="del"){ typed=typed.slice(0,-1); renderStudent(); return; }
+  if(k==="ok"){ const m=findByCode(typed); if(m) checkIn(m); return; }
+  if(typed.length>=5) return;
+  typed+=k; renderStudent();
+}
+
+async function checkIn(m){
+  if(RECS[key(m.g,m.c,m.no)]){ toast("이미 출석 완료된 학번입니다"); return; }
+  const id = key(m.g,m.c,m.no);
+  const rec = { grade:m.g, cls:m.c, no:m.no, name:m.name, ts:new Date().toISOString() };
+  try{
+    await setDoc(doc(db, REC_COL, id), rec);
+    showDone(m);
+  }catch(e){ toast("저장 실패 · 인터넷 확인"); console.error(e); }
+}
+
+function showDone(m){
+  const area = $("#studentArea");
+  area.dataset.mode = "done";
+  area.innerHTML = `<div class="card done-screen">
+    <div class="mark">✓</div>
+    <h2>출석 완료!</h2>
+    <div class="who">${m.g}학년 ${m.c}반 ${m.no}번 · ${escapeHtml(m.name)}</div>
+    <div class="time">체크 시각 ${nowStr()}</div>
+    <button class="ghost" id="nextBtn">다음 학생 입력하기</button>
+  </div>`;
+  $("#nextBtn").onclick=()=>{ area.dataset.mode=""; typed=""; renderStudent(); window.scrollTo(0,0); };
+}
+
+/* 물리 키보드 입력(데스크톱·키오스크) */
+document.addEventListener("keydown", e=>{
+  if($("#adminBg").classList.contains("on")) return;
+  if($("#studentArea").dataset.mode==="done"){ if(e.key==="Enter") $("#nextBtn")?.click(); return; }
+  if(/^[0-9]$/.test(e.key)) onKey(e.key);
+  else if(e.key==="Backspace"){ e.preventDefault(); onKey("del"); }
+  else if(e.key==="Enter") onKey("ok");
+});
+
+/* ---------- 관리자 ---------- */
+$("#gearBtn").onclick = ()=>{ $("#adminBg").classList.add("on"); };
+$("#loginCancel").onclick = ()=> $("#adminBg").classList.remove("on");
+$("#adminClose").onclick = ()=> $("#adminBg").classList.remove("on");
+$("#adminBg").onclick = e=>{ if(e.target.id==="adminBg") $("#adminBg").classList.remove("on"); };
+$("#loginBtn").onclick = ()=>{
+  if($("#pw").value === ADMIN_PW){
+    $("#loginView").style.display="none"; $("#adminView").style.display="block";
+    $("#setName").value=CONFIG.eventName; $("#setDate").value=CONFIG.eventDate;
+    if(!$("#rosterInput").value.trim()) $("#rosterInput").value = rosterToText(CONFIG.roster);
+    renderDash();
+  } else toast("비밀번호가 틀렸습니다");
+};
+$("#pw").addEventListener("keydown", e=>{ if(e.key==="Enter") $("#loginBtn").click(); });
+
+document.querySelectorAll(".tab").forEach(t=> t.onclick=()=>{
+  document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+  document.querySelectorAll(".panel").forEach(x=>x.classList.remove("on"));
+  t.classList.add("on"); $("#p-"+t.dataset.tab).classList.add("on");
+});
+
+/* 설정 저장 */
+$("#saveSetBtn").onclick = async ()=>{
+  await saveConfig({ eventName:$("#setName").value.trim(), eventDate:$("#setDate").value.trim() });
+  toast("설정을 저장했습니다");
+};
+async function saveConfig(patch){
+  const next = { eventName:CONFIG.eventName, eventDate:CONFIG.eventDate, roster:CONFIG.roster, ...patch };
+  await setDoc(doc(db, CFG_COL, CFG_DOC), next);
+}
+
+/* 명단 파싱 */
+function parseRoster(text){
+  const roster={}; let curG=null, curC=null;
+  const push=(g,c,no,name)=>{ const k=`${g}-${c}`; (roster[k]=roster[k]||[]).push({no:+no, name:name.trim()}); };
+  const header=/^(\d+)\s*학년\s*(\d+)\s*반/;
+  const errs=[];
+  text.split(/\r?\n/).forEach((raw,i)=>{
+    const line=raw.trim(); if(!line) return;
+    const h=line.match(header);
+    if(h){ curG=+h[1]; curC=+h[2]; return; }
+    const p=line.split(/[\s\t,]+/);
+    // 형식 C: 학번(4~5자리)+이름. 한 줄에 여러 쌍 가능 (엑셀 다열 복붙 지원)
+    if(/^\d{4,5}$/.test(p[0])){
+      let code=null, nameToks=[];
+      const flush=()=>{ if(code){ const g=+code[0], c=+code.slice(1,code.length-2), no=+code.slice(-2); push(g,c,no,nameToks.join(" ")); } };
+      p.forEach(tok=>{
+        if(/^\d{4,5}$/.test(tok)){ flush(); code=tok; nameToks=[]; }
+        else nameToks.push(tok);
+      });
+      flush(); return;
+    }
+    // 형식 B: 학년 반 번호 이름
+    if(p.length>=4 && /^\d+$/.test(p[0]) && /^\d+$/.test(p[1]) && /^\d+$/.test(p[2])){
+      push(+p[0],+p[1],+p[2], p.slice(3).join(" ")); return;
+    }
+    // 형식 A: (머리글 하에) 번호 이름  또는  이름만(자동번호)
+    if(curG!=null && curC!=null){
+      if(/^\d+$/.test(p[0]) && p.length>=2){ push(curG,curC,+p[0], p.slice(1).join(" ")); }
+      else { const k=`${curG}-${curC}`; const n=(roster[k]?roster[k].length:0)+1; push(curG,curC,n,line); }
+      return;
+    }
+    errs.push(`${i+1}행: "${line}"`);
+  });
+  // 정렬·중복 정리
+  Object.keys(roster).forEach(k=>{
+    const seen={}; roster[k]=roster[k].filter(s=>{ if(seen[s.no])return false; seen[s.no]=1; return s.name; }).sort((a,b)=>a.no-b.no);
+  });
+  return { roster, errs };
+}
+
+$("#previewBtn").onclick = ()=>{
+  const { roster, errs } = parseRoster($("#rosterInput").value);
+  const keys=Object.keys(roster).sort();
+  let html="";
+  if(keys.length===0){ $("#rosterPreview").innerHTML=`<div class="fmt">인식된 명단이 없습니다. 형식을 확인하세요.</div>`; return; }
+  const total=keys.reduce((s,k)=>s+roster[k].length,0);
+  html+=`<div class="fmt">✅ ${keys.length}개 반 · 총 ${total}명 인식${errs.length?`\n⚠️ 미인식 ${errs.length}행: `+errs.slice(0,3).join(" / "):""}</div>`;
+  keys.forEach(k=>{ const [g,c]=k.split("-");
+    html+=`<div class="clsrow"><div class="head"><span>${g}학년 ${c}반</span><span class="cnt">${roster[k].length}명</span></div>
+      <div class="namelist">${roster[k].map(s=>`<span class="tag">${s.no} ${escapeHtml(s.name)}</span>`).join("")}</div></div>`;
+  });
+  $("#rosterPreview").innerHTML=html;
+  $("#rosterPreview").dataset.roster = JSON.stringify(roster);
+};
+
+$("#saveRosterBtn").onclick = async ()=>{
+  let roster;
+  const cached=$("#rosterPreview").dataset.roster;
+  if(cached){ roster=JSON.parse(cached); }
+  else { roster=parseRoster($("#rosterInput").value).roster; }
+  if(Object.keys(roster).length===0){ toast("인식된 명단이 없습니다"); return; }
+  await saveConfig({ roster });
+  toast("명단을 저장했습니다");
+};
+
+/* 현황판 */
+function renderDash(){
+  const total = Object.values(CONFIG.roster).reduce((s,a)=>s+a.length,0);
+  const checked = Object.keys(RECS).length;
+  $("#stChecked").textContent = checked;
+  $("#stTotal").textContent   = total;
+  $("#stRate").textContent    = total? Math.round(checked/total*100)+"%" : "—";
+
+  const keys=Object.keys(CONFIG.roster).sort();
+  let html="";
+  keys.forEach(k=>{
+    const [g,c]=k.split("-"); const list=CONFIG.roster[k].slice().sort((a,b)=>a.no-b.no);
+    const onCnt=list.filter(s=>RECS[key(g,c,s.no)]).length;
+    html+=`<div class="clsrow"><div class="head"><span>${g}학년 ${c}반</span><span class="cnt">${onCnt}/${list.length}</span></div>
+      <div class="namelist">${list.map(s=>{
+        const r=RECS[key(g,c,s.no)];
+        const tt = r? `<span class="tt">${fmtTime(r.ts)}</span>`:"";
+        return `<span class="tag ${r?'on':''}">${escapeHtml(s.name)}${tt}</span>`;
+      }).join("")}</div></div>`;
+  });
+  if(keys.length===0) html=`<div class="fmt">명단을 먼저 등록하세요.</div>`;
+  $("#dashList").innerHTML=html;
+}
+function fmtTime(iso){ try{ const d=new Date(iso); const p=x=>String(x).padStart(2,"0"); return `${p(d.getHours())}:${p(d.getMinutes())}`; }catch(e){ return ""; } }
+
+/* CSV */
+$("#exportBtn").onclick = ()=>{
+  const rows=[["학년","반","번호","이름","출석","체크시각"]];
+  Object.keys(CONFIG.roster).sort().forEach(k=>{ const [g,c]=k.split("-");
+    CONFIG.roster[k].slice().sort((a,b)=>a.no-b.no).forEach(s=>{
+      const r=RECS[key(g,c,s.no)];
+      rows.push([g,c,s.no,s.name, r?"O":"", r?fmtTime(r.ts):""]);
+    });
+  });
+  const csv="﻿"+rows.map(r=>r.map(x=>`"${String(x).replace(/"/g,'""')}"`).join(",")).join("\r\n");
+  const blob=new Blob([csv],{type:"text/csv"}); const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=`출석_${(CONFIG.eventName||"행사").replace(/\s/g,"")}.csv`; a.click();
+};
+
+/* 출석기록 초기화 */
+$("#resetRecBtn").onclick = async ()=>{
+  if(!confirm("출석기록을 모두 삭제할까요? (명단은 유지됩니다)")) return;
+  const snap=await getDocs(collection(db, REC_COL));
+  await Promise.all(snap.docs.map(d=>deleteDoc(d.ref)));
+  toast("출석기록을 초기화했습니다");
+};
+
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m])); }
+
+/* 첫 스냅샷 도착 전 초기 화면 즉시 표시 */
+renderHeader(); renderStudent();
+</script>
+</body>
+</html>
