@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>통합과학 시험지 만들기 · 기출 출제 도구</title>
+<style>
+  :root{
+    --paper:#f4f1ea; --card:#fffdf8; --ink:#2b2b28; --ink-soft:#6b675e;
+    --line:#e5dfd2; --accent:#3f6d63; --accent-soft:#e7efe9; --gold:#b98a35;
+    --shadow:0 1px 2px rgba(60,50,30,.04), 0 6px 22px rgba(60,50,30,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:"Malgun Gothic","맑은 고딕",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif;
+    word-break:keep-all; line-height:1.6; -webkit-font-smoothing:antialiased;
+  }
+
+  /* ── 상단 바 ── */
+  #topbar{
+    position:sticky;top:0;z-index:30;background:rgba(244,241,234,.94);
+    backdrop-filter:blur(8px);border-bottom:1px solid var(--line);
+  }
+  .bar{max-width:1180px;margin:0 auto;padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .brand b{font-size:17px;letter-spacing:-.3px}
+  .brand span{display:block;font-size:12px;color:var(--ink-soft)}
+  .bar-actions{display:flex;gap:10px;align-items:center}
+  .cart-count{font-size:13px;color:var(--ink-soft)}
+  .cart-count b{color:var(--accent);font-size:16px}
+  .btn{border:none;border-radius:11px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:.15s}
+  .btn-primary{background:var(--accent);color:#fff}
+  .btn-primary:hover{background:#345850}
+  .btn-primary:disabled{background:#c9d3ce;cursor:default}
+  .btn-ghost{background:var(--card);color:var(--ink-soft);border:1px solid var(--line)}
+  .btn-ghost:hover{border-color:var(--accent);color:var(--accent)}
+
+  /* ── 레이아웃 ── */
+  .wrap{max-width:1180px;margin:0 auto;padding:18px 22px 60px;display:grid;grid-template-columns:1fr 340px;gap:22px;align-items:start}
+  @media(max-width:900px){ .wrap{grid-template-columns:1fr} }
+
+  .panel-title{font-size:14px;font-weight:800;color:var(--ink);margin:2px 0 12px;display:flex;align-items:center;gap:8px}
+  .panel-title small{font-weight:500;color:var(--ink-soft);font-size:12.5px}
+
+  /* 필터 */
+  .filter-group{margin-bottom:12px}
+  .filter-lab{font-size:11.5px;font-weight:700;color:var(--ink-soft);margin:0 0 6px;letter-spacing:.3px}
+  .filters{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line);background:var(--card);color:var(--ink-soft);padding:6px 13px;border-radius:999px;font-size:12.5px;cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--accent)}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .chip.round.on{background:var(--gold);border-color:var(--gold)}
+  .chip.round:hover{border-color:var(--gold)}
+  .subrow{margin-top:8px}
+  .subrow:empty{display:none}
+  .chip.sub{font-size:12px;padding:5px 11px;background:transparent;color:var(--ink-soft);border-style:dashed}
+  .chip.sub:hover{border-color:#55606e;color:#55606e}
+  .chip.sub.on{background:#55606e;border-color:#55606e;border-style:solid;color:#fff}
+
+  /* 문항 은행 */
+  .bank{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px}
+  .qcard{background:var(--card);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow);display:flex;flex-direction:column}
+  .qcard.picked{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft),var(--shadow)}
+  .qthumb{background:#fff;border-bottom:1px solid var(--line);height:150px;display:flex;align-items:flex-start;justify-content:center;overflow:hidden;cursor:zoom-in;position:relative}
+  .qthumb img{width:100%;object-fit:cover;object-position:top}
+  .qmeta{padding:11px 13px;display:flex;flex-direction:column;gap:7px;flex:1}
+  .qmeta-row{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .qnum{font-weight:800;font-size:14px}
+  .tag{font-size:11px;padding:2px 8px;border-radius:7px;background:var(--accent-soft);color:var(--accent);font-weight:600}
+  .tag.pt{background:#f4ecd9;color:var(--gold)}
+  .tag.unit{background:#eceff3;color:#55606e;font-weight:500}
+  .tag.rd{background:#efe7d6;color:#8a6a2a;font-weight:700}
+  .qintent{font-size:12px;color:var(--ink-soft);line-height:1.45}
+  .pick-btn{margin:0 13px 13px;border:1px solid var(--accent);background:var(--card);color:var(--accent);border-radius:10px;padding:9px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s;font-family:inherit}
+  .pick-btn:hover{background:var(--accent-soft)}
+  .qcard.picked .pick-btn{background:var(--accent);color:#fff}
+
+  /* 담은 문항 (사이드) */
+  .side{position:sticky;top:86px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
+  .side-head{padding:15px 16px 12px;border-bottom:1px solid var(--line)}
+  .field{margin-bottom:10px}
+  .field label{display:block;font-size:11.5px;color:var(--ink-soft);margin-bottom:4px;font-weight:600}
+  .field input[type=text]{width:100%;border:1px solid var(--line);border-radius:9px;padding:8px 10px;font-size:13.5px;font-family:inherit;background:#fff;color:var(--ink)}
+  .field input:focus{outline:none;border-color:var(--accent)}
+  .checks{display:flex;gap:14px;margin-top:4px}
+  .checks label{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--ink);cursor:pointer}
+  .picked-list{max-height:340px;overflow:auto;padding:8px 10px}
+  .empty{padding:26px 12px;text-align:center;color:var(--ink-soft);font-size:12.5px}
+  .pitem{display:flex;align-items:center;gap:9px;padding:8px;border-radius:10px;border:1px solid var(--line);margin-bottom:7px;background:#fff}
+  .pitem .idx{width:22px;height:22px;flex:none;border-radius:6px;background:var(--accent);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center}
+  .pitem .lbl{flex:1;font-size:12.5px;line-height:1.3}
+  .pitem .lbl small{color:var(--ink-soft)}
+  .pitem .mv{border:none;background:none;color:var(--ink-soft);cursor:pointer;font-size:15px;padding:2px 4px;border-radius:5px}
+  .pitem .mv:hover{background:var(--accent-soft);color:var(--accent)}
+  .pitem .rm{color:#c15b4a}
+  .side-foot{padding:12px 16px;border-top:1px solid var(--line);display:flex;gap:8px}
+  .side-foot .btn{flex:1;text-align:center}
+
+  footer{max-width:1180px;margin:0 auto;padding:24px 22px;text-align:center;font-size:12px;color:var(--ink-soft)}
+
+  /* ── 확대 모달 ── */
+  .modal{position:fixed;inset:0;background:rgba(30,26,20,.82);display:none;align-items:center;justify-content:center;z-index:80;padding:20px;cursor:zoom-out}
+  .modal.show{display:flex}
+  .modal img{max-width:100%;max-height:100%;border-radius:6px;background:#fff}
+
+  /* ═══════════ 시험지 ═══════════ */
+  #examSheet{display:none}
+  body.previewing{overflow:hidden}
+  body.previewing #examSheet{display:block;position:fixed;inset:0;z-index:100;background:#5c574e;overflow:auto;padding:0}
+  .pv-toolbar{position:sticky;top:0;z-index:2;background:#2f2b25;color:#fff;padding:12px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .pv-toolbar .t{font-size:13.5px;opacity:.85}
+  .pv-toolbar .btn-ghost{background:transparent;color:#fff;border:1px solid rgba(255,255,255,.3)}
+  .pv-toolbar .btn-ghost:hover{border-color:#fff;color:#fff}
+
+  .sheet-scroll{padding:26px 16px 60px;display:flex;flex-direction:column;align-items:center;gap:24px}
+  .page{
+    width:210mm;background:#fff;color:#111;padding:14mm 13mm;box-shadow:0 4px 30px rgba(0,0,0,.4);
+    font-family:"Batang","바탕",serif;
+  }
+  .exam-top{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;padding-bottom:8px}
+  .exam-top .en{flex:1;text-align:center;font-weight:600}
+  .exam-top .en b{font-weight:400;color:#555;margin:0 4px}
+  .exam-top .pg{font-weight:700;font-size:15px}
+  .exam-hd{display:flex;align-items:center;gap:14px;padding:2px 0 12px}
+  .gyosi{border:2px solid #111;border-radius:22px;padding:7px 15px;font-weight:800;font-size:15px;white-space:nowrap}
+  .area{flex:1;text-align:center}
+  .area .t{font-size:27px;font-weight:800;letter-spacing:7px}
+  .area .s{font-size:15px;font-weight:700;letter-spacing:3px;margin-top:1px}
+  .idbox{font-size:12px;text-align:left;line-height:2;white-space:nowrap}
+  .idbox .nm{border-bottom:1px solid #111;display:inline-block;min-width:66px}
+  .idbox .no b{display:inline-block;width:12px;height:15px;border:1px solid #111;margin-left:2px;vertical-align:middle}
+  .rule2{border-top:3px solid #111;height:3px;border-bottom:1px solid #111;margin-bottom:11px}
+  .sheet-guide{font-size:12px;color:#111;padding:0 0 12px}
+  .exam-foot{margin-top:12px;padding-top:8px;border-top:1px solid #111;display:flex;justify-content:center;font-size:12px}
+  .exam-foot .pgbox{border:1.5px solid #111;border-radius:13px;padding:2px 18px;font-weight:700;letter-spacing:2px}
+
+  .qcols{column-count:2;column-gap:10mm;column-rule:1px solid #ccc}
+  .ex-q{break-inside:avoid;margin-bottom:9mm}
+  .ex-q img{width:100%;display:block}
+  .ex-lbl{font-family:"Malgun Gothic",sans-serif;font-weight:800;font-size:15px;line-height:1.2;color:#111;margin:0 0 3px 1px}
+  .ex-lbl .ex-src{font-weight:500;font-size:11px;color:#777;margin-left:6px}
+
+  .answer-key h3{font-size:16px;margin:2px 0 10px;font-weight:800;font-family:"Malgun Gothic",sans-serif}
+  .ak-table{width:100%;border-collapse:collapse;font-family:"Malgun Gothic",sans-serif;font-size:10.5px;margin-bottom:10px;break-inside:avoid;table-layout:fixed}
+  .ak-table th,.ak-table td{border:1px solid #111;padding:4px 1px;text-align:center;overflow:hidden;white-space:nowrap}
+  .ak-table th{background:#eee}
+  .ak-table col.lab{width:34px}
+  .ak-sol{margin-top:6px;font-size:11.5px;line-height:1.55;font-family:"Malgun Gothic",sans-serif}
+  .ak-sol div{margin-bottom:5px}
+  .ak-sol b{color:#000}
+  .ak-sol .src{color:#777;font-size:10.5px}
+
+  @media print{
+    #topbar,.wrap,footer,.modal,.pv-toolbar{display:none !important}
+    body.previewing{overflow:visible}
+    body.previewing #examSheet{position:static;background:#fff;overflow:visible}
+    .sheet-scroll{padding:0;display:block;gap:0}
+    .page{width:auto;box-shadow:none;padding:0}
+    .page + .page{page-break-before:always;break-before:page}
+    @page{size:A4;margin:14mm 12mm}
+  }
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="bar">
+    <div class="brand">
+      <b>통합과학 시험지 만들기</b>
+      <span>기출 문항 은행 · 2025~2026 고1·고2 전국연합학력평가 8회차 200문항</span>
+    </div>
+    <div class="bar-actions">
+      <span class="cart-count">담은 문항 <b id="cartN">0</b></span>
+      <button class="btn btn-ghost" id="clearCart">비우기</button>
+      <button class="btn btn-primary" id="previewBtn" disabled>시험지 미리보기 · 인쇄</button>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <!-- 문항 은행 -->
+  <section>
+    <div class="panel-title" style="display:flex;align-items:center;justify-content:space-between;gap:10px">
+      <span>문항 은행 <small id="bankCount"></small></span>
+      <button class="btn btn-ghost" id="addAllBtn" style="padding:7px 15px;font-size:13px">전체 담기</button>
+    </div>
+    <div class="filter-group">
+      <div class="filter-lab">회차</div>
+      <div class="filters" id="roundFilters"></div>
+    </div>
+    <div class="filter-group">
+      <div class="filter-lab">영역</div>
+      <div class="filters" id="areaFilters"></div>
+      <div class="filters subrow" id="unitFilters"></div>
+    </div>
+    <div class="bank" id="bank"></div>
+  </section>
+
+  <!-- 담은 문항 & 설정 -->
+  <aside>
+    <div class="side">
+      <div class="side-head">
+        <div class="field">
+          <label>시험명 (상단 표기)</label>
+          <input type="text" id="exTitle" value="2028학년도 통합과학 대비 모의평가">
+        </div>
+        <div class="field">
+          <label>회차 · 부제</label>
+          <input type="text" id="exSub" value="제1회">
+        </div>
+        <div class="checks">
+          <label><input type="checkbox" id="optKey" checked> 정답·해설 별지</label>
+        </div>
+      </div>
+      <div class="panel-title" style="padding:12px 16px 0;margin:0">담은 문항 <small>순서대로 출제됩니다</small></div>
+      <div class="picked-list" id="pickedList"><div class="empty">문항을 담아 주세요</div></div>
+      <div class="side-foot">
+        <button class="btn btn-primary" id="previewBtn2" disabled>시험지 만들기</button>
+      </div>
+    </div>
+  </aside>
+</div>
+
+<footer>
+  전국연합학력평가 기출문항(EBSi 제공)을 학습·평가용으로 발췌한 것입니다. · 제작 · 호남고 조영신
+</footer>
+
+<div class="modal" id="modal"><img id="modalImg" src="" alt="확대"></div>
+
+<!-- ═══ 시험지 (미리보기/인쇄) ═══ -->
+<div id="examSheet">
+  <div class="pv-toolbar">
+    <span class="t" id="pvInfo"></span>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-primary" onclick="window.print()">🖨 인쇄하기</button>
+      <button class="btn btn-ghost" onclick="closePreview()">닫기</button>
+    </div>
+  </div>
+  <div class="sheet-scroll" id="sheetScroll"></div>
+</div>
+
+<script>
+/* ─────────── 데이터 (8회차 200문항) ─────────── */
+const ROUNDS = [{"id":"고1_2025_06","label":"2025 6월 고1","questions":[{"n":1,"answer":5,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"측정과 어림의 의미 이해하기"},{"n":2,"answer":5,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"기본량, 단위, 규모 이해하기"},{"n":3,"answer":3,"point":2,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"길이 측정의 현대적 방법 이해하기"},{"n":4,"answer":1,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"시간 측정과 측정 표준 이해하기"},{"n":5,"answer":3,"point":2,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"일상생활에서 측정 표준의 유용성 이해하기"},{"n":6,"answer":4,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"센서와 신호 이해하기"},{"n":7,"answer":1,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"아날로그 신호와 디지털 신호 이해하기"},{"n":8,"answer":2,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"우주 초기에 형성된 원소 이해하기"},{"n":9,"answer":4,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"빛의 스펙트럼 해석하기"},{"n":10,"answer":3,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"태양계의 형성 과정 이해하기"},{"n":11,"answer":1,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"별의 진화와 원소의 생성 이해하기"},{"n":12,"answer":5,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"원소의 주기성과 결합 이해하기"},{"n":13,"answer":2,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"알칼리 금속의 화학적 성질 이해하기"},{"n":14,"answer":3,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"이온 결합 물질의 전기 전도성 이해하기"},{"n":15,"answer":1,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"공유 결합 이해하기"},{"n":16,"answer":4,"point":2,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"Si  O 사면체 이해하기"},{"n":17,"answer":2,"point":2.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"지각과 생명체의 구성 물질 이해하기"},{"n":18,"answer":4,"point":2.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"DNA를 구성하는 염기 사이의 상보적"},{"n":19,"answer":1,"point":1.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"다양한 소재의 전기적 성질 이해하기"},{"n":20,"answer":3,"point":2,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"단백질의 특징 이해하기"},{"n":21,"answer":5,"point":2,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"순수 반도체와 규산염 광물 비교하기"},{"n":22,"answer":4,"point":2.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"지구시스템의 상호작용 이해하기"},{"n":23,"answer":5,"point":1.5,"area":"환경과 에너지","unit":"생태계와 환경","intent":"지구시스템에서의 탄소 순환 이해하기"},{"n":24,"answer":2,"point":2,"area":"시스템과 상호작용","unit":"지구시스템","intent":"지권의 변화를 판 구조론 관점에서 해석하기"},{"n":25,"answer":5,"point":1.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"지권의 변화가 지구시스템에 미치는 영향"}]},{"id":"고1_2025_09","label":"2025 9월 고1","questions":[{"n":1,"answer":3,"point":1.5,"area":"과학의 기초","unit":"과학의 기본량","intent":"기본량과 유도량을 일상생활에 적용하기"},{"n":2,"answer":1,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"자연 세계의 규모를 일상생활에 적용하기"},{"n":3,"answer":2,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"신호와 정보의 변환에 대한 탐구"},{"n":4,"answer":4,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"원소와 별의 스펙트럼 자료로부터"},{"n":5,"answer":1,"point":1.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"우주 초기 원소의 생성 과정 이해하기"},{"n":6,"answer":3,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"이온의 전자 배치 자료로부터 원소의"},{"n":7,"answer":2,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"주기율표 자료를 통한 원소의 결합과"},{"n":8,"answer":5,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"알칼리 금속에 대한 탐구 설계"},{"n":9,"answer":2,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"별의 진화 과정 이해하기"},{"n":10,"answer":1,"point":1.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"이온 결합 물질과 공유 결합 물질에"},{"n":11,"answer":2,"point":2,"area":"시스템과 상호작용","unit":"지구시스템","intent":"판의 이동에 따른 지질 현상 이해하기"},{"n":12,"answer":4,"point":1.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"물질의 전기적 성질에 따른 분류"},{"n":13,"answer":5,"point":2,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"규산염 광물 구조에 대해 소통하기"},{"n":14,"answer":1,"point":2,"area":"시스템과 상호작용","unit":"지구시스템","intent":"지구 시스템 에너지원을 자연"},{"n":15,"answer":4,"point":2,"area":"시스템과 상호작용","unit":"지구시스템","intent":"수온 분포 그래프 분석을 통한 문제"},{"n":16,"answer":5,"point":2.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"자연 현상에서 중력에 의한 물체의"},{"n":17,"answer":3,"point":2,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"충격력을 줄이는 방법 적용하기"},{"n":18,"answer":3,"point":2.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"수평 방향으로 던진 물체의 운동"},{"n":19,"answer":1,"point":2.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"세포막의 구조와 세포막을 통한"},{"n":20,"answer":3,"point":2,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"화학 반응에서 효소의 작용 원리"},{"n":21,"answer":4,"point":1.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"식물 세포의 구조와 기능 이해하기"},{"n":22,"answer":3,"point":2.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"세포 내 유전 정보의 흐름 자료로"},{"n":23,"answer":4,"point":2.5,"area":"변화와 다양성","unit":"지질 시대와 생물다양성","intent":"지질 시대 기온 변화 자료 해석하기"},{"n":24,"answer":5,"point":1.5,"area":"변화와 다양성","unit":"지질 시대와 생물다양성","intent":"생물 다양성 보전에 대해 의사소통하기"},{"n":25,"answer":5,"point":2.5,"area":"변화와 다양성","unit":"변이와 자연선택","intent":"자연선택 과정에 대한 탐구 설계"}]},{"id":"고1_2025_10","label":"2025 10월 고1","questions":[{"n":1,"answer":4,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"길이 측정 방법 이해하기"},{"n":2,"answer":5,"point":1.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"세포의 구조와 기능 이해하기"},{"n":3,"answer":5,"point":2,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"일상생활 속 사례를 통해 측정 표준의"},{"n":4,"answer":1,"point":1.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"우주 초기의 원소 생성 과정 이해하기"},{"n":5,"answer":2,"point":2,"area":"변화와 다양성","unit":"산화와 환원","intent":"산화 환원 반응 이해하기"},{"n":6,"answer":4,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"정보와 신호 이해하기"},{"n":7,"answer":1,"point":1.5,"area":"환경과 에너지","unit":"생태계와 환경","intent":"지구 시스템의 탄소 순환 이해하기"},{"n":8,"answer":4,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"스펙트럼 분석하기"},{"n":9,"answer":4,"point":2.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"반도체 자료 분석하기"},{"n":10,"answer":5,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"기본 단위, 센서, 어림 이해하기"},{"n":11,"answer":1,"point":2,"area":"환경과 에너지","unit":"생태계와 환경","intent":"생태계평형 이해하기"},{"n":12,"answer":3,"point":1.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"운동량과 충격량 적용하기"},{"n":13,"answer":5,"point":2,"area":"변화와 다양성","unit":"지질 시대와 생물다양성","intent":"지질시대의 환경 변화와 화석 이해하기"},{"n":14,"answer":3,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"결합의 특성과 물질의 전기적 성질 이"},{"n":15,"answer":5,"point":2.5,"area":"변화와 다양성","unit":"변이와 자연선택","intent":"자연선택 이해하기"},{"n":16,"answer":2,"point":1.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"판 경계의 특징 분석하기"},{"n":17,"answer":3,"point":2.5,"area":"변화와 다양성","unit":"화학 반응과 에너지","intent":"화학 반응에서 열 출입 이해하기"},{"n":18,"answer":2,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"규산염 광물의 결합 구조 이해하기"},{"n":19,"answer":4,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"우주로부터 생성된 원소의 특성 이해하"},{"n":20,"answer":4,"point":2.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"중력장 내의 운동 이해하기"},{"n":21,"answer":3,"point":2,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"효소 특성 이해하기"},{"n":22,"answer":3,"point":2,"area":"환경과 에너지","unit":"생태계와 환경","intent":"엘니뇨 현상 이해하기"},{"n":23,"answer":2,"point":2.5,"area":"변화와 다양성","unit":"산과 염기, 중화 반응","intent":"중화 반응 이해하기"},{"n":24,"answer":1,"point":2.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"유전정보의 흐름 분석하기"},{"n":25,"answer":2,"point":2.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"운동량과 충격량 이해하기"}]},{"id":"고1_2026_06","label":"2026 6월 고1","questions":[{"n":1,"answer":4,"point":1.5,"area":"과학의 기초","unit":"과학의 기본량","intent":"기본량과 단위 이해하기"},{"n":2,"answer":1,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"규모, 측정 표준 이해하기"},{"n":3,"answer":5,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"측정과 어림 이해하기"},{"n":4,"answer":2,"point":2,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"자연의 신호 이해하기"},{"n":5,"answer":5,"point":1.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"DNA 이해하기"},{"n":6,"answer":4,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"정보와 디지털 기술 이해하기"},{"n":7,"answer":5,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"빛의 스펙트럼 이해하기"},{"n":8,"answer":2,"point":1.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"원자의 전자 배치 이해하기"},{"n":9,"answer":4,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"우주에서의 원자 생성 이해하기"},{"n":10,"answer":3,"point":2.5,"area":"과학의 기초","unit":"과학의 기본량","intent":"기본량 이해하기"},{"n":11,"answer":2,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"태양계의 형성 과정 이해하기"},{"n":12,"answer":4,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"별의 진화와 원소의 생성 이해하기"},{"n":13,"answer":2,"point":2,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"사람의 몸을 구성하는 원소 이해하기"},{"n":14,"answer":5,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"알칼리 금속의 성질 이해하기"},{"n":15,"answer":3,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"이온 결합 화합물 이해하기"},{"n":16,"answer":1,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"원소의 주기성과 지각을 구성하는 원소"},{"n":17,"answer":4,"point":2.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"지구시스템의 상호작용 이해하기"},{"n":18,"answer":3,"point":2.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"물질의 전기적 성질 이해하기"},{"n":19,"answer":5,"point":1.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"물의 순환 과정 이해하기"},{"n":20,"answer":3,"point":2,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"단백질 이해하기"},{"n":21,"answer":5,"point":1.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"화산 활동의 영향 이해하기"},{"n":22,"answer":2,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"DNA의 상보적 결합 이해하기"},{"n":23,"answer":3,"point":2,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"핵산과 단백질 이해하기"},{"n":24,"answer":5,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"화학 결합 이해하기"},{"n":25,"answer":1,"point":2.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"판 구조론 이해하기"}]},{"id":"고1_2026_09","label":"2026 9월 고1","questions":[{"n":1,"answer":2,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"자연 세계의 규모 이해하기"},{"n":2,"answer":3,"point":2,"area":"과학의 기초","unit":"과학의 기본량","intent":"기본량과 유도량 적용하기"},{"n":3,"answer":5,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"신호와 정보의 변환 이해하기"},{"n":4,"answer":2,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"원소와 별의 스펙트럼 자료 변환"},{"n":5,"answer":3,"point":1.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"우주 초기 원소의 생성 과정 이해하기"},{"n":6,"answer":3,"point":1.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"별의 진화 과정 이해하기"},{"n":7,"answer":1,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"화학 결합 적용하기"},{"n":8,"answer":3,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"원자의 전자 배치 자료 변환 및 해"},{"n":9,"answer":5,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"알칼리 금속 탐구 설계하기"},{"n":10,"answer":4,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"이온 결합 물질과 공유 결합 물질"},{"n":11,"answer":5,"point":2,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"지각 구성 물질의 기본 단위체 결론"},{"n":12,"answer":1,"point":2.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"생명체 구성 물질의 기본 단위체"},{"n":13,"answer":2,"point":2,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"반도체 이해하기"},{"n":14,"answer":4,"point":1.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"물의 순환 결론 도출하기"},{"n":15,"answer":5,"point":2.5,"area":"환경과 에너지","unit":"생태계와 환경","intent":"탄소의 순환과 생물다양성 자료"},{"n":16,"answer":1,"point":2,"area":"시스템과 상호작용","unit":"지구시스템","intent":"지권의 변화 결론 도출하기"},{"n":17,"answer":2,"point":1.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"중력에 의한 물체의 운동 의사소통하기"},{"n":18,"answer":3,"point":2,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"자유낙하와 수평 방향으로 던진 물체"},{"n":19,"answer":4,"point":2.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"운동량과 충격량 자료 변환 및 해석하기"},{"n":20,"answer":4,"point":1.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"일상생활에서 활용되는 효소의 반응"},{"n":21,"answer":1,"point":2.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"세포 내 유전정보 자료 변환 및"},{"n":22,"answer":3,"point":2,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"세포의 구조와 기능 적용하기"},{"n":23,"answer":4,"point":1.5,"area":"변화와 다양성","unit":"지질 시대와 생물다양성","intent":"생물다양성 결론 도출하기"},{"n":24,"answer":2,"point":2.5,"area":"변화와 다양성","unit":"지질 시대와 생물다양성","intent":"지질 시대의 환경 변화 결론 도출하기"},{"n":25,"answer":5,"point":2.5,"area":"변화와 다양성","unit":"변이와 자연선택","intent":"변이와 자연선택 문제 인식 및 가설"}]},{"id":"고2_2026_03","label":"2026 3월 고2","questions":[{"n":1,"answer":1,"point":1.5,"area":"환경과 에너지","unit":"생태계와 환경","intent":"생태계 구성 요소 사이의 상호 관계를 이"},{"n":2,"answer":3,"point":1.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"사람의 몸과 지구를 구성하는 원소를 이"},{"n":3,"answer":3,"point":2,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"측정과 어림을 이해한다."},{"n":4,"answer":4,"point":2,"area":"변화와 다양성","unit":"화학 반응과 에너지","intent":"일상생활에서 일어나는 화학 반응을 이해"},{"n":5,"answer":5,"point":1.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"지각과 생명체를 구성하는 물질들이 기본"},{"n":6,"answer":3,"point":2,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"삼투를 이해한다."},{"n":7,"answer":4,"point":2,"area":"변화와 다양성","unit":"산과 염기, 중화 반응","intent":"산의 공통적인 성질을 이해한다."},{"n":8,"answer":4,"point":1.5,"area":"변화와 다양성","unit":"변이와 자연선택","intent":"자연선택을 이해한다."},{"n":9,"answer":2,"point":2.5,"area":"환경과 에너지","unit":"에너지","intent":"전자기 유도를 이해한다."},{"n":10,"answer":3,"point":1.5,"area":"환경과 에너지","unit":"에너지","intent":"태양 에너지 생성과 전환을 이해한다."},{"n":11,"answer":5,"point":1.5,"area":"과학과 미래 사회","unit":"과학과 미래 사회","intent":"자율주행 자동차와 관련된 과학 관련"},{"n":12,"answer":2,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"원소의 성질을 이해한다."},{"n":13,"answer":5,"point":2.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"중력에 의한 운동을 이해한다."},{"n":14,"answer":2,"point":1.5,"area":"변화와 다양성","unit":"지질 시대와 생물다양성","intent":"생물 대멸종의 시기별 특징과 대멸종이"},{"n":15,"answer":2,"point":1.5,"area":"환경과 에너지","unit":"에너지","intent":"에너지 전환과 효율을 이해한다."},{"n":16,"answer":1,"point":2,"area":"변화와 다양성","unit":"화학 반응과 에너지","intent":"에너지를 흡수하거나 방출하는 현상을"},{"n":17,"answer":1,"point":2.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"물의 순환과 해수의 층상 구조를 이해"},{"n":18,"answer":3,"point":2.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"효소의 작용 원리를 이해한다."},{"n":19,"answer":5,"point":2,"area":"과학과 미래 사회","unit":"과학과 미래 사회","intent":"감염병 진단 기술과 빅데이터의 활용을"},{"n":20,"answer":4,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"스펙트럼을 이용하여 별의 대기를 구성"},{"n":21,"answer":5,"point":2,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"자연계의 신호와 정보의 변환을 이해한"},{"n":22,"answer":5,"point":2.5,"area":"변화와 다양성","unit":"산화와 환원","intent":"이산화 탄소 농도 자료를 분석하고 지"},{"n":23,"answer":4,"point":2.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"충격량과 운동량을 이해한다."},{"n":24,"answer":2,"point":2.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"세포 내 유전정보의 흐름을 이해한다."},{"n":25,"answer":1,"point":2.5,"area":"변화와 다양성","unit":"산과 염기, 중화 반응","intent":"중화 반응을 이해한다."}]},{"id":"고2_2026_06","label":"2026 6월 고2","questions":[{"n":1,"answer":1,"point":1.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"규산염 사면체를 구성하는 원소 이해하기"},{"n":2,"answer":2,"point":2,"area":"변화와 다양성","unit":"지질 시대와 생물다양성","intent":"생물다양성 이해하기"},{"n":3,"answer":4,"point":1.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"판 구조론과 지각 변동 이해하기"},{"n":4,"answer":5,"point":1.5,"area":"과학의 기초","unit":"과학의 기본량","intent":"기본량과 단위 이해하기"},{"n":5,"answer":4,"point":1.5,"area":"환경과 에너지","unit":"생태계와 환경","intent":"탄소 순환 이해하기"},{"n":6,"answer":3,"point":1.5,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"기본량과 측정 표준 이해하기"},{"n":7,"answer":3,"point":1.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"단백질 이해하기"},{"n":8,"answer":2,"point":2,"area":"변화와 다양성","unit":"지질 시대와 생물다양성","intent":"지질 시대와 생물 대멸종 이해하기"},{"n":9,"answer":3,"point":1.5,"area":"변화와 다양성","unit":"산과 염기, 중화 반응","intent":"산과 염기 이해하기"},{"n":10,"answer":4,"point":1.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"핵융합과 태양 에너지 전환 이해하기"},{"n":11,"answer":1,"point":2.5,"area":"환경과 에너지","unit":"에너지","intent":"에너지 효율 이해하기"},{"n":12,"answer":5,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"공유 결합 물질 이해하기"},{"n":13,"answer":4,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"태양 형성 과정 이해하기"},{"n":14,"answer":4,"point":2,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"중력에 의한 물체의 운동 분석하기"},{"n":15,"answer":1,"point":2.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"세포막을 통한 물질의 이동 이해하기"},{"n":16,"answer":5,"point":2,"area":"변화와 다양성","unit":"산화와 환원","intent":"산화 환원 반응과 에너지 출입 이해하기"},{"n":17,"answer":3,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"우주 구성 원소와 스펙트럼 이해하기"},{"n":18,"answer":2,"point":2.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"전사와 번역 이해하기"},{"n":19,"answer":2,"point":2,"area":"환경과 에너지","unit":"에너지","intent":"복사 평형과 지구 열수지 이해하기"},{"n":20,"answer":5,"point":2.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"화학 결합의 종류에 따른 물질의 성질"},{"n":21,"answer":3,"point":2,"area":"환경과 에너지","unit":"생태계와 환경","intent":"환경 변화가 생태계에 미치는 영향 이해하기"},{"n":22,"answer":5,"point":2.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"자유 낙하 운동과 물체가 받는 충격량"},{"n":23,"answer":2,"point":2.5,"area":"변화와 다양성","unit":"산과 염기, 중화 반응","intent":"중화 반응 이해하기"},{"n":24,"answer":3,"point":2.5,"area":"환경과 에너지","unit":"에너지","intent":"전자기 유도와 에너지 전환 이해하기"},{"n":25,"answer":5,"point":2.5,"area":"과학과 미래 사회","unit":"과학과 미래 사회","intent":"빅데이터 해석하기"}]},{"id":"고2_2026_09","label":"2026 9월 고2","questions":[{"n":1,"answer":3,"point":1.5,"area":"물질과 규칙성","unit":"자연의 구성 물질","intent":"규산염 광물과 반도체 소자 이해하기"},{"n":2,"answer":1,"point":1.5,"area":"과학의 기초","unit":"과학의 기본량","intent":"일상생활에 기본량 적용하기"},{"n":3,"answer":5,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"별의 진화 과정 이해하기"},{"n":4,"answer":4,"point":1.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"판의 이동 이해하기"},{"n":5,"answer":5,"point":2,"area":"과학의 기초","unit":"측정 표준과 정보","intent":"길이의 측정 탐구 설계하기"},{"n":6,"answer":3,"point":2.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"충돌과 안전 장치에 대해 의사소통"},{"n":7,"answer":1,"point":2.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"효소의 작용에 대한 탐구 수행하기"},{"n":8,"answer":4,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"별의 핵융합 반응과 주기율표에 대한"},{"n":9,"answer":5,"point":1.5,"area":"과학과 미래 사회","unit":"과학과 미래 사회","intent":"빅데이터 활용에 대한 결론 도출하기"},{"n":10,"answer":2,"point":2,"area":"변화와 다양성","unit":"산화와 환원","intent":"산화·환원 반응에 대한 실험 설계하기"},{"n":11,"answer":4,"point":1.5,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"알칼리 금속과 물의 반응에 대한"},{"n":12,"answer":3,"point":1.5,"area":"변화와 다양성","unit":"화학 반응과 에너지","intent":"물질 변화로 일어나는 열 출입에"},{"n":13,"answer":3,"point":2.5,"area":"시스템과 상호작용","unit":"지구시스템","intent":"지구 시스템의 상호작용과 해양"},{"n":14,"answer":4,"point":2,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"적혈구의 삼투에 대한 탐구 수행하기"},{"n":15,"answer":2,"point":2.5,"area":"시스템과 상호작용","unit":"생명 시스템","intent":"유전정보 흐름 자료 해석하기"},{"n":16,"answer":5,"point":1.5,"area":"환경과 에너지","unit":"에너지","intent":"에너지 효율 적용하기"},{"n":17,"answer":2,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"수소 핵융합 반응에 대한 가설 설정하기"},{"n":18,"answer":5,"point":1.5,"area":"변화와 다양성","unit":"지질 시대와 생물다양성","intent":"생물다양성의 사례 적용하기"},{"n":19,"answer":3,"point":2.5,"area":"환경과 에너지","unit":"에너지","intent":"전자기 유도 실험 결론 도출하기"},{"n":20,"answer":2,"point":2.5,"area":"변화와 다양성","unit":"산과 염기, 중화 반응","intent":"중화 반응 탐구 수행하기"},{"n":21,"answer":3,"point":2,"area":"환경과 에너지","unit":"에너지","intent":"복사 에너지와 열수지 적용하기"},{"n":22,"answer":2,"point":2,"area":"과학과 미래 사회","unit":"과학과 미래 사회","intent":"감염병 진단 기술 이해하기"},{"n":23,"answer":5,"point":2.5,"area":"변화와 다양성","unit":"변이와 자연선택","intent":"자연선택에 대한 결론 도출하기"},{"n":24,"answer":1,"point":2,"area":"물질과 규칙성","unit":"원소의 생성과 규칙성","intent":"화학 결합 모형 이해하기"},{"n":25,"answer":1,"point":2.5,"area":"시스템과 상호작용","unit":"역학 시스템","intent":"수평 방향으로 던진 물체의 운동"}]}];
+const CIRCLED=["①","②","③","④","⑤"];
+const AREA_ORDER=["과학의 기초","물질과 규칙성","시스템과 상호작용","변화와 다양성","환경과 에너지","과학과 미래 사회"];
+
+// 전 회차 문항을 평탄화 (회차 컨텍스트 + 이미지 경로 포함)
+const ITEMS=[];
+ROUNDS.forEach(r=>r.questions.forEach(q=>{
+  ITEMS.push({
+    rid:r.id, rlabel:r.label, n:q.n, answer:q.answer, point:q.point,
+    area:q.area, unit:q.unit||"", intent:q.intent||"",
+    img:`img/${r.id}/q${String(q.n).padStart(2,'0')}.png`,
+    key:`${r.id}#${q.n}`
+  });
+}));
+
+let roundFilter="전체";
+let areaFilter="전체";
+let unitFilter="전체";
+let cart=[];   // 담은 문항 key 배열 (순서 유지)
+
+const byKey=k=>ITEMS.find(q=>q.key===k);
+const areasPresent=()=>["전체",...AREA_ORDER.filter(a=>ITEMS.some(q=>q.area===a))];
+function visible(){
+  return ITEMS.filter(q=>
+    (roundFilter==="전체"||q.rid===roundFilter)&&
+    (areaFilter==="전체"||q.area===areaFilter)&&
+    (unitFilter==="전체"||q.unit===unitFilter));
+}
+
+/* ─────────── 렌더: 필터 ─────────── */
+function renderRoundFilters(){
+  const box=document.getElementById("roundFilters");box.innerHTML="";
+  const mk=(id,label)=>{
+    const c=document.createElement("button");
+    c.className="chip round"+(id===roundFilter?" on":"");c.textContent=label;
+    c.onclick=()=>{roundFilter=id;renderBank();};
+    box.appendChild(c);
+  };
+  mk("전체","전체 회차");
+  ROUNDS.forEach(r=>mk(r.id,r.label));
+}
+function renderAreaFilters(){
+  const box=document.getElementById("areaFilters");box.innerHTML="";
+  // 현재 회차 범위에서 존재하는 영역만
+  const pool=ITEMS.filter(q=>roundFilter==="전체"||q.rid===roundFilter);
+  const areas=["전체",...AREA_ORDER.filter(a=>pool.some(q=>q.area===a))];
+  areas.forEach(a=>{
+    const c=document.createElement("button");
+    c.className="chip"+(a===areaFilter?" on":"");c.textContent=a;
+    c.onclick=()=>{areaFilter=a;unitFilter="전체";renderBank();};
+    box.appendChild(c);
+  });
+}
+function renderUnitFilters(){
+  const box=document.getElementById("unitFilters");box.innerHTML="";
+  if(areaFilter==="전체")return;
+  const pool=ITEMS.filter(q=>(roundFilter==="전체"||q.rid===roundFilter)&&q.area===areaFilter);
+  const units=["전체",...[...new Set(pool.map(q=>q.unit).filter(Boolean))]];
+  if(units.length<=2)return;
+  units.forEach(u=>{
+    const c=document.createElement("button");
+    c.className="chip sub"+(u===unitFilter?" on":"");c.textContent=u;
+    c.onclick=()=>{unitFilter=u;renderBank();};
+    box.appendChild(c);
+  });
+}
+/* ─────────── 렌더: 은행 ─────────── */
+function renderBank(){
+  renderRoundFilters();
+  renderAreaFilters();
+  renderUnitFilters();
+  const bank=document.getElementById("bank");bank.innerHTML="";
+  const list=visible();
+  document.getElementById("bankCount").textContent=`(${list.length}문항)`;
+  list.forEach(q=>{
+    const picked=cart.includes(q.key);
+    const card=document.createElement("div");
+    card.className="qcard"+(picked?" picked":"");
+    card.innerHTML=`
+      <div class="qthumb" onclick="zoom('${q.img}')"><img src="${q.img}" alt="문항" loading="lazy"></div>
+      <div class="qmeta">
+        <div class="qmeta-row"><span class="tag rd">${q.rlabel}</span><span class="qnum">${q.n}번</span><span class="tag pt">${q.point}점</span></div>
+        <div class="qmeta-row"><span class="tag">${q.area}</span>${q.unit?`<span class="tag unit">${q.unit}</span>`:""}</div>
+        <div class="qintent">${q.intent}</div>
+      </div>
+      <button class="pick-btn" onclick="toggle('${q.key}')">${picked?"✓ 담음":"＋ 담기"}</button>`;
+    bank.appendChild(card);
+  });
+  updateAddAll();
+}
+function updateAddAll(){
+  const vis=visible();
+  const allIn = vis.length>0 && vis.every(q=>cart.includes(q.key));
+  const btn=document.getElementById("addAllBtn");
+  btn.textContent = allIn ? "전체 빼기" : (unitFilter!=="전체" ? "이 소단원 담기" : (areaFilter!=="전체" ? "이 영역 담기" : (roundFilter!=="전체"?"이 회차 담기":"전체 담기")));
+}
+/* ─────────── 렌더: 담은 목록 ─────────── */
+function renderCart(){
+  const list=document.getElementById("pickedList");
+  document.getElementById("cartN").textContent=cart.length;
+  const on=cart.length>0;
+  document.getElementById("previewBtn").disabled=!on;
+  document.getElementById("previewBtn2").disabled=!on;
+  updateAddAll();
+  if(!on){list.innerHTML='<div class="empty">문항을 담아 주세요</div>';return;}
+  list.innerHTML="";
+  cart.forEach((key,i)=>{
+    const q=byKey(key);
+    const row=document.createElement("div");row.className="pitem";
+    row.innerHTML=`
+      <div class="idx">${i+1}</div>
+      <div class="lbl">${q.point}점 · ${q.area}<br><small>${q.rlabel} ${q.n}번</small></div>
+      <button class="mv" title="위로" onclick="move(${i},-1)">▲</button>
+      <button class="mv" title="아래로" onclick="move(${i},1)">▼</button>
+      <button class="mv rm" title="빼기" onclick="removeAt(${i})">✕</button>`;
+    list.appendChild(row);
+  });
+}
+/* ─────────── 동작 ─────────── */
+function toggle(key){ cart.includes(key) ? cart=cart.filter(x=>x!==key) : cart.push(key); renderBank(); renderCart(); }
+function move(i,d){ const j=i+d; if(j<0||j>=cart.length)return; [cart[i],cart[j]]=[cart[j],cart[i]]; renderCart(); }
+function removeAt(i){ cart.splice(i,1); renderBank(); renderCart(); }
+document.getElementById("clearCart").onclick=()=>{ if(cart.length&&confirm("담은 문항을 모두 비울까요?")){cart=[];renderBank();renderCart();} };
+document.getElementById("addAllBtn").onclick=()=>{
+  const vis=visible();
+  const allIn = vis.length>0 && vis.every(q=>cart.includes(q.key));
+  if(allIn){ const ks=vis.map(q=>q.key); cart=cart.filter(k=>!ks.includes(k)); }
+  else { vis.forEach(q=>{ if(!cart.includes(q.key)) cart.push(q.key); }); }
+  renderBank(); renderCart();
+};
+function zoom(src){document.getElementById("modalImg").src=src;document.getElementById("modal").classList.add("show");}
+document.getElementById("modal").onclick=()=>document.getElementById("modal").classList.remove("show");
+
+/* ─────────── 시험지 생성 ─────────── */
+function buildSheet(){
+  const title=document.getElementById("exTitle").value||"통합과학 평가";
+  const sub=document.getElementById("exSub").value||"";
+  const showKey=document.getElementById("optKey").checked;
+  const items=cart.map(byKey);
+
+  let qHTML="";
+  items.forEach((q,i)=>{
+    // 순차 번호(i+1) + 출처(회차) 를 이미지 위쪽에 표기 (원본 번호는 크롭 이미지에서 이미 제거됨)
+    qHTML+=`<div class="ex-q"><div class="ex-lbl">${i+1}. <span class="ex-src">${q.rlabel} 기출</span></div><img src="${q.img}" alt=""></div>`;
+  });
+
+  let keyHTML="";
+  if(showKey){
+    // 정답표: 문항 많으면 페이지 폭 초과 → 20열씩 끊어 표 여러 개로 쌓기(값이 칸 안에 들어오도록)
+    const CH=20;
+    let tables="";
+    for(let s=0;s<items.length;s+=CH){
+      const slice=items.slice(s,s+CH);
+      let cols='<col class="lab">'+slice.map(()=>'<col>').join('');
+      let rows="",ans="",pts="";
+      slice.forEach((q,j)=>{ rows+=`<td>${s+j+1}</td>`; ans+=`<td>${CIRCLED[q.answer-1]}</td>`; pts+=`<td>${q.point}</td>`; });
+      tables+=`<table class="ak-table"><colgroup>${cols}</colgroup><tr><th>문항</th>${rows}</tr><tr><th>정답</th>${ans}</tr><tr><th>배점</th>${pts}</tr></table>`;
+    }
+    let sols="";
+    items.forEach((q,i)=>{ sols+=`<div><b>${i+1}. (정답 ${CIRCLED[q.answer-1]} · ${q.point}점)</b> ${q.intent} <span class="src">［${q.rlabel} ${q.n}번］</span></div>`; });
+    keyHTML=`<div class="answer-key">
+      <div class="exam-top"><span class="en">${title}${sub?`<b>·</b>${sub}`:""}</span><span class="pg">정답 및 해설</span></div>
+      <div class="rule2"></div>
+      <h3>정답 및 출제 의도</h3>
+      ${tables}
+      <div class="ak-sol">${sols}</div>
+    </div>`;
+  }
+
+  const totalPt=items.reduce((s,q)=>s+q.point,0);
+  const page1=`<div class="page">
+    <div class="exam-top"><span class="en">${title}${sub?`<b>·</b>${sub}`:""}</span><span class="pg">1</span></div>
+    <div class="exam-hd">
+      <div class="gyosi">제 4 교시</div>
+      <div class="area"><div class="t">과학탐구 영역</div><div class="s">( 통 합 과 학 )</div></div>
+      <div class="idbox">
+        <div>성명 <span class="nm"></span></div>
+        <div class="no">수험 번호 <b></b><b></b><b></b><b></b><b></b><b></b><b></b><b></b></div>
+      </div>
+    </div>
+    <div class="rule2"></div>
+    <div class="sheet-guide">◦ 문항에 따라 배점이 다르니 유의하시오. &nbsp;[ 총 ${items.length}문항 · ${totalPt}점 ]</div>
+    <div class="qcols">${qHTML}</div>
+  </div>`;
+  const page2 = showKey ? `<div class="page">${keyHTML}</div>` : "";
+  document.getElementById("sheetScroll").innerHTML = page1 + page2;
+  document.getElementById("pvInfo").textContent=`${title} · ${items.length}문항 · ${totalPt}점`;
+}
+function openPreview(){ if(!cart.length)return; buildSheet(); document.body.classList.add("previewing"); document.getElementById("examSheet").scrollTop=0; }
+function closePreview(){ document.body.classList.remove("previewing"); }
+document.getElementById("previewBtn").onclick=openPreview;
+document.getElementById("previewBtn2").onclick=openPreview;
+document.addEventListener("keydown",e=>{ if(e.key==="Escape"){closePreview();document.getElementById("modal").classList.remove("show");} });
+
+renderBank(); renderCart();
+</script>
+</body>
+</html>
