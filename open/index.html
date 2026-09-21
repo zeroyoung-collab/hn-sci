@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>호남고등학교 과학과 · 공개 포털</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Noto+Serif+KR:wght@600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --navy:#0B3E86; --navy2:#092f66; --gold:#F5B301; --gold-d:#c8920a; --green:#1A9A3E;
+    --ink:#101319; --soft:#454c56; --mut:#8a93a1; --hair:#E6E4DF; --lt:#eef3fa;
+    --serif:'Noto Serif KR',serif; }
+  *{ box-sizing:border-box; margin:0; padding:0; }
+  body{ font-family:'Noto Sans KR',sans-serif; color:var(--ink); background:#fff; line-height:1.65;
+        word-break:keep-all; overflow-wrap:break-word; }
+  a{ color:inherit; text-decoration:none; }
+  .in{ max-width:920px; margin:0 auto; padding:0 20px; }
+
+  .logobar{ border-bottom:1px solid var(--hair); }
+  .logobar .in{ display:flex; align-items:center; justify-content:space-between; padding-top:14px; padding-bottom:14px; }
+  .logobar img{ height:40px; }
+  .logobar .rt{ font-size:11px; font-weight:700; color:var(--mut); letter-spacing:.08em; text-align:right; line-height:1.6; }
+  .logobar .rt b{ color:var(--navy); }
+
+  .hero{ padding:52px 0 0; }
+  .kicker{ font-size:11px; font-weight:800; color:var(--gold-d); letter-spacing:.34em; }
+  h1{ font-family:var(--serif); font-weight:900; font-size:clamp(30px,5.4vw,44px); letter-spacing:-.02em; line-height:1.18; margin-top:14px; }
+  .sub{ margin-top:14px; font-size:14.5px; color:var(--soft); max-width:620px; }
+  .rule{ margin-top:30px; border-top:2px solid var(--ink); }
+
+  .grid{ display:grid; grid-template-columns:1fr; gap:0; }
+  .card{ display:block; padding:30px 6px 32px; border-bottom:1px solid var(--hair); transition:background .18s; }
+  .card:hover{ background:var(--lt); }
+  .card .tag{ font-size:10.5px; font-weight:800; color:var(--green); letter-spacing:.22em; }
+  .card h2{ font-family:var(--serif); font-size:24px; font-weight:900; margin-top:9px; }
+  .card p{ margin-top:9px; font-size:13.5px; color:var(--soft); max-width:640px; }
+  .card .go{ display:inline-block; margin-top:16px; font-size:12.5px; font-weight:800; color:var(--navy);
+    border:1px solid var(--navy); padding:9px 18px; letter-spacing:.06em; }
+  .card:hover .go{ background:var(--navy); color:#fff; }
+  .card.soon{ opacity:.55; }
+  .card.soon .go{ border-color:var(--mut); color:var(--mut); }
+  .card.soon:hover{ background:#fff; }
+  .card.soon:hover .go{ background:#fff; color:var(--mut); }
+
+  .note{ margin:36px 0 0; padding:16px 18px; background:var(--lt); font-size:12px; color:var(--soft); }
+  .note b{ color:var(--navy); }
+  .foot{ padding:34px 0 46px; font-size:11.5px; color:var(--mut); }
+  .foot b{ color:var(--navy); }
+</style>
+</head>
+<body>
+  <div class="logobar"><div class="in">
+    <img id="logo" alt="호남고등학교">
+    <div class="rt">HONAM HIGH SCHOOL<br><b>SCIENCE DEPARTMENT</b></div>
+  </div></div>
+
+  <div class="hero"><div class="in">
+    <div class="kicker">OPEN PORTAL</div>
+    <h1>호남고등학교 과학과<br>공개 포털</h1>
+    <div class="sub">호남고등학교 과학과의 교육활동을 외부에 공개하는 공식 창구입니다.
+      학생 개인정보 보호를 위해 모든 자료는 이름·학번을 비식별 처리한 공개판으로 제공합니다.</div>
+    <div class="rule"></div>
+  </div></div>
+
+  <div class="in grid">
+    <a class="card" href="https://zeroyoung-collab.github.io/science-archive/">
+      <div class="tag">ARCHIVE · 2026</div>
+      <h2>과학과 활동 아카이브</h2>
+      <p>우주과학 역량개발 소감문, '과학으로 세상을 묻다' SSI 융합 탐구, 통합과학 '과학 한 장에 담다',
+        KENTECH 진로체험, 주제탐구 발표회까지 — 한 해의 과학 활동 기록을 한곳에서 열람할 수 있습니다.</p>
+      <span class="go">아카이브 열람 →</span>
+    </a>
+    <div class="card soon">
+      <div class="tag">COMING SOON</div>
+      <h2>다음 공개 자료</h2>
+      <p>과학과의 다른 교육활동 자료도 비식별 처리를 마치는 대로 이곳에 추가됩니다.</p>
+      <span class="go">준비 중</span>
+    </div>
+  </div>
+
+  <div class="in">
+    <div class="note"><b>개인정보 안내</b> — 본 포털의 모든 공개 자료는 학생 이름 마스킹(가운데 글자 비공개), 학번 비식별,
+      얼굴 사진 모자이크 처리를 거쳤으며, 자료의 다운로드 기능을 제한하고 있습니다.
+      문의는 호남고등학교 과학과로 연락해 주세요.</div>
+    <div class="foot">제작 · 호남고 조영신 &nbsp;|&nbsp; <b>호남고등학교 과학과</b> · 과학활동중점학교</div>
+  </div>
+
+<script src="logo.js"></script>
+<script>
+document.getElementById('logo').src = HONAM_LOGO;
+(async()=>{try{
+  const r=await fetch("https://firestore.googleapis.com/v1/projects/sangdam-b97c1/databases/(default)/documents/pw_archive_open/config",{cache:"no-store"});
+  if(r.ok){ const d=await r.json();
+    if(d.fields&&d.fields.open&&d.fields.open.booleanValue===false){
+      document.body.innerHTML="<div style='min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif;background:#0B3E86;color:#fff;text-align:center;padding:24px'><h1 style='font-size:22px;margin-bottom:10px'>게시가 종료되었습니다</h1><p style='font-size:14px;opacity:.85'>호남고등학교 과학과 공개 포털의 게시 기간이 종료되었습니다.</p></div>";
+      document.title="게시 종료";
+    } }
+}catch(e){}})();
+</script>
+</body>
+</html>
