@@ -456,7 +456,7 @@ slide(() => `
   <h2 class="mid">시뮬레이션으로 직접 확인하라!</h2>
   <div class="rule"></div>
   <div class="goals" style="font-size:3vh">
-    <p>❶ <b>파형 화면</b> — 온실 기체 농도를 <b>없음 → 1750년 → 2020년</b>으로 바꾸며 지표 온도 기록</p>
+    <p>❶ <b>파형 화면</b> — 온실 기체 농도를 <b>없음 → 1750년 → 1950년 → 2020년</b>으로 바꾸며 지표 온도 기록</p>
     <p>❷ <b>광자 화면</b> — 적외선이 온실 기체에 부딪혀 <b>되돌아오는 장면</b> 관찰</p>
     <p>❸ 발견한 규칙을 <b>한 문장</b>으로 — 팀장 노트북에 입력 (모두의 화면에 실시간 공유)</p>
   </div>
@@ -480,7 +480,8 @@ slide(() => {
         <div class="temps">
           <div><small>온실 기체 없음</small>${T("g0")}<small>℃</small></div>
           <div><small>1750년</small>${T("g1")}<small>℃</small></div>
-          <div><small>2020년</small>${T("g2")}<small>℃</small></div>
+          <div><small>1950년</small>${T("g2")}<small>℃</small></div>
+          <div><small>2020년</small>${T("g3")}<small>℃</small></div>
         </div>
         <div class="btext">${b.rule ? "💡 " + b.rule : '<span class="dim2">발견 입력 중…</span>'}</div>
       </div>`;}).join("")}
@@ -494,11 +495,11 @@ slide(() => {
   <h2 class="mid" style="margin-bottom:1vh">${simPres}모둠의 실험 기록 ${b.leaderName ? `<span style="font-size:2.6vh;color:var(--gold-d)">👑 팀장 ${b.leaderName}</span>` : ""}</h2>
   <div style="flex:1;display:flex;flex-direction:column;gap:2.5vh;justify-content:center;max-width:150vh">
     <div style="display:flex;gap:1.5vw">
-      ${[["온실 기체 없음","g0"],["1750년 (산업화 전)","g1"],["2020년 (현재)","g2"]].map(([lb,k]) => `
+      ${[["온실 기체 없음","g0"],["1750년 (산업화 전)","g1"],["1950년","g2"],["2020년 (현재)","g3"]].map(([lb,k]) => `
       <div style="flex:1;text-align:center;background:var(--lt);border:.35vh solid var(--line);border-radius:1.6vh;padding:2.5vh 1vh">
         <div style="font-size:2.2vh;font-weight:700;color:var(--soft)">${lb}</div>
-        <div style="font-size:8vh;font-weight:900;color:${b[k]&&String(b[k]).trim()!==""?"var(--navy)":"#a8b2c0"}">${T(k)}<span style="font-size:3.5vh">℃</span></div>
-      </div>`).join(`<div style="align-self:center;font-size:5vh;font-weight:900;color:var(--gold-d)">→</div>`)}
+        <div style="font-size:7vh;font-weight:900;color:${b[k]&&String(b[k]).trim()!==""?"var(--navy)":"#a8b2c0"}">${T(k)}<span style="font-size:3vh">℃</span></div>
+      </div>`).join(`<div style="align-self:center;font-size:4.5vh;font-weight:900;color:var(--gold-d)">→</div>`)}
     </div>
     <div class="bans" style="font-size:3.4vh;padding:2.5vh 3vh"><b style="font-size:2.2vh">💡 우리 모둠의 발견</b>${b.rule || "<span class='dim2'>아직 입력 전…</span>"}</div>
     <div style="font-size:2.2vh;color:var(--soft);font-weight:700">📡 실시간 연동 — 피드백 받고 고치면 바로 반영됩니다 &nbsp;·&nbsp; 확인 포인트: 온도가 <b style="color:var(--navy)">단계적으로 높아지는가</b>, 발견 문장에 <b style="color:var(--navy)">원인(온실 기체)과 결과(온도)</b>가 모두 있는가</div>

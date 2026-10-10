@@ -63,7 +63,7 @@ textarea:focus{ border-color:var(--navy); }
 .mission{ background:var(--lt); border-left:5px solid var(--gold); border-radius:8px;
   padding:12px 14px; font-size:13px; line-height:1.7; margin-bottom:12px; }
 .mission b{ color:var(--navy); }
-.tempgrid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.tempgrid{ display:grid; grid-template-columns:repeat(4,1fr); gap:6px; }
 .tempgrid label{ margin:10px 0 4px; font-size:11px; }
 .tempgrid input{ width:100%; font:inherit; font-size:20px; font-weight:900; text-align:center;
   padding:10px 4px; border:2px solid var(--line); border-radius:10px; outline:none; }
@@ -134,7 +134,7 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
     <h2>미션 ① 온실효과 실험실</h2>
     <div class="mission">
       <b>MISSION</b> — 시뮬레이션(파형 화면)에서 <b>온실 기체 농도</b>를 바꿔 가며 지표 온도를 기록하세요.<br>
-      ❶ 농도를 <b>온실 기체 없음 → 1750년 → 2020년</b>으로 바꾸고 온도계 값을 기록<br>
+      ❶ 농도를 <b>온실 기체 없음 → 1750년 → 1950년 → 2020년</b>으로 바꾸고 온도계 값을 기록<br>
       ❷ <b>광자 화면</b>에서 적외선(빨간 점)이 온실 기체에 부딪혀 <b>되돌아오는 장면</b>을 관찰<br>
       ❸ 발견한 규칙을 한 문장으로 정리!
     </div>
@@ -147,7 +147,8 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
       <div class="tempgrid">
         <div><label>온실 기체 없음</label><input type="text" inputmode="numeric" maxlength="5" id="bd_g0" placeholder="?"></div>
         <div><label>1750년(산업화 전)</label><input type="text" inputmode="numeric" maxlength="5" id="bd_g1" placeholder="?"></div>
-        <div><label>2020년(현재)</label><input type="text" inputmode="numeric" maxlength="5" id="bd_g2" placeholder="?"></div>
+        <div><label>1950년</label><input type="text" inputmode="numeric" maxlength="5" id="bd_g2" placeholder="?"></div>
+        <div><label>2020년(현재)</label><input type="text" inputmode="numeric" maxlength="5" id="bd_g3" placeholder="?"></div>
       </div>
       <label>❸ 우리 모둠의 발견 (한 문장)</label>
       <textarea id="bd_rule" maxlength="100" style="min-height:70px" placeholder="예) 온실 기체가 많아질수록 …"></textarea>
@@ -391,7 +392,7 @@ function renderPredict(){
 /* ── 모둠 보드 (시뮬 + 데이터 공용 문서 board_<모둠>) ── */
 let boardDoc = {}, boardUnsub = null, boardInit = false, boardSaveT = null;
 const isLeader = () => !!(me && me.leader);
-const BD_FIELDS = ["bd_g0","bd_g1","bd_g2","bd_rule","bd_find","bd_evid","bd_link"];
+const BD_FIELDS = ["bd_g0","bd_g1","bd_g2","bd_g3","bd_rule","bd_find","bd_evid","bd_link"];
 const fieldKey = id => id.slice(3);   // bd_g0 → g0
 
 function boardSave(){
@@ -434,8 +435,8 @@ function renderSim(){
   $("simEdit").classList.toggle("hidden", !lead);
   $("simView").classList.toggle("hidden", lead);
   if(!lead){
-    const t = ["g0","g1","g2"].map(k => boardDoc[k]).filter(v => v && String(v).trim() !== "");
-    const tempTxt = t.length ? `없음 ${boardDoc.g0||"?"}℃ → 1750년 ${boardDoc.g1||"?"}℃ → 2020년 ${boardDoc.g2||"?"}℃` : "";
+    const t = ["g0","g1","g2","g3"].map(k => boardDoc[k]).filter(v => v && String(v).trim() !== "");
+    const tempTxt = t.length ? `없음 ${boardDoc.g0||"?"}℃ → 1750년 ${boardDoc.g1||"?"}℃ → 1950년 ${boardDoc.g2||"?"}℃ → 2020년 ${boardDoc.g3||"?"}℃` : "";
     setView("svTemp", tempTxt); setView("svRule", boardDoc.rule);
   }
 }
