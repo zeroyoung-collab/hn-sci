@@ -627,7 +627,7 @@ slide(() => {
   return `
   <div class="kicker">정리 — 나의 생각</div>
   <h2 class="mid">오늘 본 것을 바탕으로, 나의 생각 한 문장 <span style="font-size:2.4vh;color:var(--soft)">제출 ${ops.length}/${students.length}명</span></h2>
-  <div style="font-size:2.4vh;font-weight:700;color:var(--soft)">💻 각자 노트북에 — 온실효과와 지구 온난화에 대한 <b style="color:var(--navy)">나의 생각</b>을 1~2문장으로. (시뮬레이션·데이터에서 본 것을 담으면 최고!)</div>
+  <div style="font-size:2.5vh;font-weight:700;color:var(--soft)">💻 각자 노트북에 — <b style="color:var(--navy)">"온실효과는 지구를 지켜 주는 고마운 현상이라는데, 왜 지구 온난화를 걱정할까?"</b> 이 질문에 대한 나의 생각을 1~2문장으로. (시뮬레이션·데이터에서 본 것을 담으면 최고!)</div>
   <div class="opfeed">${ops.slice(-10).map(s => `<div class="opline"><b>${s.team}모둠 ${s.name}</b>${s.opinion}</div>`).join("")}</div>`;
 },
 { enter(){ setState({phase:"end"}); } });
@@ -641,12 +641,13 @@ slide(() => {
   <div class="rule"></div>
   <div style="flex:1;display:flex;align-items:center;justify-content:center">
     <div style="border:.5vh solid var(--navy); border-radius:2vh; padding:4vh 5vh; max-width:120vh">
-      <div style="font-size:2.2vh;font-weight:900;color:var(--gold-d);letter-spacing:.14em;margin-bottom:1.5vh">수행평가 안내</div>
-      <div style="font-size:4vh;font-weight:900;color:var(--navy2);line-height:1.4">『온실효과와 지구 온난화,<br>나의 생각 쓰기』</div>
-      <div class="goals" style="font-size:2.7vh;margin-top:2.5vh">
-        <p>· 오늘 제출한 <b>나의 생각 한 문장</b>이 글의 출발점이 됩니다</p>
-        <p>· 조건 — 오늘 본 <b>데이터 중 1개 이상</b>을 근거로 인용할 것</p>
-        <p>· 온실효과의 <b>원리</b>가 글 속에 정확히 담겨 있을 것</p>
+      <div style="font-size:2.2vh;font-weight:900;color:var(--gold-d);letter-spacing:.14em;margin-bottom:1.5vh">수행평가 안내 — 과학 글쓰기</div>
+      <div style="font-size:3.6vh;font-weight:900;color:var(--navy2);line-height:1.45">『온실효과는 지구를 지켜 주는<br>고마운 현상이라는데,<br>왜 지구 온난화를 걱정할까?』</div>
+      <div style="font-size:2.3vh;font-weight:700;color:var(--soft);margin-top:1.2vh">— 이 질문에 답하는 글을 씁니다 (다음 시간 수업 중 작성 · 400~600자)</div>
+      <div class="goals" style="font-size:2.5vh;margin-top:2vh">
+        <p><span class="num" style="width:3.6vh;height:3.6vh;line-height:3.6vh;font-size:2vh">1</span><b>원리</b> — 온실효과가 일어나는 과정 설명 (<b>온실 기체 · 적외선 · 재복사</b> 중 2개 이상의 용어 사용)</p>
+        <p><span class="num" style="width:3.6vh;height:3.6vh;line-height:3.6vh;font-size:2vh">2</span><b>증거</b> — 오늘 분석한 5개 데이터 중 <b>1개 이상의 수치</b>를 인용</p>
+        <p><span class="num" style="width:3.6vh;height:3.6vh;line-height:3.6vh;font-size:2vh">3</span><b>생각</b> — 오늘 제출한 <b>나의 생각 한 문장</b>에서 출발한 나의 입장과 이유</p>
       </div>
     </div>
   </div>
