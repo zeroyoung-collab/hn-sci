@@ -464,26 +464,54 @@ slide(() => `
   { enter(){ setState({phase:"sim"}); timerSec = 480; },
     acts(){ return timerActs(480); } });
 
-/* 5 시뮬 모둠 보드 현황 */
-slide(() => `
-  <div class="kicker">모둠 미션 ① — 실시간 현황</div>
-  <h2 class="mid" style="margin-bottom:.5vh">모둠별 실험 기록 <span style="font-size:2.2vh;color:var(--soft)">— 팀장 노트북과 실시간 연동</span></h2>
-  <div class="bgrid">${[1,2,3,4,5].map(t => {
-    const b = boards[t] || {};
-    const T = k => b[k] && String(b[k]).trim() !== "" ? `<b>${b[k]}</b>` : `<b class="none">?</b>`;
+/* 5 시뮬 모둠 보드 현황 + 피드백(확대) */
+let simPres = 0;
+slide(() => {
+  if(!simPres){
     return `
-    <div class="bcard">
-      <h4>${t}모둠 ${b.leaderName ? `<span class="meta">👑 ${b.leaderName}</span>` : ""}<span class="sp"></span></h4>
-      <div class="temps">
-        <div><small>온실 기체 없음</small>${T("g0")}<small>℃</small></div>
-        <div><small>1750년</small>${T("g1")}<small>℃</small></div>
-        <div><small>2020년</small>${T("g2")}<small>℃</small></div>
-      </div>
-      <div class="btext">${b.rule ? "💡 " + b.rule : '<span class="dim2">발견 입력 중…</span>'}</div>
-    </div>`;}).join("")}
-    <div class="bcard note">🔬 온도 세 개가 말해 주는 것 —<br><b>온실 기체가 많을수록 지표는 따뜻하다.</b><br><br>몇 모둠의 발견을 함께 읽어 봅시다!</div>
-  </div>`,
-  { enter(){ setState({phase:"sim"}); } });
+    <div class="kicker">모둠 미션 ① — 실시간 현황</div>
+    <h2 class="mid" style="margin-bottom:.5vh">모둠별 실험 기록 <span style="font-size:2.2vh;color:var(--soft)">— 모둠을 누르면 피드백 화면으로 커집니다</span></h2>
+    <div class="bgrid">${[1,2,3,4,5].map(t => {
+      const b = boards[t] || {};
+      const T = k => b[k] && String(b[k]).trim() !== "" ? `<b>${b[k]}</b>` : `<b class="none">?</b>`;
+      return `
+      <div class="bcard click" data-t="${t}">
+        <h4>${t}모둠 ${b.leaderName ? `<span class="meta">👑 ${b.leaderName}</span>` : ""}<span class="sp"></span></h4>
+        <div class="temps">
+          <div><small>온실 기체 없음</small>${T("g0")}<small>℃</small></div>
+          <div><small>1750년</small>${T("g1")}<small>℃</small></div>
+          <div><small>2020년</small>${T("g2")}<small>℃</small></div>
+        </div>
+        <div class="btext">${b.rule ? "💡 " + b.rule : '<span class="dim2">발견 입력 중…</span>'}</div>
+      </div>`;}).join("")}
+      <div class="bcard note">🔬 온도 세 개가 말해 주는 것 —<br><b>온실 기체가 많을수록 지표는 따뜻하다.</b><br><br>피드백할 모둠을 <b>클릭</b>하세요!</div>
+    </div>`;
+  }
+  const b = boards[simPres] || {};
+  const T = k => b[k] && String(b[k]).trim() !== "" ? b[k] : "?";
+  return `
+  <div class="kicker">모둠 미션 ① — 피드백</div>
+  <h2 class="mid" style="margin-bottom:1vh">${simPres}모둠의 실험 기록 ${b.leaderName ? `<span style="font-size:2.6vh;color:var(--gold-d)">👑 팀장 ${b.leaderName}</span>` : ""}</h2>
+  <div style="flex:1;display:flex;flex-direction:column;gap:2.5vh;justify-content:center;max-width:150vh">
+    <div style="display:flex;gap:1.5vw">
+      ${[["온실 기체 없음","g0"],["1750년 (산업화 전)","g1"],["2020년 (현재)","g2"]].map(([lb,k]) => `
+      <div style="flex:1;text-align:center;background:var(--lt);border:.35vh solid var(--line);border-radius:1.6vh;padding:2.5vh 1vh">
+        <div style="font-size:2.2vh;font-weight:700;color:var(--soft)">${lb}</div>
+        <div style="font-size:8vh;font-weight:900;color:${b[k]&&String(b[k]).trim()!==""?"var(--navy)":"#a8b2c0"}">${T(k)}<span style="font-size:3.5vh">℃</span></div>
+      </div>`).join(`<div style="align-self:center;font-size:5vh;font-weight:900;color:var(--gold-d)">→</div>`)}
+    </div>
+    <div class="bans" style="font-size:3.4vh;padding:2.5vh 3vh"><b style="font-size:2.2vh">💡 우리 모둠의 발견</b>${b.rule || "<span class='dim2'>아직 입력 전…</span>"}</div>
+    <div style="font-size:2.2vh;color:var(--soft);font-weight:700">📡 실시간 연동 — 피드백 받고 고치면 바로 반영됩니다 &nbsp;·&nbsp; 확인 포인트: 온도가 <b style="color:var(--navy)">단계적으로 높아지는가</b>, 발견 문장에 <b style="color:var(--navy)">원인(온실 기체)과 결과(온도)</b>가 모두 있는가</div>
+  </div>`;
+},
+{ enter(){ setState({phase:"sim"}); },
+  after(){
+    document.querySelectorAll(".bcard.click[data-t]").forEach(el => el.onclick = () => { simPres = +el.dataset.t; render(); });
+  },
+  acts(){ return [
+    ["◀ 전체 보기", "ghost", () => { simPres = 0; render(); }, !simPres],
+    ...[1,2,3,4,5].map(t => [`${t}모둠`, simPres===t ? "gold" : "navy", () => { simPres = t; render(); }, false])
+  ]; } });
 
 /* 6 데이터 미션 안내 */
 slide(() => `
