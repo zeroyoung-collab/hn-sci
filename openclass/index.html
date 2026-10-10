@@ -95,7 +95,7 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
 <header>
   <div class="tag">통합과학2 · 지구 환경 변화</div>
   <h1>지구의 체온 — 온실효과와 지구 온난화</h1>
-  <div class="me" id="meLine">호남고등학교 1학년 5반</div>
+  <div class="me" id="meLine">호남고등학교</div>
 </header>
 <main>
 
@@ -340,7 +340,7 @@ $("btnJoin").onclick = async () => {
   try{
     await setDoc(doc(db, COL, "stu_"+uid), { name, team, leader: leaderSel, joinedAt: serverTimestamp() }, {merge:true});
     joined = true;
-    $("meLine").innerHTML = `1학년 5반 · <b>${team}모둠 ${name}</b>`;
+    $("meLine").innerHTML = `호남고등학교 · <b>${team}모둠 ${name}</b>`;
     render();
   }catch(e){ alert("접속 오류: 선생님께 알려주세요\n" + e.message); }
 };
@@ -367,7 +367,7 @@ async function save(data){
 /* ── 렌더 ── */
 function render(){
   if(!joined && !(me && myDoc.name)){ show("vJoin"); return; }
-  if(me && myDoc.name && !joined){ joined = true; $("meLine").innerHTML = `1학년 5반 · <b>${me.team}모둠 ${me.name}</b>`; }
+  if(me && myDoc.name && !joined){ joined = true; $("meLine").innerHTML = `호남고등학교 · <b>${me.team}모둠 ${me.name}</b>`; }
 
   const ph = state.phase || "lobby";
   if(ph === "lobby"){ show("vLobby"); }
