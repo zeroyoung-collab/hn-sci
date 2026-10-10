@@ -427,7 +427,7 @@ slide(() => {
 }, { enter(){ setState({phase:"predict"}); },
      acts(){ return [
        [state.predictOpen ? "제출 마감" : "제출 열기", state.predictOpen ? "ghost" : "gold", () => setState({predictOpen: !state.predictOpen})],
-       ["정답 공개 (−18℃)", "green", () => setState({predictOpen:false, predictReveal:true})],
+       ["정답 공개", "green", () => setState({predictOpen:false, predictReveal:true})],
      ]; } });
 
 /* 2 학습목표 */
