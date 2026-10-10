@@ -2,8 +2,8 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<title>히트 버짓 챌린지 — 1학년 5반</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>지구의 체온 — 온실효과와 지구 온난화</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -20,6 +20,7 @@ header h1{ font-size:19px; font-weight:900; letter-spacing:-.02em; }
 header .me{ font-size:12px; font-weight:500; opacity:.9; margin-top:2px; }
 header .me b{ color:var(--gold); }
 main{ flex:1; overflow-y:auto; padding:20px 18px 30px; max-width:480px; width:100%; margin:0 auto; }
+body.wide main{ max-width:860px; }
 .hidden{ display:none !important; }
 
 .card{ background:#fff; border:2px solid var(--line); border-radius:14px; padding:20px 18px; }
@@ -36,7 +37,7 @@ input[type=text]:focus{ border-color:var(--navy); }
 .teamgrid button.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
 
 .big{ display:block; width:100%; font:inherit; font-size:17px; font-weight:900; color:#fff;
-  background:var(--navy); border:none; border-radius:12px; padding:16px 0; margin-top:18px; }
+  background:var(--navy); border:none; border-radius:12px; padding:16px 0; margin-top:18px; cursor:pointer; }
 .big:disabled{ background:#9fb0c6; }
 .big.gold{ background:var(--gold); color:var(--navy2); }
 
@@ -47,33 +48,36 @@ input[type=text]:focus{ border-color:var(--navy); }
 
 /* 예측 */
 .predval{ text-align:center; font-size:52px; font-weight:900; color:var(--navy); margin:10px 0 4px; }
-.predval small{ font-size:18px; color:var(--soft); font-weight:700; }
+.predval small{ font-size:20px; color:var(--soft); font-weight:700; }
 input[type=range]{ width:100%; margin:8px 0 4px; accent-color:var(--navy); height:34px; }
+.predscale{ display:flex; justify-content:space-between; font-size:11px; color:var(--soft); font-weight:700; }
 
-/* 퀴즈 */
-.qhead{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
-.qhead .qno{ font-size:22px; font-weight:900; color:var(--navy); }
-.qhead .rd{ font-size:11px; font-weight:700; color:var(--gold-d); background:#fdf3d7; padding:3px 10px; border-radius:20px; }
-.qhint{ font-size:13px; color:var(--soft); text-align:center; margin-bottom:14px; line-height:1.55; }
-.oxgrid{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-.oxgrid button{ font:inherit; font-size:56px; font-weight:900; padding:28px 0; border-radius:16px; border:none; color:#fff; }
-.oxO{ background:#1f6fd6; } .oxX{ background:var(--red); }
-.mcgrid{ display:grid; gap:10px; }
-.mcgrid button{ font:inherit; font-size:19px; font-weight:900; padding:18px 0; border-radius:12px; border:none; color:#fff; }
-.mc0{ background:#1f6fd6; } .mc1{ background:var(--green); } .mc2{ background:var(--gold-d); } .mc3{ background:#7a4fc9; }
-button:disabled{ opacity:.45; }
-.locked{ text-align:center; padding:26px 8px; }
-.locked .mark{ font-size:46px; font-weight:900; }
-.locked h3{ font-size:17px; font-weight:900; margin-top:6px; }
-.locked p{ font-size:13px; color:var(--soft); margin-top:6px; }
-.ok{ color:var(--green); } .no{ color:var(--red); }
-.scorebar{ margin-top:16px; background:var(--lt); border-radius:10px; padding:10px 14px;
-  display:flex; justify-content:space-between; font-size:13px; font-weight:700; color:var(--navy2); }
-
-/* 문장/투표 */
+/* 팀장/보드 */
+.leaderToggle{ width:100%; font:inherit; font-size:14px; font-weight:900; padding:12px 0; margin-top:2px;
+  border:2px solid var(--line); border-radius:10px; background:#fff; color:var(--soft); }
+.leaderToggle.on{ border-color:var(--gold-d); background:#fffaf0; color:var(--gold-d); }
 textarea{ width:100%; font:inherit; font-size:15px; font-weight:500; line-height:1.6; padding:12px 14px;
-  border:2px solid var(--line); border-radius:10px; outline:none; min-height:96px; resize:none; }
+  border:2px solid var(--line); border-radius:10px; outline:none; min-height:84px; resize:none; }
 textarea:focus{ border-color:var(--navy); }
+.savedot{ font-size:11.5px; color:var(--green); font-weight:700; margin-top:8px; }
+.mission{ background:var(--lt); border-left:5px solid var(--gold); border-radius:8px;
+  padding:12px 14px; font-size:13px; line-height:1.7; margin-bottom:12px; }
+.mission b{ color:var(--navy); }
+.tempgrid{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+.tempgrid label{ margin:10px 0 4px; font-size:11px; }
+.tempgrid input{ width:100%; font:inherit; font-size:20px; font-weight:900; text-align:center;
+  padding:10px 4px; border:2px solid var(--line); border-radius:10px; outline:none; }
+.tempgrid input:focus{ border-color:var(--navy); }
+.viewbox{ background:var(--lt); border-radius:10px; padding:12px 14px; margin-top:12px; }
+.viewbox h4{ font-size:12px; font-weight:900; color:var(--navy); margin-bottom:4px; }
+.viewbox p{ font-size:14px; font-weight:700; line-height:1.55; min-height:20px; }
+.viewbox p.empty{ color:#a8b2c0; font-weight:500; }
+
+/* 차트 */
+.chartwrap{ border:2px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; margin:4px 0 12px; }
+.chartwrap svg{ width:100%; height:auto; display:block; }
+
+/* 투표 */
 .votegrid{ display:grid; gap:10px; }
 .votegrid button{ font:inherit; text-align:left; font-size:13.5px; font-weight:500; line-height:1.55;
   padding:13px 14px; border-radius:12px; border:2px solid var(--line); background:#fff; color:var(--ink); }
@@ -81,39 +85,16 @@ textarea:focus{ border-color:var(--navy); }
 .votegrid button.on{ border-color:var(--gold); background:#fffaf0; }
 .votegrid button:disabled{ opacity:.4; }
 
-/* 열수지 퍼즐 (모둠 보드) */
-body.puzzle main{ max-width:920px; }
-.leaderToggle{ width:100%; font:inherit; font-size:14px; font-weight:900; padding:12px 0; margin-top:2px;
-  border:2px solid var(--line); border-radius:10px; background:#fff; color:var(--soft); }
-.leaderToggle.on{ border-color:var(--gold-d); background:#fffaf0; color:var(--gold-d); }
-.pzwrap{ position:relative; width:100%; height:0; padding-bottom:54.17%; margin-top:10px;
-  border:2px solid var(--line); border-radius:12px; overflow:hidden; background:#dcebfa; }
-.pzwrap #pzSvg{ position:absolute; inset:0; }
-.pzwrap #pzSvg svg{ width:100%; height:100%; display:block; }
-.pzwrap canvas{ position:absolute; inset:0; width:100%; height:100%; touch-action:none;
-  -webkit-user-select:none; user-select:none; }
-.pztools{ display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
-.pztools button{ font:inherit; font-size:12.5px; font-weight:900; padding:9px 12px; border-radius:9px;
-  border:2px solid var(--line); background:#fff; color:var(--soft); }
-#penPink.on{ border-color:#e2547e; color:#e2547e; background:#fdf0f4; }
-#penGold.on{ border-color:#e09b00; color:#e09b00; background:#fff8e8; }
-.pzvals{ display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
-.pzvals label{ margin:10px 0 4px; font-size:11px; }
-.pzvals input{ width:100%; font:inherit; font-size:20px; font-weight:900; text-align:center;
-  padding:10px 4px; border:2px solid var(--line); border-radius:10px; outline:none; }
-.pzvals input:focus{ border-color:var(--navy); }
-.savedot{ font-size:11.5px; color:var(--green); font-weight:700; margin-top:8px; }
-
 footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; padding:8px 0 12px; }
-.conn{ position:fixed; top:10px; right:12px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:12px; }
+.conn{ position:fixed; top:10px; right:12px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:12px; z-index:5; }
 .conn.on{ background:#e7f5ec; color:#136e2e; } .conn.off{ background:#fde8e8; color:#a02b2b; }
 </style>
 </head>
 <body>
 <div id="conn" class="conn off">연결 중…</div>
 <header>
-  <div class="tag">통합과학2 · 지구의 열수지</div>
-  <h1>히트 버짓 챌린지</h1>
+  <div class="tag">통합과학2 · 지구 환경 변화</div>
+  <h1>지구의 체온 — 온실효과와 지구 온난화</h1>
   <div class="me" id="meLine">호남고등학교 1학년 5반</div>
 </header>
 <main>
@@ -126,14 +107,14 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
     <input type="text" id="inName" maxlength="10" placeholder="예) 김호남">
     <label>모둠</label>
     <div class="teamgrid" id="teamGrid"></div>
-    <label>모둠 태블릿(팀장 기기)인가요?</label>
-    <button class="leaderToggle" id="btnLeader" type="button">👑 이 기기를 팀장 보드로 쓸게요</button>
+    <label>모둠 대표 기기(팀장 노트북)인가요?</label>
+    <button class="leaderToggle" id="btnLeader" type="button">👑 이 노트북을 팀장 보드로 쓸게요</button>
     <button class="big" id="btnJoin">입장하기</button>
   </section>
 
   <!-- 대기 -->
   <section id="vLobby" class="wait hidden">
-    <div class="dot">🌏</div>
+    <div class="dot">🌡️</div>
     <h2>입장 완료!</h2>
     <p>수업이 시작되면 화면이 자동으로 바뀝니다.<br>현재 <b id="lobbyN">0</b>명 접속 중</p>
   </section>
@@ -141,83 +122,84 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
   <!-- 예측 -->
   <section id="vPredict" class="card hidden">
     <h2>예측해 보세요</h2>
-    <p class="desc">태양이 지구에 보낸 에너지를 <b>100</b>이라 하면,<br>흡수되지 못하고 <b>우주로 반사되어 돌아가는 양</b>은?</p>
-    <div class="predval"><span id="predNum">30</span><small> / 100</small></div>
-    <input type="range" id="predRange" min="0" max="100" value="30">
+    <p class="desc">지구에 <b>대기가 전혀 없다면</b>, 지구 표면의 평균 온도는 몇 ℃가 될까요?<br>(지금 지구의 평균 기온은 약 <b>15℃</b>입니다)</p>
+    <div class="predval"><span id="predNum">0</span><small> ℃</small></div>
+    <input type="range" id="predRange" min="-50" max="50" value="0">
+    <div class="predscale"><span>-50℃</span><span>0℃</span><span>+50℃</span></div>
     <button class="big gold" id="btnPredict">제출하기</button>
   </section>
 
-  <!-- 열수지 퍼즐 (모둠 보드) -->
-  <section id="vPuzzle" class="card hidden">
-    <h2>열수지 퍼즐 — 태양 에너지 100의 행방을 찾아라</h2>
-    <p class="desc"><b>MISSION</b> — 빈칸 (가)~(다)를 채우고, 지구에서 <b>나가는 에너지 화살표</b>(지구 복사·재복사)를 손가락으로 그림 위에 직접 그리세요. 단서는 하나: <b>들어온 양과 나간 양은 반드시 같다!</b></p>
-    <div id="pzClaim" class="hidden">
-      <button class="big gold" id="btnClaim" style="margin-top:0">👑 이 기기를 팀장 보드로 쓰기</button>
+  <!-- 전개1: 시뮬레이션 미션 -->
+  <section id="vSim" class="card hidden">
+    <h2>미션 ① 온실효과 실험실</h2>
+    <div class="mission">
+      <b>MISSION</b> — 시뮬레이션(파형 화면)에서 <b>온실 기체 농도</b>를 바꿔 가며 지표 온도를 기록하세요.<br>
+      ❶ 농도를 <b>온실 기체 없음 → 1750년 → 2020년</b>으로 바꾸고 온도계 값을 기록<br>
+      ❷ <b>광자 화면</b>에서 적외선(빨간 점)이 온실 기체에 부딪혀 <b>되돌아오는 장면</b>을 관찰<br>
+      ❸ 발견한 규칙을 한 문장으로 정리!
     </div>
-    <div class="pzwrap" id="pzWrap">
-      <div id="pzSvg"></div>
-      <canvas id="pzCanvas"></canvas>
+    <button class="big gold" id="btnPhet" style="margin-top:0">🔬 시뮬레이션 열기 (새 탭)</button>
+    <div id="simClaim" class="hidden">
+      <button class="big" id="btnClaimS">👑 이 노트북을 팀장 보드로 쓰기</button>
     </div>
-    <p class="desc hidden" id="pzViewNote" style="margin:8px 0 0">👀 우리 모둠 팀장 보드를 실시간으로 보는 중 — 태블릿에 모여 함께 토의하세요!</p>
-    <div id="pzEdit">
-      <div class="pztools">
-        <button id="penPink" class="on" type="button">🖊 지구 복사 펜</button>
-        <button id="penGold" type="button">🖊 태양 복사 펜</button>
-        <button id="penUndo" type="button">↩ 되돌리기</button>
-        <button id="penClear" type="button">전체 지우기</button>
+    <div id="simEdit">
+      <label style="margin-top:16px">❶ 지표 온도 기록 (℃)</label>
+      <div class="tempgrid">
+        <div><label>온실 기체 없음</label><input type="text" inputmode="numeric" maxlength="5" id="bd_g0" placeholder="?"></div>
+        <div><label>1750년(산업화 전)</label><input type="text" inputmode="numeric" maxlength="5" id="bd_g1" placeholder="?"></div>
+        <div><label>2020년(현재)</label><input type="text" inputmode="numeric" maxlength="5" id="bd_g2" placeholder="?"></div>
       </div>
-      <div class="pzvals">
-        <div><label>(가) 반사</label><input type="text" inputmode="numeric" maxlength="3" id="pz_ga"></div>
-        <div><label>(나) 대기·구름 흡수</label><input type="text" inputmode="numeric" maxlength="3" id="pz_na"></div>
-        <div><label>(다) 지표 흡수</label><input type="text" inputmode="numeric" maxlength="3" id="pz_da"></div>
-      </div>
-      <label>② 흡수한 양 = 방출하는 양, 이 상태를 뭐라고 할까?</label>
-      <input type="text" id="pzTerm" maxlength="15" placeholder="○○ ○○(이)라고 한다">
-      <label>③ [모둠 토의] 온실 기체가 늘어나면 어떤 화살표가 굵어지고, 기온은 어떻게 될까?</label>
-      <textarea id="pzTalk" maxlength="120" style="min-height:70px" placeholder="예) 재복사 화살표가 굵어져서 …"></textarea>
-      <p class="desc" style="margin:10px 0 0; font-size:12px">HINT 1 · (가)는 수업 처음에 다 같이 예측했던 바로 그 값! &nbsp;HINT 2 · 세 값을 모두 더하면 반드시 100. &nbsp;HINT 3 · 온실 기체는 '들어오는 빛'이 아니라 '나가는 적외선'을 붙잡는다.</p>
-      <p class="savedot" id="pzSaved">입력하면 자동 저장됩니다</p>
+      <label>❸ 우리 모둠의 발견 (한 문장)</label>
+      <textarea id="bd_rule" maxlength="100" style="min-height:70px" placeholder="예) 온실 기체가 많아질수록 …"></textarea>
+      <p class="savedot" id="simSaved">입력하면 자동 저장됩니다 — 선생님 화면과 실시간 연동</p>
+    </div>
+    <div id="simView" class="hidden">
+      <p class="desc" style="margin:10px 0 0">👀 우리 모둠 팀장 보드를 실시간으로 보는 중 — 함께 토의하세요!</p>
+      <div class="viewbox"><h4>❶ 지표 온도 기록</h4><p id="svTemp" class="empty">아직 입력 전…</p></div>
+      <div class="viewbox"><h4>❸ 우리 모둠의 발견</h4><p id="svRule" class="empty">아직 입력 전…</p></div>
     </div>
   </section>
 
-  <!-- 퀴즈 -->
-  <section id="vQuiz" class="hidden">
-    <div class="card">
-      <div class="qhead"><span class="qno" id="qNo">Q1</span><span class="rd" id="qRound">ROUND 1 · OX</span></div>
-      <p class="qhint">문제는 <b>화면</b>을 보세요! 폰에서는 답만 고릅니다.</p>
-      <div id="qButtons"></div>
-      <div id="qLocked" class="locked hidden"></div>
+  <!-- 전개2: 데이터 분석 미션 -->
+  <section id="vData" class="card hidden">
+    <h2 id="dataTitle">미션 ② 데이터 탐정</h2>
+    <p class="desc" id="dataSub"></p>
+    <div class="chartwrap" id="chartBox"></div>
+    <div class="mission" id="dataHint"></div>
+    <div id="dataClaim" class="hidden">
+      <button class="big" id="btnClaimD" style="margin-top:0">👑 이 노트북을 팀장 보드로 쓰기</button>
     </div>
-    <div class="scorebar"><span>내 점수</span><span id="myScore">0점</span></div>
-  </section>
-
-  <!-- 모둠 논증 (지구공학 딜레마) -->
-  <section id="vSentence" class="card hidden">
-    <h2>모둠 미션 — 지구에 양산을 씌운다면?</h2>
-    <p class="desc">성층권에 반사 입자를 뿌려 <b>반사율을 인위적으로 높이는 지구공학</b>, 해야 할까요? 모둠의 <b>입장</b>을 고르고 <b>근거 한 문장</b>을 제출하세요. (모둠에서 한 명만 제출 · 다시 제출하면 덮어써요)</p>
-    <label>우리 모둠의 입장</label>
-    <div class="teamgrid" id="stanceGrid" style="grid-template-columns:repeat(3,1fr)"></div>
-    <label>근거 한 문장 (오늘 배운 열수지 개념이 들어가면 최고!)</label>
-    <textarea id="inSentence" maxlength="90" placeholder="예) 반사가 늘면 흡수가 줄어 기온은 내려가지만 …"></textarea>
-    <button class="big" id="btnSentence">우리 모둠 논증 제출</button>
-    <p class="desc" id="sentDone" style="margin-top:10px"></p>
+    <div id="dataEdit">
+      <label>① 이 데이터가 말하는 것 (한 문장)</label>
+      <textarea id="bd_find" maxlength="100" style="min-height:64px" placeholder="예) 1958년 이후 대기 중 CO₂ 농도가 …"></textarea>
+      <label>② 근거가 되는 수치 (시작값 → 최근값)</label>
+      <textarea id="bd_evid" maxlength="80" style="min-height:52px" placeholder="예) 315 ppm(1958) → 423 ppm(2024)"></textarea>
+      <label>③ 온실효과 강화와의 연결 — 왜 이렇게 변했을까?</label>
+      <textarea id="bd_link" maxlength="120" style="min-height:64px" placeholder="예) 화석 연료 사용으로 …"></textarea>
+      <p class="savedot" id="dataSaved">입력하면 자동 저장됩니다 — 발표 때 선생님 화면에 크게 나와요</p>
+    </div>
+    <div id="dataView" class="hidden">
+      <p class="desc" style="margin:10px 0 0">👀 우리 모둠 팀장 보드를 실시간으로 보는 중 — 함께 토의하세요!</p>
+      <div class="viewbox"><h4>① 데이터가 말하는 것</h4><p id="dvFind" class="empty">아직 입력 전…</p></div>
+      <div class="viewbox"><h4>② 근거 수치</h4><p id="dvEvid" class="empty">아직 입력 전…</p></div>
+      <div class="viewbox"><h4>③ 온실효과와의 연결</h4><p id="dvLink" class="empty">아직 입력 전…</p></div>
+    </div>
   </section>
 
   <!-- 투표 -->
   <section id="vVote" class="card hidden">
-    <h2>가장 설득력 있는 근거는?</h2>
-    <p class="desc">우리 모둠을 <b>제외한</b> 모둠 중, 입장과 관계없이 <b>근거가 가장 탄탄한 논증</b>에 투표하세요. (1인 1표)</p>
+    <h2>가장 설득력 있는 분석은?</h2>
+    <p class="desc">우리 모둠을 <b>제외한</b> 모둠 중, 데이터를 <b>가장 정확하고 설득력 있게</b> 해석한 모둠에 투표하세요. (1인 1표)</p>
     <div class="votegrid" id="voteGrid"></div>
   </section>
 
-  <!-- 종료/퇴장권 -->
+  <!-- 정리: 나의 생각 -->
   <section id="vEnd" class="card hidden">
-    <h2>오늘 수업 어땠나요?</h2>
-    <p class="desc">소감이나 궁금한 점을 한 줄 남기면 퇴장권 완료!</p>
-    <div class="scorebar" style="margin:0 0 14px"><span>내 최종 점수</span><span id="endScore">0점</span></div>
-    <textarea id="inExit" maxlength="60" placeholder="예) 온실효과가 원래 자연 현상인 게 신기했다"></textarea>
-    <button class="big" id="btnExit">퇴장권 제출</button>
-    <p class="desc" id="exitDone" style="margin-top:10px"></p>
+    <h2>나의 생각 한 문장</h2>
+    <p class="desc">오늘 본 <b>시뮬레이션과 데이터</b>를 바탕으로, 온실효과와 지구 온난화에 대한 <b>나의 생각</b>을 1~2문장으로 적어 보세요.<br>이 문장은 <b>다음 시간 수행평가</b>에서 여러분이 쓸 글의 첫 문장이 됩니다!</p>
+    <textarea id="inOpinion" maxlength="160" style="min-height:110px" placeholder="예) 온실효과는 지구를 살 만한 온도로 지켜 주는 자연 현상이지만, 데이터를 보면 …"></textarea>
+    <button class="big" id="btnOpinion">제출하기</button>
+    <p class="desc" id="opinionDone" style="margin-top:10px"></p>
   </section>
 
 </main>
@@ -236,32 +218,102 @@ const firebaseConfig = {
   messagingSenderId: "389048360844",
   appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
 };
-const COL = "pw_openclass_heat";
+const COL = "pw_openclass_warming";
+const PHET = "https://phet.colorado.edu/sims/html/greenhouse-effect/latest/greenhouse-effect_all.html?locale=ko";
 const db = getFirestore(initializeApp(firebaseConfig));
 
-/* 문항 메타(유형·배점만 — 정답은 교사 화면에만 있음) */
-const QMETA = [
-  {type:"ox", base:100, round:"ROUND 1 · OX"},
-  {type:"ox", base:100, round:"ROUND 1 · OX"},
-  {type:"ox", base:100, round:"ROUND 1 · OX"},
-  {type:"ox", base:100, round:"ROUND 1 · OX"},
-  {type:"mc", base:100, round:"ROUND 2 · 선다형"},
-  {type:"mc", base:100, round:"ROUND 2 · 선다형"},
-  {type:"mc", base:100, round:"ROUND 2 · 선다형"},
-  {type:"mc", base:100, round:"ROUND 2 · 선다형"},
-  {type:"mc", base:200, round:"ROUND 3 · 자료 해석"},
-  {type:"mc", base:200, round:"ROUND 3 · 자료 해석"},
-];
-const BONUS = 100, BONUS_MS = 20000;
+/* ── 모둠별 데이터셋 ── */
+const DATASETS = {
+  1:{ name:"대기 중 CO₂ 농도", sub:"하와이 마우나로아 관측소의 연속 관측 — '킬링 곡선'",
+      hint:"<b>HINT</b> — 잘게 떨리는 톱니 모양은 계절(식물의 광합성) 때문이에요. 톱니 말고 <b>큰 흐름</b>에 주목! 증가 속도는 일정한가요, 점점 빨라지나요?" },
+  2:{ name:"지구 평균 기온 편차", sub:"1951~1980년 평균을 0℃로 놓았을 때의 차이 (NASA)",
+      hint:"<b>HINT</b> — 0℃ 선을 <b>언제부터 완전히 벗어났는지</b>, 그리고 가장 최근 값이 얼마인지에 주목하세요." },
+  3:{ name:"지구 평균 해수면 변화", sub:"인공위성으로 잰 전 지구 평균 해수면 (1993년 = 0)",
+      hint:"<b>HINT</b> — 바닷물은 데워지면 <b>부피가 커지고(열팽창)</b>, 녹은 빙하가 더해져요. 기온 상승과 어떻게 이어질까요?" },
+  4:{ name:"북극 해빙 최소 면적", sub:"매년 9월에 기록되는 한 해의 최솟값 (미국 빙설자료센터)",
+      hint:"<b>HINT</b> — 들쭉날쭉해도 <b>추세선</b>을 상상해 보세요. 흰 얼음이 줄면 반사가 줄고, 어두운 바다가 열을 더 흡수하면…?" },
+  5:{ name:"우리나라 연평균 기온", sub:"기상청 장기 관측 자료의 10년 평균값",
+      hint:"<b>HINT</b> — 우리나라의 상승 폭(약 +1.6℃/100년)을 지구 전체 평균(약 +1.1℃)과 비교해 보세요. 어디가 더 가파른가요?" },
+};
+
+/* ── 차트 (실제 관측값 기반) ── */
+function lineChart(o){
+  const w=820, h=500, ml=o.ml||86, mr=30, mt=92, mb=62;
+  const iw=w-ml-mr, ih=h-mt-mb;
+  const X=x=>ml+(x-o.xmin)/(o.xmax-o.xmin)*iw;
+  const Y=y=>mt+ih-(y-o.ymin)/(o.ymax-o.ymin)*ih;
+  let g = "";
+  (o.yticks||[]).forEach(t=>{ g += `<line x1="${ml}" y1="${Y(t)}" x2="${w-mr}" y2="${Y(t)}" stroke="#e3e9f2" stroke-width="1.5"/>
+    <text x="${ml-10}" y="${Y(t)+5}" text-anchor="end" font-size="16" fill="#3d4652">${t}</text>`; });
+  (o.xticks||[]).forEach(t=>{ g += `<text x="${X(t)}" y="${h-mb+26}" text-anchor="middle" font-size="16" fill="#3d4652">${t}</text>`; });
+  if(o.zero !== undefined) g += `<line x1="${ml}" y1="${Y(o.zero)}" x2="${w-mr}" y2="${Y(o.zero)}" stroke="#3d4652" stroke-width="2" stroke-dasharray="5 4"/>`;
+  g += `<line x1="${ml}" y1="${mt-6}" x2="${ml}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>
+        <line x1="${ml}" y1="${h-mb}" x2="${w-mr}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>`;
+  const line = pts => pts.map(p=>`${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(" ");
+  g += `<polyline points="${line(o.pts)}" fill="none" stroke="${o.color||"#d64545"}" stroke-width="3.5" stroke-linejoin="round"/>`;
+  if(o.dots) o.pts.forEach(p=>{ g += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="5" fill="${o.color||"#d64545"}"/>`; });
+  (o.marks||[]).forEach(m=>{ g += `<circle cx="${X(m[0])}" cy="${Y(m[1])}" r="6.5" fill="#0B3E86"/>
+    <text x="${X(m[0])+(m[3]==="end"?-14:14)}" y="${Y(m[1])+(m[4]||5)}" text-anchor="${m[3]||"start"}" font-size="17" font-weight="900" fill="#0B3E86">${m[2]}</text>`; });
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${w}" height="${h}" fill="#fff"/>
+    <text x="30" y="40" font-size="24" font-weight="900" fill="#092f66">${o.title}</text>
+    <text x="30" y="66" font-size="15" font-weight="700" fill="#3d4652">${o.sub}</text>
+    <text x="26" y="${mt+ih/2}" text-anchor="middle" font-size="15" font-weight="900" fill="#0B3E86" transform="rotate(-90 26 ${mt+ih/2})">${o.ylabel||""}</text>
+    ${g}
+    <text x="${w-24}" y="${h-16}" text-anchor="end" font-size="12.5" fill="#8a93a1">${o.src} · 관측값 기반(수업용 재구성)</text>
+  </svg>`;
+}
+function interp(A, x){
+  for(let i=0;i<A.length-1;i++) if(x>=A[i][0] && x<=A[i+1][0]){
+    const t=(x-A[i][0])/(A[i+1][0]-A[i][0]); return A[i][1]+t*(A[i+1][1]-A[i][1]); }
+  return A[A.length-1][1];
+}
+function chartCO2(){
+  const A=[[1958,315.3],[1970,325.7],[1980,338.8],[1990,354.4],[2000,369.7],[2010,390.1],[2015,401.0],[2020,414.2],[2024,422.8]];
+  const pts=[]; for(let y=1958;y<=2024.01;y+=0.25) pts.push([y, interp(A,y)+2.7*Math.sin((y%1)*6.283+1.3)]);
+  return lineChart({ title:"대기 중 CO₂ 농도 (킬링 곡선)", sub:"하와이 마우나로아 관측소", ylabel:"CO₂ 농도 (ppm)",
+    src:"자료: NOAA·스크립스 해양연구소", xmin:1956, xmax:2026, ymin:300, ymax:435,
+    yticks:[300,330,360,390,420], xticks:[1960,1980,2000,2020], pts,
+    marks:[[1958,315.3,"1958년 315 ppm","start",-12],[2024,422.8,"2024년 423 ppm","end",-12]] });
+}
+function chartTemp(){
+  const pts=[[1880,-0.16],[1890,-0.35],[1900,-0.08],[1910,-0.43],[1920,-0.27],[1930,-0.14],[1940,0.12],[1950,-0.17],[1960,-0.03],[1970,0.03],[1980,0.26],[1990,0.45],[2000,0.39],[2005,0.67],[2010,0.72],[2015,0.90],[2020,1.01],[2023,1.17],[2024,1.28]];
+  return lineChart({ title:"지구 평균 기온 편차", sub:"1951~1980년 평균 대비 (℃)", ylabel:"기온 편차 (℃)",
+    src:"자료: NASA GISS", xmin:1875, xmax:2030, ymin:-0.6, ymax:1.5, zero:0,
+    yticks:[-0.5,0,0.5,1.0,1.5], xticks:[1880,1920,1960,2000,2024], pts, dots:true, color:"#d64545",
+    marks:[[1910,-0.43,"−0.43℃","start",22],[2024,1.28,"2024년 +1.28℃","end",-10]] });
+}
+function chartSea(){
+  const pts=[[1993,0],[1997,10],[2000,21],[2005,36],[2010,52],[2015,70],[2020,87],[2024,105]];
+  return lineChart({ title:"지구 평균 해수면 변화", sub:"인공위성 관측 (1993년 = 0 mm)", ylabel:"해수면 변화 (mm)",
+    src:"자료: NASA 위성 고도계", xmin:1991, xmax:2027, ymin:-8, ymax:118,
+    yticks:[0,30,60,90],  xticks:[1995,2005,2015,2024], pts, dots:true, color:"#1f6fd6",
+    marks:[[1993,0,"1993년 기준 0","start",-12],[2024,105,"2024년 +105 mm","end",-12]] });
+}
+function chartIce(){
+  const pts=[[1979,7.05],[1980,7.67],[1985,6.70],[1990,6.24],[1996,7.88],[2000,6.32],[2005,5.57],[2007,4.16],[2012,3.39],[2015,4.63],[2020,3.92],[2024,4.28]];
+  return lineChart({ title:"북극 해빙 최소 면적", sub:"매년 9월 최솟값 (백만 km²)", ylabel:"면적 (백만 km²)",
+    src:"자료: 미국 빙설자료센터(NSIDC)", xmin:1977, xmax:2027, ymin:3, ymax:8.2,
+    yticks:[3,4,5,6,7,8], xticks:[1980,1995,2010,2024], pts, dots:true, color:"#1f6fd6",
+    marks:[[1979,7.05,"1979년 7.05","start",-12],[2012,3.39,"2012년 3.39 (최저)","start",26],[2024,4.28,"2024년 4.28","end",-14]] });
+}
+function chartKorea(){
+  const pts=[[1915,12.1],[1925,12.2],[1935,12.4],[1945,12.3],[1955,12.2],[1965,12.4],[1975,12.5],[1985,12.6],[1995,13.0],[2005,13.2],[2015,13.4],[2021,13.7]];
+  return lineChart({ title:"우리나라 연평균 기온", sub:"10년 평균값 (℃) — 약 +1.6℃/100년", ylabel:"연평균 기온 (℃)",
+    src:"자료: 기상청 109년 기후변화 분석", xmin:1910, xmax:2028, ymin:11.8, ymax:14.1,
+    yticks:[12.0,12.5,13.0,13.5,14.0], xticks:[1920,1950,1980,2010], pts, dots:true, color:"#1A9A3E",
+    marks:[[1915,12.1,"1910년대 12.1℃","start",-12],[2021,13.7,"2020년대 13.7℃","end",-12]] });
+}
+function chartSVG(t){ return [chartCO2, chartTemp, chartSea, chartIce, chartKorea][t-1](); }
 
 const $ = id => document.getElementById(id);
-const views = ["vJoin","vLobby","vPredict","vPuzzle","vQuiz","vSentence","vVote","vEnd"];
+const views = ["vJoin","vLobby","vPredict","vSim","vData","vVote","vEnd"];
 function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v));
-  document.body.classList.toggle("puzzle", v === "vPuzzle"); }
+  document.body.classList.toggle("wide", v==="vSim" || v==="vData"); }
 
-let uid = localStorage.getItem("och_uid");
-if(!uid){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem("och_uid", uid); }
-let me = JSON.parse(localStorage.getItem("och_me") || "null");   // {name, team}
+let uid = localStorage.getItem("ocw_uid");
+if(!uid){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem("ocw_uid", uid); }
+let me = JSON.parse(localStorage.getItem("ocw_me") || "null");   // {name, team, leader}
 let myDoc = {};           // 서버에 저장된 내 데이터
 let state = {};           // 진행 상태
 let team = 0, joined = false;
@@ -284,7 +336,7 @@ $("btnJoin").onclick = async () => {
   if(!name){ alert("이름을 입력하세요"); return; }
   if(!team){ alert("모둠을 선택하세요"); return; }
   me = {name, team, leader: leaderSel};
-  localStorage.setItem("och_me", JSON.stringify(me));
+  localStorage.setItem("ocw_me", JSON.stringify(me));
   try{
     await setDoc(doc(db, COL, "stu_"+uid), { name, team, leader: leaderSel, joinedAt: serverTimestamp() }, {merge:true});
     joined = true;
@@ -302,29 +354,14 @@ onSnapshot(doc(db, COL, "state"), snap => {
 
 onSnapshot(doc(db, COL, "stu_"+uid), snap => { myDoc = snap.data() || {}; render(); });
 
-let lobbyCount = 0;
 onSnapshot(collection(db, COL), snap => {
   let n = 0; snap.forEach(d => { if(d.id.startsWith("stu_") && d.data().name) n++; });
-  lobbyCount = n; $("lobbyN").textContent = n;
+  $("lobbyN").textContent = n;
 });
 
 async function save(data){
   try{ await setDoc(doc(db, COL, "stu_"+uid), data, {merge:true}); }
   catch(e){ alert("전송 오류: " + e.message); }
-}
-
-/* ── 점수 계산(공개된 정답 기준) ── */
-function calcScore(){
-  const ans = myDoc.ans || {}, revealed = state.ans || {};
-  let s = 0;
-  Object.keys(revealed).forEach(k => {
-    const a = ans[k];
-    if(a && a.c === revealed[k]){
-      const q = QMETA[+k] || {base:100};
-      s += q.base + Math.round(BONUS * Math.max(0, 1 - (a.ms||BONUS_MS)/BONUS_MS));
-    }
-  });
-  return s;
 }
 
 /* ── 렌더 ── */
@@ -335,269 +372,106 @@ function render(){
   const ph = state.phase || "lobby";
   if(ph === "lobby"){ show("vLobby"); }
   else if(ph === "predict"){ renderPredict(); }
-  else if(ph === "puzzle"){ renderPuzzle(); }
-  else if(ph === "quiz"){ renderQuiz(); }
-  else if(ph === "sentence"){ renderSentence(); }
+  else if(ph === "sim"){ renderSim(); }
+  else if(ph === "data"){ renderData(); }
   else if(ph === "vote"){ renderVote(); }
   else if(ph === "end"){ renderEnd(); }
 }
 
 /* 예측 */
-$("predRange").oninput = e => $("predNum").textContent = e.target.value;
-$("btnPredict").onclick = () => {
-  save({ predict: +$("predRange").value });
-};
+$("predRange").oninput = e => { const v = +e.target.value; $("predNum").textContent = (v>0?"+":"") + v; };
+$("btnPredict").onclick = () => { save({ predict: +$("predRange").value }); };
 function renderPredict(){
   show("vPredict");
   const done = myDoc.predict !== undefined;
   $("btnPredict").disabled = done || !state.predictOpen;
-  $("btnPredict").textContent = done ? `제출 완료 (${myDoc.predict})` : (state.predictOpen ? "제출하기" : "잠시 후 열립니다");
+  $("btnPredict").textContent = done ? `제출 완료 (${myDoc.predict>0?"+":""}${myDoc.predict}℃)` : (state.predictOpen ? "제출하기" : "잠시 후 열립니다");
 }
 
-/* ── 열수지 퍼즐 (모둠 보드) ── */
-let pen = "#e2547e", strokes = [], drawing = null;
-let pzDoc = {}, pzUnsub = null, pzInit = false, pzSaveT = null;
+/* ── 모둠 보드 (시뮬 + 데이터 공용 문서 board_<모둠>) ── */
+let boardDoc = {}, boardUnsub = null, boardInit = false, boardSaveT = null;
 const isLeader = () => !!(me && me.leader);
-const pzCv = $("pzCanvas"), pzCtx = pzCv.getContext("2d");
+const BD_FIELDS = ["bd_g0","bd_g1","bd_g2","bd_rule","bd_find","bd_evid","bd_link"];
+const fieldKey = id => id.slice(3);   // bd_g0 → g0
 
-function pzArrow(x1,y1,x2,y2,w,fill,stroke){
-  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L, px=-uy, py=ux;
-  const hl=Math.min(w*1.7, L*.4), hw=w*2.1, bx=x2-ux*hl, by=y2-uy*hl, h=w/2;
-  const P=(x,y)=>`${x.toFixed(1)},${y.toFixed(1)}`;
-  return `<polygon points="${P(x1+px*h,y1+py*h)} ${P(bx+px*h,by+py*h)} ${P(bx+px*hw/2,by+py*hw/2)} ${P(x2,y2)} ${P(bx-px*hw/2,by-py*hw/2)} ${P(bx-px*h,by-py*h)} ${P(x1-px*h,y1-py*h)}" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round" opacity=".95"/>`;
-}
-function pzCloud(cx,cy,s=1){
-  return `<g fill="#fff" opacity=".95">
-    <ellipse cx="${cx}" cy="${cy}" rx="${34*s}" ry="${15*s}"/>
-    <ellipse cx="${cx-22*s}" cy="${cy+4*s}" rx="${20*s}" ry="${11*s}"/>
-    <ellipse cx="${cx+24*s}" cy="${cy+5*s}" rx="${22*s}" ry="${12*s}"/>
-    <ellipse cx="${cx+2*s}" cy="${cy-9*s}" rx="${20*s}" ry="${12*s}"/></g>`;
-}
-function pzValBox(x,y,label,val){
-  const has = val !== undefined && String(val).trim() !== "";
-  return `<g><rect x="${x}" y="${y}" width="158" height="58" rx="10" fill="#fff" stroke="#c8920a" stroke-width="2"/>
-    <text x="${x+79}" y="${y+21}" text-anchor="middle" font-size="14" font-weight="900" fill="#c8920a">${label}</text>
-    <text x="${x+79}" y="${y+48}" text-anchor="middle" font-size="24" font-weight="900" fill="${has?"#0B3E86":"#b9c4d4"}">${has?val:"?"}</text></g>`;
-}
-function pzSVG(v){
-  v = v || {};
-  const SOL="#ffc93c", SOLS="#e09b00";
-  return `<svg viewBox="0 0 960 520" preserveAspectRatio="xMidYMid meet">
-    <defs>
-      <linearGradient id="pzatm" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#aecfee"/><stop offset="1" stop-color="#dcebfa"/></linearGradient>
-      <linearGradient id="pzspc" x1="0" y1="0" x2="0" y2="1">
-        <stop offset="0" stop-color="#101b36"/><stop offset="1" stop-color="#2b4573"/></linearGradient>
-    </defs>
-    <rect x="0" y="0" width="960" height="70" fill="url(#pzspc)"/>
-    <g fill="#fff" opacity=".8"><circle cx="250" cy="18" r="1.5"/><circle cx="320" cy="50" r="1.2"/><circle cx="560" cy="14" r="1.5"/><circle cx="905" cy="56" r="1.2"/></g>
-    <rect x="0" y="70" width="960" height="370" fill="url(#pzatm)"/>
-    <rect x="0" y="440" width="960" height="46" fill="#cdbf9f"/>
-    <rect x="0" y="486" width="960" height="34" fill="#b3a184"/>
-    <line x1="0" y1="70" x2="960" y2="70" stroke="#8fb2d6" stroke-width="1.5"/>
-    <line x1="0" y1="440" x2="960" y2="440" stroke="#a4906d" stroke-width="1.5"/>
-    <rect x="12" y="22" width="58" height="30" rx="15" fill="#5b7cad"/><text x="41" y="43" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">우주</text>
-    <rect x="12" y="240" width="58" height="30" rx="15" fill="#3f6ea8"/><text x="41" y="261" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">대기</text>
-    <rect x="12" y="463" width="58" height="30" rx="15" fill="#7a674a"/><text x="41" y="484" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">지표</text>
-    ${pzArrow(400,46,400,428,34,SOL,SOLS)}
-    <text x="400" y="30" text-anchor="middle" font-size="21" font-weight="900" fill="#fff">태양 복사 100</text>
-    ${pzArrow(330,296,185,62,20,SOL,SOLS)}
-    ${pzCloud(520,272,1.3)}
-    ${pzArrow(418,242,500,276,12,SOL,SOLS)}
-    ${pzValBox(40,84,"(가) 반사", v.ga)}
-    ${pzValBox(548,316,"(나) 대기·구름 흡수", v.na)}
-    ${pzValBox(322,446,"(다) 지표 흡수", v.da)}
-    <rect x="660" y="84" width="284" height="216" rx="14" fill="#fff" opacity=".22"/>
-    <rect x="660" y="84" width="284" height="216" rx="14" fill="none" stroke="#d64577" stroke-width="2.5" stroke-dasharray="8 6"/>
-    <text x="802" y="116" text-anchor="middle" font-size="17" font-weight="900" fill="#d64577">🖊 나가는 에너지</text>
-    <text x="802" y="144" text-anchor="middle" font-size="13.5" font-weight="700" fill="#a04565">지구 복사(적외선)와 재복사 화살표를</text>
-    <text x="802" y="164" text-anchor="middle" font-size="13.5" font-weight="700" fill="#a04565">손가락으로 그림 위에 그려 보세요</text>
-  </svg>`;
-}
-function pzDrawStroke(c, s, W, H){
-  const p = s.p || []; if(p.length < 4) return;
-  c.strokeStyle = s.c; c.fillStyle = s.c; c.lineWidth = (s.w||10)*W/960;
-  c.lineCap = "round"; c.lineJoin = "round"; c.beginPath();
-  for(let i=0;i<p.length;i+=2){ const x=p[i]*W, y=p[i+1]*H; i ? c.lineTo(x,y) : c.moveTo(x,y); }
-  c.stroke();
-  const n=p.length, x2=p[n-2]*W, y2=p[n-1]*H;
-  let ix=n-4; while(ix>1 && Math.hypot(p[ix]*W-x2, p[ix+1]*H-y2) < 14*W/960) ix-=2;
-  const a=Math.atan2(y2-p[ix+1]*H, x2-p[ix]*W), hl=26*W/960;
-  c.beginPath(); c.moveTo(x2,y2);
-  c.lineTo(x2-hl*Math.cos(a-.5), y2-hl*Math.sin(a-.5));
-  c.lineTo(x2-hl*Math.cos(a+.5), y2-hl*Math.sin(a+.5));
-  c.closePath(); c.fill();
-}
-function pzRedraw(){
-  const W = pzCv.width, H = pzCv.height;
-  pzCtx.clearRect(0,0,W,H);
-  strokes.forEach(s => pzDrawStroke(pzCtx, s, W, H));
-  if(drawing) pzDrawStroke(pzCtx, drawing, W, H);
-}
-function pzResize(){
-  const w = $("pzWrap").clientWidth; if(!w) return;
-  const W = Math.round(w*2), H = Math.round(W*520/960);
-  if(pzCv.width !== W || pzCv.height !== H){ pzCv.width = W; pzCv.height = H; }
-  pzRedraw();
-}
-window.addEventListener("resize", () => { if(!$("vPuzzle").classList.contains("hidden")) pzResize(); });
-
-function pzAddPt(e){
-  const r = pzCv.getBoundingClientRect();
-  const nx = Math.min(1, Math.max(0, (e.clientX - r.left)/r.width));
-  const ny = Math.min(1, Math.max(0, (e.clientY - r.top)/r.height));
-  const p = drawing.p;
-  if(p.length >= 400) return;
-  if(p.length >= 2 && Math.hypot(nx-p[p.length-2], ny-p[p.length-1]) < 0.006) return;
-  p.push(+nx.toFixed(4), +ny.toFixed(4));
-}
-pzCv.addEventListener("pointerdown", e => {
-  if(!isLeader()) return;
-  e.preventDefault();
-  drawing = {c:pen, w:10, p:[]};
-  pzAddPt(e);
-  try{ pzCv.setPointerCapture(e.pointerId); }catch(_){}
-});
-pzCv.addEventListener("pointermove", e => { if(!drawing) return; e.preventDefault(); pzAddPt(e); pzRedraw(); });
-const pzEnd = e => {
-  if(!drawing) return;
-  if(drawing.p.length >= 6) strokes.push(drawing);
-  drawing = null; pzRedraw(); pzSave({strokes});
-};
-pzCv.addEventListener("pointerup", pzEnd);
-pzCv.addEventListener("pointercancel", pzEnd);
-
-$("penPink").onclick = () => { pen = "#e2547e"; $("penPink").classList.add("on"); $("penGold").classList.remove("on"); };
-$("penGold").onclick = () => { pen = "#e09b00"; $("penGold").classList.add("on"); $("penPink").classList.remove("on"); };
-$("penUndo").onclick = () => { strokes.pop(); pzRedraw(); pzSave({strokes}); };
-$("penClear").onclick = () => { if(!confirm("그린 화살표를 모두 지울까요?")) return; strokes = []; pzRedraw(); pzSave({strokes}); };
-
-function pzSave(partial){
+function boardSave(){
   if(!isLeader() || !me) return;
-  setDoc(doc(db, COL, "puzzle_"+me.team),
-    Object.assign({team:me.team, leaderName:me.name, ts:Date.now()}, partial), {merge:true})
-    .then(() => { $("pzSaved").textContent = "✓ 실시간 저장됨 — 선생님 화면과 연동 중"; })
-    .catch(e => { $("pzSaved").textContent = "저장 오류: " + e.message; });
+  const data = {team:me.team, leaderName:me.name, ts:Date.now()};
+  BD_FIELDS.forEach(id => data[fieldKey(id)] = $(id).value.trim());
+  setDoc(doc(db, COL, "board_"+me.team), data, {merge:true})
+    .then(() => { $("simSaved").textContent = $("dataSaved").textContent = "✓ 실시간 저장됨 — 선생님 화면과 연동 중"; })
+    .catch(e => { $("simSaved").textContent = $("dataSaved").textContent = "저장 오류: " + e.message; });
 }
-function pzVals(){
-  return { ga:$("pz_ga").value.trim(), na:$("pz_na").value.trim(), da:$("pz_da").value.trim(),
-    term:$("pzTerm").value.trim(), talk:$("pzTalk").value.trim() };
+BD_FIELDS.forEach(id => { $(id).oninput = () => { clearTimeout(boardSaveT); boardSaveT = setTimeout(boardSave, 600); }; });
+
+function boardLoad(){
+  BD_FIELDS.forEach(id => { $(id).value = boardDoc[fieldKey(id)] || ""; });
 }
-["pz_ga","pz_na","pz_da","pzTerm","pzTalk"].forEach(id => {
-  $(id).oninput = () => {
-    if(["pz_ga","pz_na","pz_da"].includes(id)) $("pzSvg").innerHTML = pzSVG(pzVals());
-    clearTimeout(pzSaveT);
-    pzSaveT = setTimeout(() => pzSave(pzVals()), 600);
-  };
-});
-function pzLoadFromDoc(){
-  strokes = pzDoc.strokes || [];
-  $("pz_ga").value = pzDoc.ga || ""; $("pz_na").value = pzDoc.na || ""; $("pz_da").value = pzDoc.da || "";
-  $("pzTerm").value = pzDoc.term || ""; $("pzTalk").value = pzDoc.talk || "";
-}
-function subPuzzle(){
-  if(pzUnsub || !me || !me.team) return;
-  pzUnsub = onSnapshot(doc(db, COL, "puzzle_"+me.team), s => {
-    pzDoc = s.data() || {};
-    if(isLeader() && !pzInit){ pzInit = true; pzLoadFromDoc(); }
-    if((state.phase||"") === "puzzle") renderPuzzle();
+function subBoard(){
+  if(boardUnsub || !me || !me.team) return;
+  boardUnsub = onSnapshot(doc(db, COL, "board_"+me.team), s => {
+    boardDoc = s.data() || {};
+    if(isLeader() && !boardInit){ boardInit = true; boardLoad(); }
+    const ph = state.phase || "";
+    if(ph === "sim") renderSim(); else if(ph === "data") renderData();
   });
 }
-$("btnClaim").onclick = () => {
-  me.leader = true; localStorage.setItem("och_me", JSON.stringify(me));
+function claim(){
+  me.leader = true; localStorage.setItem("ocw_me", JSON.stringify(me));
   save({leader:true});
-  pzInit = true; pzLoadFromDoc();
-  renderPuzzle();
-};
-function renderPuzzle(){
-  show("vPuzzle");
-  subPuzzle();
-  const lead = isLeader();
-  $("pzClaim").classList.toggle("hidden", lead);
-  $("pzEdit").classList.toggle("hidden", !lead);
-  $("pzViewNote").classList.toggle("hidden", lead);
-  if(!lead){ strokes = pzDoc.strokes || []; drawing = null; }
-  $("pzSvg").innerHTML = pzSVG(lead ? pzVals() : pzDoc);
-  requestAnimationFrame(pzResize);
-}
-
-/* 퀴즈 */
-function renderQuiz(){
-  show("vQuiz");
-  const i = state.qIndex ?? 0, q = QMETA[i];
-  $("qNo").textContent = "Q" + (i+1);
-  $("qRound").textContent = q.round;
-  $("myScore").textContent = calcScore() + "점";
-
-  const myAns = (myDoc.ans || {})[i];
-  const revealed = (state.ans || {})[i];
-  const btns = $("qButtons"), lock = $("qLocked");
-
-  if(myAns !== undefined || !state.qOpen){
-    btns.classList.add("hidden"); lock.classList.remove("hidden");
-    if(myAns === undefined){
-      lock.innerHTML = `<div class="mark">⏳</div><h3>대기 중</h3><p>화면의 문제를 읽어 두세요!</p>`;
-    } else if(revealed === undefined){
-      lock.innerHTML = `<div class="mark">✓</div><h3>제출 완료!</h3><p>정답 공개를 기다리세요…</p>`;
-    } else if(myAns.c === revealed){
-      const q2 = QMETA[i];
-      const pts = q2.base + Math.round(BONUS * Math.max(0, 1 - (myAns.ms||BONUS_MS)/BONUS_MS));
-      lock.innerHTML = `<div class="mark ok">O</div><h3 class="ok">정답! +${pts}점</h3><p>속도 보너스 포함</p>`;
-    } else {
-      lock.innerHTML = `<div class="mark no">X</div><h3 class="no">아쉬워요</h3><p>해설을 잘 들어 두면 2차 지필에 나와요!</p>`;
-    }
-    return;
-  }
-
-  lock.classList.add("hidden"); btns.classList.remove("hidden");
-  if(q.type === "ox"){
-    btns.className = "oxgrid";
-    btns.innerHTML = `<button class="oxO">O</button><button class="oxX">X</button>`;
-    [...btns.children].forEach((b,c) => b.onclick = () => answer(i, c));
-  } else {
-    btns.className = "mcgrid";
-    btns.innerHTML = ["①","②","③","④"].map((s,c)=>`<button class="mc${c}">${s}</button>`).join("");
-    [...btns.children].forEach((b,c) => b.onclick = () => answer(i, c));
-  }
-}
-function answer(i, c){
-  if((myDoc.ans||{})[i] !== undefined) return;
-  const ms = Math.max(0, Date.now() - (state.qOpenAt || Date.now()));
-  myDoc.ans = Object.assign({}, myDoc.ans, {[i]: {c, ms}});   // 즉시 잠금
-  save({ ans: { [i]: {c, ms} } });                             // setDoc(merge)는 점 경로 미지원 — 중첩 merge 사용
+  boardInit = true; boardLoad();
   render();
 }
+$("btnClaimS").onclick = claim;
+$("btnClaimD").onclick = claim;
 
-/* 모둠 논증 (지구공학 딜레마) */
-let stance = "";
-const STANCES = ["찬성","반대","조건부"];
-const sg = $("stanceGrid");
-STANCES.forEach(s => {
-  const b = document.createElement("button");
-  b.textContent = s;
-  b.onclick = () => { stance = s; [...sg.children].forEach(c => c.classList.toggle("on", c.textContent === s)); };
-  sg.appendChild(b);
-});
-$("btnSentence").onclick = () => {
-  const t = $("inSentence").value.trim();
-  if(!stance){ alert("입장을 먼저 골라 주세요"); return; }
-  if(!t){ alert("근거를 입력하세요"); return; }
-  save({ stance, sentence: t, sentenceTs: Date.now() });
-  $("sentDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 화면에서 확인하세요.";
-};
-function renderSentence(){ show("vSentence"); }
+/* 전개1: 시뮬레이션 */
+$("btnPhet").onclick = () => window.open(PHET, "_blank");
+function renderSim(){
+  show("vSim"); subBoard();
+  const lead = isLeader();
+  $("simClaim").classList.toggle("hidden", lead);
+  $("simEdit").classList.toggle("hidden", !lead);
+  $("simView").classList.toggle("hidden", lead);
+  if(!lead){
+    const t = ["g0","g1","g2"].map(k => boardDoc[k]).filter(v => v && String(v).trim() !== "");
+    const tempTxt = t.length ? `없음 ${boardDoc.g0||"?"}℃ → 1750년 ${boardDoc.g1||"?"}℃ → 2020년 ${boardDoc.g2||"?"}℃` : "";
+    setView("svTemp", tempTxt); setView("svRule", boardDoc.rule);
+  }
+}
+function setView(id, val){
+  const el = $(id), has = val && String(val).trim() !== "";
+  el.textContent = has ? val : "아직 입력 전…";
+  el.classList.toggle("empty", !has);
+}
+
+/* 전개2: 데이터 분석 */
+let chartDrawn = 0;
+function renderData(){
+  show("vData"); subBoard();
+  const ds = DATASETS[me.team];
+  $("dataTitle").textContent = `미션 ② 데이터 탐정 — ${me.team}모둠: ${ds.name}`;
+  $("dataSub").innerHTML = ds.sub;
+  $("dataHint").innerHTML = ds.hint;
+  if(chartDrawn !== me.team){ $("chartBox").innerHTML = chartSVG(me.team); chartDrawn = me.team; }
+  const lead = isLeader();
+  $("dataClaim").classList.toggle("hidden", lead);
+  $("dataEdit").classList.toggle("hidden", !lead);
+  $("dataView").classList.toggle("hidden", lead);
+  if(!lead){ setView("dvFind", boardDoc.find); setView("dvEvid", boardDoc.evid); setView("dvLink", boardDoc.link); }
+}
 
 /* 투표 */
 function renderVote(){
   show("vVote");
   const g = $("voteGrid");
-  const sents = state.sentences || {};   // {1:{stance,text}, ...}
+  const sents = state.sentences || {};   // {1:{ds,text}, ...}
   g.innerHTML = "";
   for(let t=1;t<=5;t++){
     const s = sents[t];
     if(!s || !s.text) continue;
     const b = document.createElement("button");
-    b.innerHTML = `<b>${t}모둠 · ${s.stance || ""}</b>${s.text}`;
+    b.innerHTML = `<b>${t}모둠 · ${s.ds || ""}</b>${s.text}`;
     if(t === me.team){ b.disabled = true; b.innerHTML += " (우리 모둠)"; }
     if(myDoc.vote === t) b.classList.add("on");
     b.onclick = () => { save({ vote: t }); };
@@ -606,14 +480,18 @@ function renderVote(){
   if(myDoc.vote) [...g.children].forEach(b => b.disabled = true);
 }
 
-/* 종료 */
-$("btnExit").onclick = () => {
-  const t = $("inExit").value.trim();
-  if(!t){ alert("한 줄만 남겨 주세요!"); return; }
-  save({ exit: t });
-  $("exitDone").innerHTML = "<b style='color:var(--green)'>퇴장권 제출 완료! 수고했어요 🌏</b>";
+/* 정리: 나의 생각 */
+$("btnOpinion").onclick = () => {
+  const t = $("inOpinion").value.trim();
+  if(!t){ alert("한 문장만 적어 주세요!"); return; }
+  save({ opinion: t, opinionTs: Date.now() });
+  $("opinionDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다음 시간, 이 문장에서 글이 시작됩니다 🌏";
 };
-function renderEnd(){ show("vEnd"); $("endScore").textContent = calcScore() + "점"; }
+function renderEnd(){
+  show("vEnd");
+  if(myDoc.opinion){ $("inOpinion").value = myDoc.opinion;
+    $("opinionDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다시 제출하면 덮어써요."; }
+}
 </script>
 </body>
 </html>
