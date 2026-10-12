@@ -42,14 +42,16 @@ h2.mid{ font-size:5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02e
 #hud button.nav:active{ background:var(--gold); color:var(--navy2); }
 .slide{ bottom:5.2vh; }
 
-/* 액션 버튼 */
-.acts{ position:fixed; right:1.6vw; bottom:7.5vh; display:flex; flex-direction:column; gap:1vh; z-index:60; }
-.acts button{ font:inherit; font-size:2.1vh; font-weight:900; padding:1.4vh 2.4vh; border-radius:1.2vh;
+/* 액션 버튼 — 하단 가로 툴바(콘텐츠와 안 겹침) */
+.acts{ position:fixed; left:1.6vw; right:1.6vw; bottom:6.4vh; display:flex; flex-direction:row;
+  justify-content:flex-end; align-items:flex-end; flex-wrap:wrap; gap:.8vh 1vh; z-index:60; pointer-events:none; }
+.acts button{ pointer-events:auto; font:inherit; font-size:2vh; font-weight:900; padding:1.2vh 2.2vh; border-radius:1.2vh;
   border:none; background:var(--navy); color:#fff; cursor:pointer; box-shadow:0 .4vh 1.2vh rgba(0,0,0,.25); }
 .acts button.gold{ background:var(--gold); color:var(--navy2); }
 .acts button.green{ background:var(--green); }
 .acts button.ghost{ background:#e7ecf4; color:var(--soft); }
 .acts button:disabled{ opacity:.4; cursor:default; }
+body.has-acts .slide{ bottom:12vh; }   /* 버튼 툴바가 있는 슬라이드는 본문을 그만큼 위로 */
 
 /* 로비 */
 .lobbywrap{ flex:1; display:flex; gap:4vw; align-items:center; }
@@ -133,6 +135,19 @@ h2.mid{ font-size:5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02e
 .opfeed{ flex:1; overflow:hidden; display:grid; grid-template-columns:1fr 1fr; gap:1.2vh 1.5vw; margin-top:1.5vh; align-content:start; }
 .opline{ font-size:2.4vh; font-weight:500; line-height:1.5; background:var(--lt); border-left:.5vh solid var(--gold); border-radius:.8vh; padding:1.2vh 1.6vh; }
 .opline b{ color:var(--navy); font-weight:900; margin-right:1vh; }
+
+/* 4:3 등 좁은 비율(아이패드) 조율 — vh 기준 타이포가 가로폭 대비 커지는 것 보정 */
+@media (max-aspect-ratio: 3/2){
+  h1.big{ font-size:6vh; }
+  h2.mid{ font-size:4.2vh; }
+  .qbig{ font-size:3.8vh; }
+  .goals{ font-size:2.9vh; }
+  .sumflow{ flex-wrap:wrap; }
+  .sumbox{ font-size:2.4vh; padding:2.2vh 1.8vh; }
+  .sumarrow{ font-size:4vh; }
+  .sent .tx{ font-size:2.5vh; }
+  .bans{ font-size:2.2vh; }
+}
 </style>
 </head>
 <body>
@@ -504,7 +519,7 @@ slide(() => {
   return `
   <div class="kicker">모둠 미션 ① — 피드백</div>
   <h2 class="mid" style="margin-bottom:1vh">${simPres}모둠의 실험 기록 ${b.leaderName ? `<span style="font-size:2.6vh;color:var(--gold-d)">👑 팀장 ${b.leaderName}</span>` : ""}</h2>
-  <div style="flex:1;display:flex;flex-direction:column;gap:2.5vh;justify-content:center;max-width:150vh">
+  <div style="flex:1;display:flex;flex-direction:column;gap:2.5vh;justify-content:center;max-width:100%">
     <div style="display:flex;gap:1.5vw">
       ${[["온실 기체 없음","g0"],["1750년 (산업화 전)","g1"],["1950년","g2"],["2020년 (현재)","g3"]].map(([lb,k]) => `
       <div style="flex:1;text-align:center;background:var(--lt);border:.35vh solid var(--line);border-radius:1.6vh;padding:2.5vh 1vh">
@@ -678,6 +693,7 @@ function render(){
     b.textContent = label; b.className = cls; b.disabled = !!disabled; b.onclick = fn;
     actsEl.appendChild(b);
   });
+  document.body.classList.toggle("has-acts", actsEl.children.length > 0);
   if(s.after) s.after();
 }
 function go(n){
