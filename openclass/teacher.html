@@ -12,8 +12,10 @@
   --green:#1A9A3E; --red:#d64545; --ink:#141a24; --soft:#3d4652; --line:#b9c4d4; --lt:#eef3fa;
 }
 *{ margin:0; padding:0; box-sizing:border-box; }
-html,body{ height:100%; overflow:hidden; }
-body{ font-family:'Noto Sans KR',sans-serif; color:var(--ink); background:#0d1524; word-break:keep-all; }
+html,body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+body{ font-family:'Noto Sans KR',sans-serif; color:var(--ink); background:#0d1524; word-break:keep-all;
+  touch-action:manipulation; -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
+input, textarea{ -webkit-user-select:text; user-select:text; }
 
 /* 잠금 */
 #gate{ position:fixed; inset:0; background:#0d1524; z-index:99; display:flex; align-items:center; justify-content:center; }
@@ -35,6 +37,9 @@ h2.mid{ font-size:5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02e
 #hud b{ color:#fff; }
 #hud .live{ color:#5fd08a; font-weight:700; }
 #hud .dead{ color:#e07f7f; font-weight:700; }
+#hud button.nav{ font:inherit; font-size:2.3vh; font-weight:900; color:#fff; background:#23407a;
+  border:none; border-radius:.8vh; padding:.5vh 2.6vh; cursor:pointer; }
+#hud button.nav:active{ background:var(--gold); color:var(--navy2); }
 .slide{ bottom:5.2vh; }
 
 /* 액션 버튼 */
@@ -134,8 +139,9 @@ h2.mid{ font-size:5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02e
 
 <div id="gate"><div class="box">
   <div style="font-size:22px;font-weight:900">지구의 체온 · 교사 화면</div>
-  <input type="password" id="gatePw" placeholder="비밀번호"><br>
-  <div style="font-size:12px;opacity:.6;margin-top:10px">Enter로 입장</div>
+  <input type="password" id="gatePw" placeholder="비밀번호">
+  <button id="gateBtn" style="font:inherit;font-size:18px;font-weight:900;padding:10px 20px;border-radius:10px;border:none;background:var(--gold);color:var(--navy2);margin-left:8px;cursor:pointer">입장</button><br>
+  <div style="font-size:12px;opacity:.6;margin-top:10px">Enter 또는 입장 버튼</div>
 </div></div>
 
 <div id="stage"></div>
@@ -146,8 +152,11 @@ h2.mid{ font-size:5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02e
   <span id="hudConn" class="dead">연결 중…</span>
   <span>접속 <b id="hudN">0</b>명</span>
   <span class="sp"></span>
-  <span>←/→ 슬라이드 · Space 진행</span>
+  <span>←/→·스와이프 슬라이드 · Space 진행</span>
+  <button class="nav" id="navPrev">◀</button>
   <span><b id="hudPg">1</b> / <span id="hudTot">?</span></span>
+  <button class="nav" id="navNext">▶</button>
+  <button class="nav" id="navFull">⛶</button>
 </div>
 
 <script type="module">
@@ -169,9 +178,11 @@ const PHET = "phet.colorado.edu → Greenhouse Effect (학생 앱의 버튼으�
 const db = getFirestore(initializeApp(firebaseConfig));
 
 /* ── 게이트 ── */
-document.getElementById("gatePw").addEventListener("keydown", e => {
-  if(e.key === "Enter" && e.target.value === "honam1234"){ document.getElementById("gate").remove(); }
-});
+const tryGate = () => {
+  if(document.getElementById("gatePw").value === "honam1234") document.getElementById("gate").remove();
+};
+document.getElementById("gatePw").addEventListener("keydown", e => { if(e.key === "Enter") tryGate(); });
+document.getElementById("gateBtn").addEventListener("click", tryGate);
 if(new URLSearchParams(location.search).get("pw") === "honam1234"){ document.getElementById("gate").remove(); }
 
 /* ── 모둠별 데이터셋 (학생 앱과 동일) ── */
@@ -676,16 +687,39 @@ function go(n){
   if(s.enter) s.enter();
   render();
 }
+function fwd(){   // Space와 동일: 단계가 남았으면 단계 진행, 아니면 다음 슬라이드
+  const s = slides[cur];
+  if(!(s.space && s.space())) go(cur+1);
+}
+function goFullscreen(){
+  const el = document.documentElement;
+  if(el.requestFullscreen) el.requestFullscreen();
+  else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
 document.addEventListener("keydown", e => {
   if(document.getElementById("gate")) return;
   if(e.key === "ArrowRight" || e.key === "PageDown") go(cur+1);
   else if(e.key === "ArrowLeft" || e.key === "PageUp") go(cur-1);
-  else if(e.key === " "){ e.preventDefault();
-    const s = slides[cur];
-    if(!(s.space && s.space())) go(cur+1);
-  }
-  else if(e.key === "f" || e.key === "F"){ document.documentElement.requestFullscreen?.(); }
+  else if(e.key === " "){ e.preventDefault(); fwd(); }
+  else if(e.key === "f" || e.key === "F") goFullscreen();
 });
+
+/* 터치(아이패드) — HUD 버튼 + 좌우 스와이프 */
+document.getElementById("navPrev").onclick = () => { if(!document.getElementById("gate")) go(cur-1); };
+document.getElementById("navNext").onclick = () => { if(!document.getElementById("gate")) fwd(); };
+document.getElementById("navFull").onclick = goFullscreen;
+let swX = null, swY = null;
+document.addEventListener("touchstart", e => {
+  if(e.touches.length !== 1){ swX = null; return; }
+  swX = e.touches[0].clientX; swY = e.touches[0].clientY;
+}, {passive:true});
+document.addEventListener("touchend", e => {
+  if(swX === null || document.getElementById("gate")) return;
+  if(e.target.closest("button, input, textarea, #hud, .acts")){ swX = null; return; }
+  const dx = e.changedTouches[0].clientX - swX, dy = e.changedTouches[0].clientY - swY;
+  swX = null;
+  if(Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5){ dx < 0 ? fwd() : go(cur-1); }
+}, {passive:true});
 go(Math.min(slides.length-1, Math.max(0, +(new URLSearchParams(location.search).get("slide") || 0))));
 </script>
 </body>
