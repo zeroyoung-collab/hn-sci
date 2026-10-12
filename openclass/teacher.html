@@ -104,6 +104,8 @@ body.has-acts .slide{ bottom:12vh; }   /* 버튼 툴바가 있는 슬라이드�
   min-height:0; overflow:hidden; background:#fff; }
 .bcard.click{ cursor:pointer; }
 .bcard.click:hover{ border-color:var(--navy); }
+.bcard.hl{ border-color:var(--gold); background:#fffaf0; box-shadow:0 0 0 .5vh rgba(245,179,1,.4); }
+.donebdg{ font-size:1.6vh; color:var(--green); font-weight:900; }
 .bcard h4{ display:flex; align-items:center; gap:.6vw; font-size:2.2vh; color:var(--navy); margin-bottom:.8vh; }
 .bcard h4 .sp{ flex:1; }
 .bcard .meta{ font-size:1.6vh; color:var(--soft); font-weight:700; }
@@ -605,27 +607,61 @@ slide(() => `
     acts(){ return timerActs(600); } });
 
 /* 7 데이터 모둠 보드 + 발표 */
-let presTeam = 0;
+let presTeam = 0, presented = new Set(), drawing = false, drawHL = 0, speaker = "";
+function openPres(t){ presTeam = t; presented.add(t); speaker = ""; render(); }
+function drawTeam(){
+  if(drawing) return;
+  const pool = [1,2,3,4,5].filter(t => !presented.has(t));
+  if(!pool.length){ alert("모든 모둠이 발표를 마쳤습니다. '뽑기 초기화'를 누르면 처음부터 다시 뽑을 수 있어요."); return; }
+  drawing = true;
+  const winner = pool[Math.floor(Math.random()*pool.length)];
+  const total = 12 + Math.floor(Math.random()*6);
+  let step = 0;
+  const spin = () => {
+    drawHL = step >= total ? winner : pool[step % pool.length];
+    render();
+    if(step >= total){
+      setTimeout(() => { drawing = false; drawHL = 0; openPres(winner); }, 900);
+      return;
+    }
+    step++;
+    setTimeout(spin, 70 + step*step*1.1);
+  };
+  spin();
+}
+function drawSpeaker(){
+  const pool = students.filter(s => s.team === presTeam).map(s => s.name);
+  if(!pool.length){ alert("이 모둠으로 입장한 학생이 없어요."); return; }
+  const winner = pool[Math.floor(Math.random()*pool.length)];
+  const total = 12 + Math.floor(Math.random()*6);
+  let step = 0;
+  const spin = () => {
+    speaker = step >= total ? winner : pool[step % pool.length];
+    render();
+    if(step < total){ step++; setTimeout(spin, 60 + step*step); }
+  };
+  spin();
+}
 slide(() => {
   if(!presTeam){
     return `
     <div class="kicker">모둠 미션 ② — 실시간 현황</div>
-    <h2 class="mid" style="margin-bottom:.5vh">데이터 분석 한눈에 보기 <span style="font-size:2.2vh;color:var(--soft)">— 모둠을 누르면 발표 화면으로 커집니다</span></h2>
+    <h2 class="mid" style="margin-bottom:.5vh">데이터 분석 한눈에 보기 <span style="font-size:2.2vh;color:var(--soft)">— 모둠을 누르거나 🎲 뽑기로 발표 순서를 정하세요</span></h2>
     <div class="bgrid">${[1,2,3,4,5].map(t => {
       const b = boards[t] || {};
       return `
-      <div class="bcard click" data-t="${t}">
-        <h4>${t}모둠 · ${DATASETS[t].short} ${b.leaderName ? `<span class="meta">👑 ${b.leaderName}</span>` : ""}<span class="sp"></span></h4>
+      <div class="bcard click ${drawHL===t ? "hl" : ""}" data-t="${t}">
+        <h4>${t}모둠 · ${DATASETS[t].short} ${b.leaderName ? `<span class="meta">👑 ${b.leaderName}</span>` : ""}<span class="sp"></span>${presented.has(t) ? '<span class="donebdg">✓ 발표함</span>' : ""}</h4>
         <div class="minichart">${chartSVG(t)}</div>
         <div class="btext" style="font-size:1.9vh">${b.find ? "① " + b.find : '<span class="dim2">① 입력 중…</span>'}</div>
       </div>`;}).join("")}
-      <div class="bcard note">📡 팀장 노트북과 <b>실시간 연동</b> 중.<br><br>발표할 모둠을 <b>클릭</b>하세요!</div>
+      <div class="bcard note">📡 팀장 노트북과 <b>실시간 연동</b> 중.<br><br>🎲 <b>발표 모둠 뽑기</b>를 누르면 아직 발표 안 한 모둠 중에서 <b>랜덤으로</b> 뽑아요!</div>
     </div>`;
   }
   const b = boards[presTeam] || {};
   return `
   <div class="kicker">모둠 발표 — ${DATASETS[presTeam].name}</div>
-  <h2 class="mid" style="margin-bottom:1vh">${presTeam}모둠 ${b.leaderName ? `<span style="font-size:2.6vh;color:var(--gold-d)">👑 팀장 ${b.leaderName}</span>` : ""}</h2>
+  <h2 class="mid" style="margin-bottom:1vh">${presTeam}모둠 ${b.leaderName ? `<span style="font-size:2.6vh;color:var(--gold-d)">👑 팀장 ${b.leaderName}</span>` : ""}${speaker ? ` <span style="font-size:2.6vh;background:var(--gold);color:var(--navy2);border-radius:1vh;padding:.5vh 1.6vh">🎤 발표자 ${speaker}</span>` : ""}</h2>
   <div style="flex:1;display:flex;gap:2.5vw;min-height:0;align-items:center">
     <div style="flex:1.4;max-width:120vh"><div class="minichart" style="border-width:.3vh">${chartSVG(presTeam)}</div></div>
     <div style="flex:1;display:flex;flex-direction:column;gap:1.6vh;min-width:0">
@@ -638,12 +674,20 @@ slide(() => {
 },
 { enter(){ setState({phase:"data"}); },
   after(){
-    document.querySelectorAll(".bcard.click[data-t]").forEach(el => el.onclick = () => { presTeam = +el.dataset.t; render(); });
+    document.querySelectorAll(".bcard.click[data-t]").forEach(el => el.onclick = () => { if(!drawing) openPres(+el.dataset.t); });
   },
-  acts(){ return !presTeam ? [] : [
-    ["◀ 전체 보기", "ghost", () => { presTeam = 0; render(); }],
-    ...[1,2,3,4,5].map(t => [`${t}모둠 발표`, presTeam===t ? "gold" : "navy", () => { presTeam = t; render(); }])
-  ]; } });
+  acts(){
+    if(!presTeam){
+      const a = [["🎲 발표 모둠 뽑기", "gold", drawTeam]];
+      if(presented.size) a.push(["뽑기 초기화", "ghost", () => { presented.clear(); render(); }]);
+      return a;
+    }
+    return [
+      ["◀ 전체 보기", "ghost", () => { presTeam = 0; speaker = ""; render(); }],
+      ["🎤 발표자 뽑기", "gold", drawSpeaker],
+      ...[1,2,3,4,5].map(t => [`${t}모둠`, presTeam===t ? "gold" : "navy", () => openPres(t)])
+    ];
+  } });
 
 /* 8 상호 투표 */
 slide(() => {
