@@ -117,6 +117,7 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
     <div class="dot">🌡️</div>
     <h2>입장 완료!</h2>
     <p>수업이 시작되면 화면이 자동으로 바뀝니다.<br>현재 <b id="lobbyN">0</b>명 접속 중</p>
+    <button id="btnRejoin" style="margin-top:20px;font:inherit;font-size:12px;font-weight:700;color:var(--soft);background:#fff;border:2px solid var(--line);border-radius:10px;padding:8px 14px">↩ 내가 아니에요 — 다른 이름으로 다시 입장</button>
   </section>
 
   <!-- 예측 -->
@@ -313,11 +314,17 @@ const views = ["vJoin","vLobby","vPredict","vSim","vData","vVote","vEnd"];
 function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v));
   document.body.classList.toggle("wide", v==="vSim" || v==="vData"); }
 
-let uid = null, meKey = "ocw_me";
+let uid = null, uidKey = "ocw_uid", meKey = "ocw_me";
 let me = null;            // {name, team, leader}
 let myDoc = {};           // 서버에 저장된 내 데이터
 let state = {};           // 진행 상태
 let team = 0, joined = false, inited = false;
+let stuUnsub = null;
+function subMe(){         // 내 문서 구독 — uid가 바뀌면 다시 건다
+  if(stuUnsub) stuUnsub();
+  stuUnsub = onSnapshot(doc(db, COL, "stu_"+uid), snap => { myDoc = snap.data() || {}; render(); });
+}
+function newUid(){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem(uidKey, uid); }
 
 /* ── 입장 ── */
 const tg = $("teamGrid");
@@ -335,6 +342,7 @@ $("btnJoin").onclick = async () => {
   const name = $("inName").value.trim();
   if(!name){ alert("이름을 입력하세요"); return; }
   if(!team){ alert("모둠을 선택하세요"); return; }
+  if(me && me.name && me.name !== name){ newUid(); myDoc = {}; subMe(); }   // 같은 기기, 다른 학생 — 이전 기록 보존
   me = {name, team, leader: leaderSel};
   localStorage.setItem(meKey, JSON.stringify(me));
   try{
@@ -356,9 +364,9 @@ onSnapshot(doc(db, COLBASE, "live"), snap => {
 function init(cls){
   CLS = cls; COL = cls ? COLBASE + "_c" + cls : COLBASE;
   const K = cls ? "ocw_c" + cls + "_" : "ocw_";   // 반별 기기 식별 — 다음 교시 다른 반과 안 섞이게
-  uid = localStorage.getItem(K + "uid");
-  if(!uid){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem(K + "uid", uid); }
-  meKey = K + "me";
+  uidKey = K + "uid"; meKey = K + "me";
+  uid = localStorage.getItem(uidKey);
+  if(!uid) newUid();
   me = JSON.parse(localStorage.getItem(meKey) || "null");
   if(me){ $("inName").value = me.name; team = me.team; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1));
     leaderSel = !!me.leader; $("btnLeader").classList.toggle("on", leaderSel); }
@@ -369,7 +377,7 @@ function init(cls){
     render();
   }, err => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
 
-  onSnapshot(doc(db, COL, "stu_"+uid), snap => { myDoc = snap.data() || {}; render(); });
+  subMe();
 
   onSnapshot(collection(db, COL), snap => {
     let n = 0; snap.forEach(d => { if(d.id.startsWith("stu_") && d.data().name) n++; });
@@ -378,6 +386,19 @@ function init(cls){
   inited = true;
   render();
 }
+
+/* 같은 노트북을 다른 학생이 쓰게 된 경우 — 새 식별자로 다시 입장(이전 학생 기록은 그대로 보존) */
+$("btnRejoin").onclick = () => {
+  if(!inited) return;
+  newUid();
+  localStorage.removeItem(meKey);
+  me = null; myDoc = {}; joined = false; team = 0; leaderSel = false;
+  $("inName").value = "";
+  [...tg.children].forEach(c => c.classList.remove("on"));
+  $("btnLeader").classList.remove("on");
+  $("meLine").textContent = "호남고등학교";
+  subMe(); show("vJoin");
+};
 
 async function save(data){
   try{ await setDoc(doc(db, COL, "stu_"+uid), data, {merge:true}); }
