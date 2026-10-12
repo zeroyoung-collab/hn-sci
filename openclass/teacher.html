@@ -520,9 +520,9 @@ slide(() => {
   after(){
     document.querySelectorAll(".bcard.click[data-t]").forEach(el => el.onclick = () => { simPres = +el.dataset.t; render(); });
   },
-  acts(){ return [
-    ["◀ 전체 보기", "ghost", () => { simPres = 0; render(); }, !simPres],
-    ...[1,2,3,4,5].map(t => [`${t}모둠`, simPres===t ? "gold" : "navy", () => { simPres = t; render(); }, false])
+  acts(){ return !simPres ? [] : [
+    ["◀ 전체 보기", "ghost", () => { simPres = 0; render(); }],
+    ...[1,2,3,4,5].map(t => [`${t}모둠`, simPres===t ? "gold" : "navy", () => { simPres = t; render(); }])
   ]; } });
 
 /* 6 데이터 미션 안내 */
@@ -582,9 +582,9 @@ slide(() => {
   after(){
     document.querySelectorAll(".bcard.click[data-t]").forEach(el => el.onclick = () => { presTeam = +el.dataset.t; render(); });
   },
-  acts(){ return [
-    ["◀ 전체 보기", "ghost", () => { presTeam = 0; render(); }, !presTeam],
-    ...[1,2,3,4,5].map(t => [`${t}모둠 발표`, presTeam===t ? "gold" : "navy", () => { presTeam = t; render(); }, false])
+  acts(){ return !presTeam ? [] : [
+    ["◀ 전체 보기", "ghost", () => { presTeam = 0; render(); }],
+    ...[1,2,3,4,5].map(t => [`${t}모둠 발표`, presTeam===t ? "gold" : "navy", () => { presTeam = t; render(); }])
   ]; } });
 
 /* 8 상호 투표 */
