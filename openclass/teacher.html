@@ -435,7 +435,7 @@ slide(() => {
     </div>`).join("")}
   </div>
   <div class="predmeta">제출 ${preds.length}명 · 우리 반 평균 <b>${avg}℃</b>${state.predictReveal ? ` &nbsp;→&nbsp; 실제는 약 <b style="color:#1f6fd6">−18℃</b>! 그 33℃의 차이가 오늘의 주인공입니다` : ""}</div>`;
-}, { enter(){ setState({phase:"predict"}); },
+}, { enter(){ setState({phase:"predict", predictReveal:false}); },
      acts(){ return [
        [state.predictOpen ? "제출 마감" : "제출 열기", state.predictOpen ? "ghost" : "gold", () => setState({predictOpen: !state.predictOpen})],
        ["정답 공개", "green", () => setState({predictOpen:false, predictReveal:true})],
