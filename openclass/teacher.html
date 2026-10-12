@@ -205,6 +205,7 @@ const firebaseConfig = {
   appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
 };
 const COLBASE = "pw_openclass_warming";
+const TEACHER_CLS_KEY = "ocw_teacher_cls";
 let CLS = null, COL = COLBASE;   // 반 선택 후 pw_openclass_warming_c<N>으로 — 반별 기록 보존
 const STUDENT_URL = "https://zeroyoung-collab.github.io/hn-sci/openclass/";
 const PHET = "phet.colorado.edu → Greenhouse Effect (학생 앱의 버튼으로 바로 열림)";
@@ -233,6 +234,7 @@ clsBtns.appendChild(rb);
 
 function startClass(n){
   CLS = n; COL = n ? `${COLBASE}_c${n}` : COLBASE;
+  localStorage.setItem(TEACHER_CLS_KEY, JSON.stringify({cls:n, ts:Date.now()}));
   setDoc(doc(db, COLBASE, "live"), {cls:n, ts:Date.now()});   // 학생 앱이 이 반 저장소로 따라오게
   document.getElementById("clsPick")?.remove();
   document.getElementById("hudCls").textContent = n ? `1-${n}반` : "리허설";
@@ -461,14 +463,16 @@ slide(() => `
     </div>
     <div class="lobbyR"><div id="qr"></div><div style="font-size:2vh;color:var(--soft);font-weight:700">QR을 찍어도 바로 열려요</div></div>
   </div>`,
-  { enter(){ setState({phase:"lobby"}); setTimeout(() => {
+  { enter(){ setState({phase:"lobby"}); },
+    after(){
       const el = document.getElementById("qr");
       if(el && window.QRCode){ el.innerHTML=""; new QRCode(el, {text:STUDENT_URL, width:280, height:280, correctLevel:QRCode.CorrectLevel.M}); }
-    }, 50); },
+    },
     acts(){ return [
       ["전체 초기화", "ghost", async () => {
         const who = CLS ? `1-${CLS}반` : "리허설(공용)";
-        if(!confirm(`${who}의 학생 데이터와 진행 상태를 모두 삭제합니다. 다른 반 기록은 그대로 남습니다. 계속할까요?`)) return;
+        const typed = prompt(`${who}의 학생 데이터와 진행 상태를 모두 삭제합니다 — 접속 중인 학생 전원이 대기화면으로 돌아갑니다.\n정말 초기화하려면 "초기화"라고 입력하세요.`);
+        if(typed !== "초기화") return;
         const snap = await getDocs(collection(db, COL));
         for(const d of snap.docs) await deleteDoc(d.ref);
         await setDoc(doc(db, COL, "state"), {phase:"lobby"});
@@ -827,9 +831,15 @@ document.addEventListener("touchend", e => {
   if(Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5){ dx < 0 ? fwd() : go(cur-1); }
 }, {passive:true});
 
-/* ?class=N 이면 반 선택 건너뛰기 */
+/* ?class=N 이면 반 선택 건너뛰기 — 없으면 50분 이내 이어하던 반을 자동 복원(화면 새로고침으로 반을 잘못 다시 고르는 사고 방지) */
 const clsParam = +(new URLSearchParams(location.search).get("class") || 0);
-if(clsParam >= 1 && clsParam <= 6) startClass(clsParam);
+if(clsParam >= 1 && clsParam <= 6){ startClass(clsParam); }
+else {
+  try{
+    const saved = JSON.parse(localStorage.getItem(TEACHER_CLS_KEY) || "null");
+    if(saved && saved.cls >= 0 && Date.now() - saved.ts < 50*60*1000) startClass(saved.cls);
+  }catch(e){}
+}
 </script>
 </body>
 </html>
