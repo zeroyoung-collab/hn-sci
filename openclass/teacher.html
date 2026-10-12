@@ -25,10 +25,10 @@ input, textarea{ -webkit-user-select:text; user-select:text; }
 /* 반 선택 */
 #clsPick{ position:fixed; inset:0; background:#0d1524; z-index:98; display:flex; align-items:center; justify-content:center; }
 #clsPick .box{ text-align:center; color:#fff; max-width:440px; padding:0 20px; }
-#clsBtns{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:20px; }
+#clsBtns{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; }
 #clsBtns button{ font:inherit; font-size:19px; font-weight:900; padding:16px 0; border-radius:12px;
   border:none; background:#fff; color:var(--navy2); cursor:pointer; }
-#clsBtns button.ghost{ grid-column:span 4; background:#2a3a57; color:#9fb0c6; font-size:14px; padding:12px 0; }
+#clsBtns button.ghost{ grid-column:span 3; background:#2a3a57; color:#9fb0c6; font-size:14px; padding:12px 0; }
 
 /* 슬라이드 */
 .slide{ position:absolute; inset:0; display:none; flex-direction:column; background:#fff; padding:4.5vh 5vw; }
@@ -218,7 +218,7 @@ if(new URLSearchParams(location.search).get("pw") === "honam1234"){ document.get
 
 /* ── 반 선택 — 반별 저장소 분리 ── */
 const clsBtns = document.getElementById("clsBtns");
-for(let n=1;n<=8;n++){
+for(let n=1;n<=6;n++){
   const b = document.createElement("button");
   b.textContent = `1-${n}`;
   b.onclick = () => startClass(n);
@@ -785,7 +785,7 @@ document.addEventListener("touchend", e => {
 
 /* ?class=N 이면 반 선택 건너뛰기 */
 const clsParam = +(new URLSearchParams(location.search).get("class") || 0);
-if(clsParam >= 1 && clsParam <= 8) startClass(clsParam);
+if(clsParam >= 1 && clsParam <= 6) startClass(clsParam);
 </script>
 </body>
 </html>
