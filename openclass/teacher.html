@@ -22,6 +22,14 @@ input, textarea{ -webkit-user-select:text; user-select:text; }
 #gate .box{ text-align:center; color:#fff; }
 #gate input{ font:inherit; font-size:18px; padding:10px 16px; border-radius:10px; border:none; text-align:center; margin-top:14px; }
 
+/* 반 선택 */
+#clsPick{ position:fixed; inset:0; background:#0d1524; z-index:98; display:flex; align-items:center; justify-content:center; }
+#clsPick .box{ text-align:center; color:#fff; max-width:440px; padding:0 20px; }
+#clsBtns{ display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:20px; }
+#clsBtns button{ font:inherit; font-size:19px; font-weight:900; padding:16px 0; border-radius:12px;
+  border:none; background:#fff; color:var(--navy2); cursor:pointer; }
+#clsBtns button.ghost{ grid-column:span 4; background:#2a3a57; color:#9fb0c6; font-size:14px; padding:12px 0; }
+
 /* 슬라이드 */
 .slide{ position:absolute; inset:0; display:none; flex-direction:column; background:#fff; padding:4.5vh 5vw; }
 .slide.on{ display:flex; }
@@ -159,12 +167,19 @@ body.has-acts .slide{ bottom:12vh; }   /* 버튼 툴바가 있는 슬라이드�
   <div style="font-size:12px;opacity:.6;margin-top:10px">Enter 또는 입장 버튼</div>
 </div></div>
 
+<div id="clsPick"><div class="box">
+  <div style="font-size:24px;font-weight:900">어느 반 수업인가요?</div>
+  <div style="font-size:13px;opacity:.65;margin-top:8px;line-height:1.6">반별로 기록이 <b style="color:var(--gold)">따로 저장</b>됩니다.<br>수행평가 때 같은 반을 다시 선택하면 제출한 "나의 생각"이 그대로 열려요.</div>
+  <div id="clsBtns"></div>
+</div></div>
+
 <div id="stage"></div>
 
 <div class="acts" id="acts"></div>
 
 <div id="hud">
   <span id="hudConn" class="dead">연결 중…</span>
+  <span><b id="hudCls">—</b></span>
   <span>접속 <b id="hudN">0</b>명</span>
   <span class="sp"></span>
   <span>←/→·스와이프 슬라이드 · Space 진행</span>
@@ -187,7 +202,8 @@ const firebaseConfig = {
   messagingSenderId: "389048360844",
   appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
 };
-const COL = "pw_openclass_warming";
+const COLBASE = "pw_openclass_warming";
+let CLS = null, COL = COLBASE;   // 반 선택 후 pw_openclass_warming_c<N>으로 — 반별 기록 보존
 const STUDENT_URL = "https://zeroyoung-collab.github.io/hn-sci/openclass/";
 const PHET = "phet.colorado.edu → Greenhouse Effect (학생 앱의 버튼으로 바로 열림)";
 const db = getFirestore(initializeApp(firebaseConfig));
@@ -199,6 +215,29 @@ const tryGate = () => {
 document.getElementById("gatePw").addEventListener("keydown", e => { if(e.key === "Enter") tryGate(); });
 document.getElementById("gateBtn").addEventListener("click", tryGate);
 if(new URLSearchParams(location.search).get("pw") === "honam1234"){ document.getElementById("gate").remove(); }
+
+/* ── 반 선택 — 반별 저장소 분리 ── */
+const clsBtns = document.getElementById("clsBtns");
+for(let n=1;n<=8;n++){
+  const b = document.createElement("button");
+  b.textContent = `1-${n}`;
+  b.onclick = () => startClass(n);
+  clsBtns.appendChild(b);
+}
+const rb = document.createElement("button");
+rb.textContent = "리허설 (공용 — 반 기록에 안 남음)"; rb.className = "ghost";
+rb.onclick = () => startClass(0);
+clsBtns.appendChild(rb);
+
+function startClass(n){
+  CLS = n; COL = n ? `${COLBASE}_c${n}` : COLBASE;
+  setDoc(doc(db, COLBASE, "live"), {cls:n, ts:Date.now()});   // 학생 앱이 이 반 저장소로 따라오게
+  document.getElementById("clsPick")?.remove();
+  document.getElementById("hudCls").textContent = n ? `1-${n}반` : "리허설";
+  startRealtime();
+  go(Math.min(slides.length-1, Math.max(0, +(new URLSearchParams(location.search).get("slide") || 0))));
+}
+const uiLocked = () => document.getElementById("gate") || document.getElementById("clsPick");
 
 /* ── 모둠별 데이터셋 (학생 앱과 동일) ── */
 const DATASETS = {
@@ -352,24 +391,26 @@ let state = {}, students = [], boards = {};   // boards: {team:{g0,g1,g2,rule,fi
 const stage = document.getElementById("stage");
 const actsEl = document.getElementById("acts");
 
-onSnapshot(doc(db, COL, "state"), s => {
-  state = s.data() || {};
-  document.getElementById("hudConn").className = "live";
-  document.getElementById("hudConn").textContent = "● 실시간";
-  render();
-}, () => {
-  document.getElementById("hudConn").className = "dead";
-  document.getElementById("hudConn").textContent = "연결 오류";
-});
-onSnapshot(collection(db, COL), snap => {
-  students = []; boards = {};
-  snap.forEach(d => {
-    if(d.id.startsWith("stu_")){ const v = d.data(); if(v.name) students.push({id:d.id, ...v}); }
-    else if(d.id.startsWith("board_")){ const v = d.data(); if(v.team) boards[v.team] = v; }
+function startRealtime(){
+  onSnapshot(doc(db, COL, "state"), s => {
+    state = s.data() || {};
+    document.getElementById("hudConn").className = "live";
+    document.getElementById("hudConn").textContent = "● 실시간";
+    render();
+  }, () => {
+    document.getElementById("hudConn").className = "dead";
+    document.getElementById("hudConn").textContent = "연결 오류";
   });
-  document.getElementById("hudN").textContent = students.length;
-  render();
-});
+  onSnapshot(collection(db, COL), snap => {
+    students = []; boards = {};
+    snap.forEach(d => {
+      if(d.id.startsWith("stu_")){ const v = d.data(); if(v.name) students.push({id:d.id, ...v}); }
+      else if(d.id.startsWith("board_")){ const v = d.data(); if(v.team) boards[v.team] = v; }
+    });
+    document.getElementById("hudN").textContent = students.length;
+    render();
+  });
+}
 const setState = data => setDoc(doc(db, COL, "state"), data, {merge:true});
 
 function collectSentences(){
@@ -402,7 +443,7 @@ const timerHTML = () => {
 
 /* 0 로비 */
 slide(() => `
-  <div class="kicker">통합과학2 · 지구 환경 변화 · 호남고등학교</div>
+  <div class="kicker">통합과학2 · 지구 환경 변화 · 호남고등학교${CLS ? ` · 1학년 ${CLS}반` : " · 리허설"}</div>
   <h1 class="big">지구의 체온 —<br>온실효과와 지구 온난화</h1>
   <div class="rule"></div>
   <div class="lobbywrap">
@@ -423,12 +464,14 @@ slide(() => `
       if(el && window.QRCode){ el.innerHTML=""; new QRCode(el, {text:STUDENT_URL, width:280, height:280, correctLevel:QRCode.CorrectLevel.M}); }
     }, 50); },
     acts(){ return [
-      ["전체 초기화(리허설용)", "ghost", async () => {
-        if(!confirm("모든 학생 데이터와 진행 상태를 삭제합니다. 계속할까요?")) return;
+      ["전체 초기화", "ghost", async () => {
+        const who = CLS ? `1-${CLS}반` : "리허설(공용)";
+        if(!confirm(`${who}의 학생 데이터와 진행 상태를 모두 삭제합니다. 다른 반 기록은 그대로 남습니다. 계속할까요?`)) return;
         const snap = await getDocs(collection(db, COL));
         for(const d of snap.docs) await deleteDoc(d.ref);
         await setDoc(doc(db, COL, "state"), {phase:"lobby"});
-        alert("초기화 완료");
+        await setDoc(doc(db, COLBASE, "live"), {cls:CLS, ts:Date.now()});
+        alert(`${who} 초기화 완료`);
       }]
     ]; } });
 
@@ -648,15 +691,18 @@ slide(() => {
 });
 
 /* 10 나의 생각 한 문장 */
+let opFull = false;
 slide(() => {
   const ops = students.filter(s => s.opinion).sort((a,b)=>(a.opinionTs||0)-(b.opinionTs||0));
+  const list = opFull ? ops : ops.slice(-10);
   return `
-  <div class="kicker">정리 — 나의 생각</div>
+  <div class="kicker">정리 — 나의 생각${opFull ? ` · 전체 목록 (${CLS ? `1-${CLS}반` : "리허설"})` : ""}</div>
   <h2 class="mid">오늘 본 것을 바탕으로, 나의 생각 한 문장 <span style="font-size:2.4vh;color:var(--soft)">제출 ${ops.length}/${students.length}명</span></h2>
-  <div style="font-size:2.5vh;font-weight:700;color:var(--soft)">💻 각자 노트북에 — <b style="color:var(--navy)">"온실효과는 지구를 지켜 주는 고마운 현상이라는데, 왜 지구 온난화를 걱정할까?"</b> 이 질문에 대한 나의 생각을 1~2문장으로. (시뮬레이션·데이터에서 본 것을 담으면 최고!)</div>
-  <div class="opfeed">${ops.slice(-10).map(s => `<div class="opline"><b>${s.team}모둠 ${s.name}</b>${s.opinion}</div>`).join("")}</div>`;
+  ${opFull ? "" : `<div style="font-size:2.5vh;font-weight:700;color:var(--soft)">💻 각자 노트북에 — <b style="color:var(--navy)">"온실효과는 지구를 지켜 주는 고마운 현상이라는데, 왜 지구 온난화를 걱정할까?"</b> 이 질문에 대한 나의 생각을 1~2문장으로. (시뮬레이션·데이터에서 본 것을 담으면 최고!)</div>`}
+  <div class="opfeed" style="${opFull ? "overflow-y:auto" : ""}">${list.map(s => `<div class="opline"><b>${s.team}모둠 ${s.name}</b>${s.opinion}</div>`).join("")}</div>`;
 },
-{ enter(){ setState({phase:"end"}); } });
+{ enter(){ setState({phase:"end"}); opFull = false; },
+  acts(){ return [[opFull ? "최근 10개만 보기" : "전체 목록 보기 (수행평가용)", opFull ? "ghost" : "gold", () => { opFull = !opFull; render(); }]]; } });
 
 /* 11 마무리 — 수행평가 예고 */
 slide(() => {
@@ -713,7 +759,7 @@ function goFullscreen(){
   else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
 }
 document.addEventListener("keydown", e => {
-  if(document.getElementById("gate")) return;
+  if(uiLocked()) return;
   if(e.key === "ArrowRight" || e.key === "PageDown") go(cur+1);
   else if(e.key === "ArrowLeft" || e.key === "PageUp") go(cur-1);
   else if(e.key === " "){ e.preventDefault(); fwd(); }
@@ -721,8 +767,8 @@ document.addEventListener("keydown", e => {
 });
 
 /* 터치(아이패드) — HUD 버튼 + 좌우 스와이프 */
-document.getElementById("navPrev").onclick = () => { if(!document.getElementById("gate")) go(cur-1); };
-document.getElementById("navNext").onclick = () => { if(!document.getElementById("gate")) fwd(); };
+document.getElementById("navPrev").onclick = () => { if(!uiLocked()) go(cur-1); };
+document.getElementById("navNext").onclick = () => { if(!uiLocked()) fwd(); };
 document.getElementById("navFull").onclick = goFullscreen;
 let swX = null, swY = null;
 document.addEventListener("touchstart", e => {
@@ -730,13 +776,16 @@ document.addEventListener("touchstart", e => {
   swX = e.touches[0].clientX; swY = e.touches[0].clientY;
 }, {passive:true});
 document.addEventListener("touchend", e => {
-  if(swX === null || document.getElementById("gate")) return;
+  if(swX === null || uiLocked()) return;
   if(e.target.closest("button, input, textarea, #hud, .acts")){ swX = null; return; }
   const dx = e.changedTouches[0].clientX - swX, dy = e.changedTouches[0].clientY - swY;
   swX = null;
   if(Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5){ dx < 0 ? fwd() : go(cur-1); }
 }, {passive:true});
-go(Math.min(slides.length-1, Math.max(0, +(new URLSearchParams(location.search).get("slide") || 0))));
+
+/* ?class=N 이면 반 선택 건너뛰기 */
+const clsParam = +(new URLSearchParams(location.search).get("class") || 0);
+if(clsParam >= 1 && clsParam <= 8) startClass(clsParam);
 </script>
 </body>
 </html>

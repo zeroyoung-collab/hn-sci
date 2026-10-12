@@ -219,7 +219,8 @@ const firebaseConfig = {
   messagingSenderId: "389048360844",
   appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
 };
-const COL = "pw_openclass_warming";
+const COLBASE = "pw_openclass_warming";
+let COL = COLBASE, CLS = 0;   // 선생님이 고른 반의 저장소(pw_openclass_warming_c<N>)로 자동 연결
 const PHET = "https://phet.colorado.edu/sims/html/greenhouse-effect/latest/greenhouse-effect_all.html?locale=ko";
 const db = getFirestore(initializeApp(firebaseConfig));
 
@@ -312,12 +313,11 @@ const views = ["vJoin","vLobby","vPredict","vSim","vData","vVote","vEnd"];
 function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v));
   document.body.classList.toggle("wide", v==="vSim" || v==="vData"); }
 
-let uid = localStorage.getItem("ocw_uid");
-if(!uid){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem("ocw_uid", uid); }
-let me = JSON.parse(localStorage.getItem("ocw_me") || "null");   // {name, team, leader}
+let uid = null, meKey = "ocw_me";
+let me = null;            // {name, team, leader}
 let myDoc = {};           // 서버에 저장된 내 데이터
 let state = {};           // 진행 상태
-let team = 0, joined = false;
+let team = 0, joined = false, inited = false;
 
 /* ── 입장 ── */
 const tg = $("teamGrid");
@@ -329,15 +329,14 @@ for(let i=1;i<=5;i++){
 }
 let leaderSel = false;
 $("btnLeader").onclick = () => { leaderSel = !leaderSel; $("btnLeader").classList.toggle("on", leaderSel); };
-if(me){ $("inName").value = me.name; team = me.team; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1));
-  leaderSel = !!me.leader; $("btnLeader").classList.toggle("on", leaderSel); }
 
 $("btnJoin").onclick = async () => {
+  if(!inited){ alert("서버에 연결 중입니다. 잠시 후 다시 눌러 주세요."); return; }
   const name = $("inName").value.trim();
   if(!name){ alert("이름을 입력하세요"); return; }
   if(!team){ alert("모둠을 선택하세요"); return; }
   me = {name, team, leader: leaderSel};
-  localStorage.setItem("ocw_me", JSON.stringify(me));
+  localStorage.setItem(meKey, JSON.stringify(me));
   try{
     await setDoc(doc(db, COL, "stu_"+uid), { name, team, leader: leaderSel, joinedAt: serverTimestamp() }, {merge:true});
     joined = true;
@@ -346,19 +345,39 @@ $("btnJoin").onclick = async () => {
   }catch(e){ alert("접속 오류: 선생님께 알려주세요\n" + e.message); }
 };
 
-/* ── 실시간 구독 ── */
-onSnapshot(doc(db, COL, "state"), snap => {
-  state = snap.data() || {};
-  $("conn").className = "conn on"; $("conn").textContent = "실시간 연결됨";
+/* ── 반 연동 — 선생님이 고른 반의 저장소로 접속 ── */
+let liveCls = null;
+onSnapshot(doc(db, COLBASE, "live"), snap => {
+  const c = +((snap.data() || {}).cls || 0);
+  if(liveCls === null){ liveCls = c; init(c); }
+  else if(c !== liveCls){ location.reload(); }   // 수업 반이 바뀌면 새로 입장
+}, () => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
+
+function init(cls){
+  CLS = cls; COL = cls ? COLBASE + "_c" + cls : COLBASE;
+  const K = cls ? "ocw_c" + cls + "_" : "ocw_";   // 반별 기기 식별 — 다음 교시 다른 반과 안 섞이게
+  uid = localStorage.getItem(K + "uid");
+  if(!uid){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem(K + "uid", uid); }
+  meKey = K + "me";
+  me = JSON.parse(localStorage.getItem(meKey) || "null");
+  if(me){ $("inName").value = me.name; team = me.team; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1));
+    leaderSel = !!me.leader; $("btnLeader").classList.toggle("on", leaderSel); }
+
+  onSnapshot(doc(db, COL, "state"), snap => {
+    state = snap.data() || {};
+    $("conn").className = "conn on"; $("conn").textContent = CLS ? `실시간 · 1-${CLS}반` : "실시간 연결됨";
+    render();
+  }, err => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
+
+  onSnapshot(doc(db, COL, "stu_"+uid), snap => { myDoc = snap.data() || {}; render(); });
+
+  onSnapshot(collection(db, COL), snap => {
+    let n = 0; snap.forEach(d => { if(d.id.startsWith("stu_") && d.data().name) n++; });
+    $("lobbyN").textContent = n;
+  });
+  inited = true;
   render();
-}, err => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
-
-onSnapshot(doc(db, COL, "stu_"+uid), snap => { myDoc = snap.data() || {}; render(); });
-
-onSnapshot(collection(db, COL), snap => {
-  let n = 0; snap.forEach(d => { if(d.id.startsWith("stu_") && d.data().name) n++; });
-  $("lobbyN").textContent = n;
-});
+}
 
 async function save(data){
   try{ await setDoc(doc(db, COL, "stu_"+uid), data, {merge:true}); }
@@ -418,7 +437,7 @@ function subBoard(){
   });
 }
 function claim(){
-  me.leader = true; localStorage.setItem("ocw_me", JSON.stringify(me));
+  me.leader = true; localStorage.setItem(meKey, JSON.stringify(me));
   save({leader:true});
   boardInit = true; boardLoad();
   render();
