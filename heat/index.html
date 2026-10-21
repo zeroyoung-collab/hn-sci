@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>지구의 가계부 — 열수지와 복사 평형</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --navy:#0B3E86; --navy2:#092f66; --gold:#F5B301; --gold-d:#c8920a;
+  --green:#1A9A3E; --red:#d64545; --ink:#141a24; --soft:#3d4652; --line:#b9c4d4; --lt:#eef3fa;
+}
+*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; }
+body{ font-family:'Noto Sans KR',sans-serif; color:var(--ink); background:#f4f7fb; word-break:keep-all;
+  display:flex; flex-direction:column; overflow-x:hidden; }
+header{ background:linear-gradient(135deg,var(--navy),var(--navy2)); color:#fff; padding:14px 18px 12px; flex-shrink:0; }
+header .tag{ font-size:11px; font-weight:700; color:var(--gold); letter-spacing:.12em; }
+header h1{ font-size:19px; font-weight:900; letter-spacing:-.02em; }
+header .me{ font-size:12px; font-weight:500; opacity:.9; margin-top:2px; }
+header .me b{ color:var(--gold); }
+main{ flex:1; overflow-y:auto; padding:20px 18px 30px; max-width:480px; width:100%; margin:0 auto; }
+body.wide main{ max-width:860px; }
+.hidden{ display:none !important; }
+
+.card{ background:#fff; border:2px solid var(--line); border-radius:14px; padding:20px 18px; }
+.card h2{ font-size:17px; font-weight:900; color:var(--navy2); margin-bottom:6px; }
+.card p.desc{ font-size:13px; color:var(--soft); line-height:1.6; margin-bottom:14px; }
+
+label{ display:block; font-size:12px; font-weight:700; color:var(--navy); margin:12px 0 5px; }
+input[type=text]{ width:100%; font:inherit; font-size:16px; font-weight:700; padding:12px 14px;
+  border:2px solid var(--line); border-radius:10px; outline:none; }
+input[type=text]:focus{ border-color:var(--navy); }
+.teamgrid{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+.teamgrid button{ font:inherit; font-size:13px; font-weight:900; padding:13px 0; border-radius:10px;
+  border:2px solid var(--line); background:#fff; color:var(--soft); }
+.teamgrid button.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
+
+.big{ display:block; width:100%; font:inherit; font-size:17px; font-weight:900; color:#fff;
+  background:var(--navy); border:none; border-radius:12px; padding:16px 0; margin-top:18px; cursor:pointer; }
+.big:disabled{ background:#9fb0c6; }
+.big.gold{ background:var(--gold); color:var(--navy2); }
+
+.wait{ text-align:center; padding:44px 10px; }
+.wait .dot{ font-size:40px; }
+.wait h2{ font-size:18px; font-weight:900; color:var(--navy2); margin-top:10px; }
+.wait p{ font-size:13px; color:var(--soft); margin-top:6px; line-height:1.6; }
+
+/* 예측 */
+.predval{ text-align:center; font-size:52px; font-weight:900; color:var(--navy); margin:10px 0 4px; }
+.predval small{ font-size:20px; color:var(--soft); font-weight:700; }
+input[type=range]{ width:100%; margin:8px 0 4px; accent-color:var(--navy); height:34px; }
+.predscale{ display:flex; justify-content:space-between; font-size:11px; color:var(--soft); font-weight:700; }
+
+/* 팀장/보드 */
+.leaderToggle{ width:100%; font:inherit; font-size:14px; font-weight:900; padding:12px 0; margin-top:2px;
+  border:2px solid var(--line); border-radius:10px; background:#fff; color:var(--soft); }
+.leaderToggle.on{ border-color:var(--gold-d); background:#fffaf0; color:var(--gold-d); }
+textarea{ width:100%; font:inherit; font-size:15px; font-weight:500; line-height:1.6; padding:12px 14px;
+  border:2px solid var(--line); border-radius:10px; outline:none; min-height:84px; resize:none; }
+textarea:focus{ border-color:var(--navy); }
+.savedot{ font-size:11.5px; color:var(--green); font-weight:700; margin-top:8px; }
+.mission{ background:var(--lt); border-left:5px solid var(--gold); border-radius:8px;
+  padding:12px 14px; font-size:13px; line-height:1.7; margin-bottom:12px; }
+.mission b{ color:var(--navy); }
+.viewbox{ background:var(--lt); border-radius:10px; padding:12px 14px; margin-top:12px; }
+.viewbox h4{ font-size:12px; font-weight:900; color:var(--navy); margin-bottom:4px; }
+.viewbox p{ font-size:14px; font-weight:700; line-height:1.55; min-height:20px; }
+.viewbox p.empty{ color:#a8b2c0; font-weight:500; }
+
+/* 배분 슬라이더 */
+.allocrow{ display:flex; align-items:center; gap:10px; margin-top:2px; }
+.allocrow input[type=range]{ flex:1; margin:4px 0; }
+.allocrow .av{ flex-shrink:0; width:52px; text-align:center; font-size:20px; font-weight:900; color:var(--navy);
+  background:var(--lt); border-radius:8px; padding:6px 0; }
+.sumline{ display:flex; align-items:center; justify-content:space-between; margin-top:12px;
+  border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:13px; font-weight:700; color:var(--soft); }
+.sumline b{ font-size:22px; font-weight:900; }
+.sumline.ok{ border-color:var(--green); background:#f0faf3; } .sumline.ok b{ color:var(--green); }
+.sumline.no b{ color:var(--red); }
+.realbox{ background:#fdf3d7; border-left:5px solid var(--gold-d); border-radius:8px;
+  padding:12px 14px; font-size:13px; line-height:1.7; margin-bottom:12px; font-weight:700; }
+.realbox b{ color:var(--navy2); }
+
+/* 차트 */
+.chartwrap{ border:2px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; margin:4px 0 12px; }
+.chartwrap svg{ width:100%; height:auto; display:block; }
+
+/* 투표 */
+.votegrid{ display:grid; gap:10px; }
+.votegrid button{ font:inherit; text-align:left; font-size:13.5px; font-weight:500; line-height:1.55;
+  padding:13px 14px; border-radius:12px; border:2px solid var(--line); background:#fff; color:var(--ink); }
+.votegrid button b{ display:block; font-size:12px; font-weight:900; color:var(--navy); margin-bottom:3px; }
+.votegrid button.on{ border-color:var(--gold); background:#fffaf0; }
+.votegrid button:disabled{ opacity:.4; }
+
+footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; padding:8px 0 12px; }
+.conn{ position:fixed; top:10px; right:12px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:12px; z-index:5; }
+.conn.on{ background:#e7f5ec; color:#136e2e; } .conn.off{ background:#fde8e8; color:#a02b2b; }
+</style>
+</head>
+<body>
+<div id="conn" class="conn off">연결 중…</div>
+<header>
+  <div class="tag">통합과학2 · 지구 환경 변화 1/3</div>
+  <h1>지구의 가계부 — 열수지와 복사 평형</h1>
+  <div class="me" id="meLine">호남고등학교</div>
+</header>
+<main>
+
+  <!-- 입장 -->
+  <section id="vJoin" class="card">
+    <h2>수업 입장</h2>
+    <p class="desc">이름을 쓰고 모둠을 고른 뒤 입장하세요.</p>
+    <label>이름</label>
+    <input type="text" id="inName" maxlength="10" placeholder="예) 김호남">
+    <label>모둠</label>
+    <div class="teamgrid" id="teamGrid"></div>
+    <label>모둠 대표 기기(팀장 노트북)인가요?</label>
+    <button class="leaderToggle" id="btnLeader" type="button">👑 이 노트북을 팀장 보드로 쓸게요</button>
+    <button class="big" id="btnJoin">입장하기</button>
+  </section>
+
+  <!-- 대기 -->
+  <section id="vLobby" class="wait hidden">
+    <div class="dot">💰</div>
+    <h2>입장 완료!</h2>
+    <p>수업이 시작되면 화면이 자동으로 바뀝니다.<br>현재 <b id="lobbyN">0</b>명 접속 중</p>
+    <button id="btnRejoin" style="margin-top:20px;font:inherit;font-size:12px;font-weight:700;color:var(--soft);background:#fff;border:2px solid var(--line);border-radius:10px;padding:8px 14px">↩ 내가 아니에요 — 다른 이름으로 다시 입장</button>
+  </section>
+
+  <!-- 예측 -->
+  <section id="vPredict" class="card hidden">
+    <h2>예측해 보세요</h2>
+    <p class="desc">태양에서 지구로 들어오는 복사 에너지를 <b>100</b>이라고 할 때, 그중 <b>지표면이 흡수하는 양</b>은 얼마일까요?</p>
+    <div class="predval"><span id="predNum">50</span><small> / 100</small></div>
+    <input type="range" id="predRange" min="0" max="100" value="50">
+    <div class="predscale"><span>0</span><span>50</span><span>100</span></div>
+    <button class="big gold" id="btnPredict">제출하기</button>
+  </section>
+
+  <!-- 전개1: 에너지 100 배분 미션 -->
+  <section id="vAlloc" class="card hidden">
+    <h2>미션 ① 에너지 100 배분하기</h2>
+    <div class="mission">
+      <b>MISSION</b> — 태양에서 온 에너지 <b>100</b>은 세 갈래로 나뉩니다. 우리 모둠이 생각하는 배분을 정하세요.<br>
+      ❶ 모둠 토론 — <b>반사 및 산란 / 대기의 흡수 / 지표면 흡수</b>는 각각 얼마일까?<br>
+      ❷ 팀장 보드의 슬라이더로 제출 — <b>합계 100</b>을 맞추세요<br>
+      ❸ 그렇게 나눈 <b>근거를 한 문장</b>으로!
+    </div>
+    <div id="allocReal" class="realbox hidden">📖 실제값 공개 — <b>반사 및 산란 30</b>(대기 23 + 지표면 7) · <b>대기의 흡수 23</b> · <b>지표면 흡수 47</b><br>완자 120쪽 지구 열수지 그대로 — 시험에 나옵니다!</div>
+    <div class="chartwrap" id="allocFig"></div>
+    <div id="allocClaim" class="hidden">
+      <button class="big" id="btnClaimA" style="margin-top:0">👑 이 노트북을 팀장 보드로 쓰기</button>
+    </div>
+    <div id="allocEdit">
+      <label>☀️ 반사 및 산란 — 우주로 되돌아감 (구름·대기·지표면)</label>
+      <div class="allocrow"><input type="range" id="bd_ref" min="0" max="100" value="34"><div class="av" id="avRef">34</div></div>
+      <label>🌫️ 대기의 흡수 — 대기와 구름이 흡수</label>
+      <div class="allocrow"><input type="range" id="bd_atm" min="0" max="100" value="33"><div class="av" id="avAtm">33</div></div>
+      <label>🌍 지표면 흡수 — 땅과 바다가 흡수</label>
+      <div class="allocrow"><input type="range" id="bd_srf" min="0" max="100" value="33"><div class="av" id="avSrf">33</div></div>
+      <div class="sumline" id="sumLine">합계 (100을 맞추세요)<b id="sumVal">100</b></div>
+      <label>❸ 우리 모둠의 근거 (한 문장)</label>
+      <textarea id="bd_rule" maxlength="100" style="min-height:70px" placeholder="예) 구름과 눈이 꽤 반사할 것 같아서 …"></textarea>
+      <p class="savedot" id="allocSaved">움직이면 자동 저장됩니다 — 선생님 화면과 실시간 연동</p>
+    </div>
+    <div id="allocView" class="hidden">
+      <p class="desc" style="margin:10px 0 0">👀 우리 모둠 팀장 보드를 실시간으로 보는 중 — 함께 토의하세요!</p>
+      <div class="viewbox"><h4>우리 모둠의 배분</h4><p id="avView" class="empty">아직 입력 전…</p></div>
+      <div class="viewbox"><h4>❸ 우리 모둠의 근거</h4><p id="avRule" class="empty">아직 입력 전…</p></div>
+    </div>
+  </section>
+
+  <!-- 전개2: 데이터 분석 미션 -->
+  <section id="vData" class="card hidden">
+    <h2 id="dataTitle">미션 ② 데이터 탐정</h2>
+    <p class="desc" id="dataSub"></p>
+    <div class="chartwrap" id="chartBox"></div>
+    <div class="mission" id="dataHint"></div>
+    <div id="dataClaim" class="hidden">
+      <button class="big" id="btnClaimD" style="margin-top:0">👑 이 노트북을 팀장 보드로 쓰기</button>
+    </div>
+    <div id="dataEdit">
+      <label>① 이 데이터가 말하는 것 (한 문장)</label>
+      <textarea id="bd_find" maxlength="100" style="min-height:64px" placeholder="예) 1991년 분출 이후 지구 평균 기온이 …"></textarea>
+      <label>② 근거가 되는 수치 (시작값 → 변화값)</label>
+      <textarea id="bd_evid" maxlength="80" style="min-height:52px" placeholder="예) +0.45 W/m²(2001) → +1.4 W/m²(2023)"></textarea>
+      <label>③ 복사 평형(흡수량=방출량)과의 연결 — 열수지로 설명하면?</label>
+      <textarea id="bd_link" maxlength="120" style="min-height:64px" placeholder="예) 반사가 늘어난 만큼 지표면 흡수가 줄어서 …"></textarea>
+      <p class="savedot" id="dataSaved">입력하면 자동 저장됩니다 — 발표 때 선생님 화면에 크게 나와요</p>
+    </div>
+    <div id="dataView" class="hidden">
+      <p class="desc" style="margin:10px 0 0">👀 우리 모둠 팀장 보드를 실시간으로 보는 중 — 함께 토의하세요!</p>
+      <div class="viewbox"><h4>① 데이터가 말하는 것</h4><p id="dvFind" class="empty">아직 입력 전…</p></div>
+      <div class="viewbox"><h4>② 근거 수치</h4><p id="dvEvid" class="empty">아직 입력 전…</p></div>
+      <div class="viewbox"><h4>③ 복사 평형과의 연결</h4><p id="dvLink" class="empty">아직 입력 전…</p></div>
+    </div>
+  </section>
+
+  <!-- 투표 -->
+  <section id="vVote" class="card hidden">
+    <h2>가장 설득력 있는 열수지 해석은?</h2>
+    <p class="desc">우리 모둠을 <b>제외한</b> 모둠 중, 데이터를 <b>가장 정확하고 설득력 있게</b> 해석한 모둠에 투표하세요. (1인 1표)</p>
+    <div class="votegrid" id="voteGrid"></div>
+  </section>
+
+  <!-- 정리: 나의 생각 -->
+  <section id="vEnd" class="card hidden">
+    <h2>나의 생각 한 문장</h2>
+    <p class="desc">오늘 마지막 질문 — <b>적도 쪽(저위도)은 흡수량&gt;방출량으로 에너지가 남고, 극 쪽(고위도)은 모자랍니다. 그런데 왜 적도는 계속 뜨거워지지 않고, 극은 계속 차가워지지 않을까요?</b><br>오늘 배운 열수지를 떠올리며 나의 생각을 1~2문장으로 적어 보세요. 이 문장이 다음 수업의 출발점이 됩니다!</p>
+    <textarea id="inOpinion" maxlength="160" style="min-height:110px" placeholder="예) 남는 에너지가 어딘가로 옮겨가는 게 아닐까 …"></textarea>
+    <button class="big" id="btnOpinion">제출하기</button>
+    <p class="desc" id="opinionDone" style="margin-top:10px"></p>
+  </section>
+
+</main>
+<footer>제작 · 호남고 조영신</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBotwjsJxit4SbOzXVVOov37Po97AieoxM",
+  authDomain: "sangdam-b97c1.firebaseapp.com",
+  projectId: "sangdam-b97c1",
+  storageBucket: "sangdam-b97c1.firebasestorage.app",
+  messagingSenderId: "389048360844",
+  appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
+};
+const COLBASE = "pw_openclass_heat";
+let COL = COLBASE, CLS = 0;   // 선생님이 고른 반의 저장소(pw_openclass_heat_c<N>)로 자동 연결
+const db = getFirestore(initializeApp(firebaseConfig));
+
+/* ── 모둠별 데이터셋 ── */
+const DATASETS = {
+  1:{ name:"화산 분출과 지구의 반사율", sub:"1991년 피나투보 화산 분출 전후의 지구 평균 기온 편차 (NASA)",
+      hint:"<b>HINT</b> — 화산재(에어로졸)가 성층권에 퍼지면 열수지의 <b>'반사 및 산란'</b>이 커져요. 반사가 커지면 지표면 흡수는…? 그리고 왜 2~3년 뒤 기온이 다시 회복될까요?" },
+  2:{ name:"달과 지구의 낮밤 온도", sub:"대기가 없는 달(적도)과 대기가 있는 지구(사하라 사막)의 하루",
+      hint:"<b>HINT</b> — 달도 복사 평형을 이루지만 훨씬 극단적인 온도 사이를 오가요. 일교차를 비교해 보세요(약 300℃ vs 약 33℃). <b>대기의 흡수와 재복사</b>가 있으면 왜 변화가 부드러워질까요?" },
+  3:{ name:"표면에 따라 다른 반사율", sub:"표면별 태양 복사 반사 비율 · 북극 해빙 9월 최소 면적: 1979년 705만 → 2024년 428만 km²",
+      hint:"<b>HINT</b> — 흰 해빙이 녹아 어두운 바다가 드러나면 <b>'반사 및 산란 30'</b>은 어떻게 될까요? 반사가 줄어든 만큼 흡수가 늘면 기온은…? (1모둠과 <b>반대 방향</b>의 변화입니다)" },
+  4:{ name:"지구 에너지 불균형", sub:"위성으로 잰 흡수−방출 에너지(W/m²) — 0이면 복사 평형 (분석마다 값은 조금 다를 수 있어요)",
+      hint:"<b>HINT</b> — 0보다 크면 <b>흡수량&gt;방출량</b>. 온실 기체가 늘면 '우주로 손실'과 '대기의 재복사' 중 무엇이 어떻게 변해 불균형이 생길까요? 지난 시간과 연결해 보세요!" },
+  5:{ name:"하루 동안의 일사량과 기온", sub:"맑은 날 하루의 태양 복사(일사량)와 기온 변화 (상대값)",
+      hint:"<b>HINT</b> — 일사량 최대는 남중(약 12시 30분)인데 기온 최대는 왜 15시쯤일까요? <b>'흡수량이 방출량보다 많은 동안 온도는 계속 오른다'</b>로 설명해 보세요." },
+};
+
+/* ── 차트 (실제 관측값 기반) ── */
+function lineChart(o){
+  const w=820, h=500, ml=o.ml||86, mr=30, mt=92, mb=62;
+  const iw=w-ml-mr, ih=h-mt-mb;
+  const X=x=>ml+(x-o.xmin)/(o.xmax-o.xmin)*iw;
+  const Y=y=>mt+ih-(y-o.ymin)/(o.ymax-o.ymin)*ih;
+  let g = "";
+  (o.yticks||[]).forEach(t=>{ g += `<line x1="${ml}" y1="${Y(t)}" x2="${w-mr}" y2="${Y(t)}" stroke="#e3e9f2" stroke-width="1.5"/>
+    <text x="${ml-10}" y="${Y(t)+5}" text-anchor="end" font-size="16" fill="#3d4652">${t}</text>`; });
+  (o.xticks||[]).forEach(t=>{ g += `<text x="${X(t)}" y="${h-mb+26}" text-anchor="middle" font-size="16" fill="#3d4652">${o.xfmt?o.xfmt(t):t}</text>`; });
+  if(o.zero !== undefined) g += `<line x1="${ml}" y1="${Y(o.zero)}" x2="${w-mr}" y2="${Y(o.zero)}" stroke="#3d4652" stroke-width="2" stroke-dasharray="5 4"/>`;
+  g += `<line x1="${ml}" y1="${mt-6}" x2="${ml}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>
+        <line x1="${ml}" y1="${h-mb}" x2="${w-mr}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>`;
+  const line = pts => pts.map(p=>`${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(" ");
+  const series = o.series || [{pts:o.pts, color:o.color, dots:o.dots}];
+  series.forEach(s=>{
+    g += `<polyline points="${line(s.pts)}" fill="none" stroke="${s.color||"#d64545"}" stroke-width="3.5" stroke-linejoin="round"/>`;
+    if(s.dots) s.pts.forEach(p=>{ g += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="5" fill="${s.color||"#d64545"}"/>`; });
+  });
+  const leg = series.filter(s=>s.label);
+  leg.forEach((s,i)=>{ const lx=w-mr-184, ly=mt-58+i*26;
+    g += `<line x1="${lx}" y1="${ly}" x2="${lx+34}" y2="${ly}" stroke="${s.color}" stroke-width="5"/>
+      <text x="${lx+42}" y="${ly+6}" font-size="16" font-weight="700" fill="#3d4652">${s.label}</text>`; });
+  (o.marks||[]).forEach(m=>{ g += `<circle cx="${X(m[0])}" cy="${Y(m[1])}" r="6.5" fill="#0B3E86"/>
+    <text x="${X(m[0])+(m[3]==="end"?-14:14)}" y="${Y(m[1])+(m[4]||5)}" text-anchor="${m[3]||"start"}" font-size="17" font-weight="900" fill="#0B3E86">${m[2]}</text>`; });
+  (o.notes||[]).forEach(n=>{ g += `<text x="${X(n[0])}" y="${Y(n[1])}" text-anchor="${n[3]||"middle"}" font-size="16" font-weight="900" fill="${n[4]||"#c8920a"}">${n[2]}</text>`; });
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${w}" height="${h}" fill="#fff"/>
+    <text x="30" y="40" font-size="24" font-weight="900" fill="#092f66">${o.title}</text>
+    <text x="30" y="66" font-size="15" font-weight="700" fill="#3d4652">${o.sub}</text>
+    <text x="26" y="${mt+ih/2}" text-anchor="middle" font-size="15" font-weight="900" fill="#0B3E86" transform="rotate(-90 26 ${mt+ih/2})">${o.ylabel||""}</text>
+    ${g}
+    <text x="${w-24}" y="${h-16}" text-anchor="end" font-size="12.5" fill="#8a93a1">${o.src} · 관측값 기반(수업용 재구성)</text>
+  </svg>`;
+}
+function barChart(o){
+  const w=820, h=500, ml=o.ml||86, mr=30, mt=92, mb=70;
+  const iw=w-ml-mr, ih=h-mt-mb;
+  const Y=v=>mt+ih-(v-o.ymin)/(o.ymax-o.ymin)*ih;
+  const base = o.zero !== undefined ? o.zero : o.ymin;
+  const n=o.cats.length, bw=iw/n*0.56;
+  let g = "";
+  (o.yticks||[]).forEach(t=>{ g += `<line x1="${ml}" y1="${Y(t)}" x2="${w-mr}" y2="${Y(t)}" stroke="#e3e9f2" stroke-width="1.5"/>
+    <text x="${ml-10}" y="${Y(t)+5}" text-anchor="end" font-size="16" fill="#3d4652">${t}</text>`; });
+  g += `<line x1="${ml}" y1="${mt-6}" x2="${ml}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>
+        <line x1="${ml}" y1="${Y(base)}" x2="${w-mr}" y2="${Y(base)}" stroke="#3d4652" stroke-width="2.5"/>`;
+  o.cats.forEach((c,i)=>{
+    const cx = ml+iw/n*(i+0.5);
+    const yA = Y(Math.max(c.val, base)), yB = Y(Math.min(c.val, base));
+    g += `<rect x="${(cx-bw/2).toFixed(1)}" y="${yA.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2,yB-yA).toFixed(1)}" rx="6" fill="${c.color}"/>
+      <text x="${cx}" y="${c.val>=base ? yA-10 : yB+24}" text-anchor="middle" font-size="19" font-weight="900" fill="#092f66">${c.vlabel!==undefined?c.vlabel:c.val}</text>
+      <text x="${cx}" y="${h-mb+30}" text-anchor="middle" font-size="16" font-weight="700" fill="#3d4652">${c.label}</text>`;
+  });
+  (o.notes||[]).forEach(nn=>{ const cx = ml+iw/n*(nn[0]+0.5);
+    g += `<text x="${cx}" y="${Y(nn[1])}" text-anchor="middle" font-size="17" font-weight="900" fill="${nn[3]||"#c8920a"}">${nn[2]}</text>`; });
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${w}" height="${h}" fill="#fff"/>
+    <text x="30" y="40" font-size="24" font-weight="900" fill="#092f66">${o.title}</text>
+    <text x="30" y="66" font-size="15" font-weight="700" fill="#3d4652">${o.sub}</text>
+    <text x="26" y="${mt+ih/2}" text-anchor="middle" font-size="15" font-weight="900" fill="#0B3E86" transform="rotate(-90 26 ${mt+ih/2})">${o.ylabel||""}</text>
+    ${g}
+    <text x="${w-24}" y="${h-16}" text-anchor="end" font-size="12.5" fill="#8a93a1">${o.src} · 관측값 기반(수업용 재구성)</text>
+  </svg>`;
+}
+function chartPinatubo(){
+  const pts=[[1988,0.41],[1989,0.29],[1990,0.45],[1991,0.40],[1992,0.02],[1993,0.08],[1994,0.22],[1995,0.42],[1996,0.35]];
+  return lineChart({ title:"피나투보 화산 분출과 지구 평균 기온", sub:"1951~1980년 평균 대비 기온 편차 (℃)", ylabel:"기온 편차 (℃)",
+    src:"자료: NASA GISS", xmin:1987, xmax:1997.5, ymin:-0.25, ymax:0.75, zero:0,
+    yticks:[-0.2,0,0.2,0.4,0.6], xticks:[1988,1990,1992,1994,1996], pts, dots:true, color:"#d64545",
+    marks:[[1991,0.40,"1991.6 분출 🌋","start",-14],[1992,0.02,"약 0.4~0.5℃ 하강","start",26]] });
+}
+function chartMoon(){
+  return barChart({ title:"달과 지구의 낮밤 온도", sub:"대기가 없는 달(적도) vs 대기가 있는 지구(사하라 사막)", ylabel:"온도 (℃)",
+    src:"자료: NASA·기상 관측", ymin:-210, ymax:180, zero:0, yticks:[-150,-100,-50,0,50,100,150],
+    cats:[ {label:"달 · 낮", val:127, vlabel:"+127℃", color:"#e09b00"},
+           {label:"달 · 밤", val:-173, vlabel:"−173℃", color:"#1f6fd6"},
+           {label:"사하라 · 낮", val:38, vlabel:"+38℃", color:"#e09b00"},
+           {label:"사하라 · 밤", val:5, vlabel:"+5℃", color:"#1f6fd6"} ],
+    notes:[[0.5,165,"일교차 약 300℃!"],[2.5,165,"일교차 약 33℃"]] });
+}
+function chartAlbedo(){
+  return barChart({ title:"표면에 따라 다른 반사율(알베도)", sub:"표면이 태양 복사를 반사하는 비율 — 지구 전체 평균은 30 %", ylabel:"반사율",
+    src:"자료: 지구과학 관측 자료", ymin:0, ymax:1.0, yticks:[0,0.2,0.4,0.6,0.8,1.0],
+    cats:[ {label:"갓 내린 눈", val:0.85, vlabel:"85%", color:"#8fb2d6"},
+           {label:"해빙(얼음)", val:0.5, vlabel:"50%", color:"#5b9bd5"},
+           {label:"사막 모래", val:0.4, vlabel:"40%", color:"#d8b24a"},
+           {label:"숲", val:0.15, vlabel:"15%", color:"#1A9A3E"},
+           {label:"바다", val:0.06, vlabel:"6%", color:"#1f6fd6"} ],
+    notes:[[2,0.97,"밝을수록 많이 반사 · 어두울수록 많이 흡수","#c8920a"]] });
+}
+function chartEEI(){
+  const pts=[[2001,0.45],[2003,0.5],[2005,0.55],[2008,0.6],[2010,0.65],[2012,0.72],[2015,0.85],[2017,0.95],[2019,1.05],[2021,1.2],[2023,1.4]];
+  return lineChart({ title:"지구 에너지 불균형 (흡수 − 방출)", sub:"위성으로 잰 전 지구 평균 (W/m²) — 0이면 복사 평형", ylabel:"흡수 − 방출 (W/m²)",
+    src:"자료: NASA CERES", xmin:2000, xmax:2025, ymin:-0.2, ymax:1.7, zero:0,
+    yticks:[0,0.5,1.0,1.5], xticks:[2001,2010,2023], pts, dots:true, color:"#d64545",
+    marks:[[2001,0.45,"2001년 +0.45","start",-12],[2023,1.4,"2023년 +1.4 W/m²","end",-12]],
+    notes:[[2010,-0.12,"0 = 흡수량과 방출량이 같은 상태(복사 평형)","middle","#3d4652"]] });
+}
+function chartDay(){
+  const sun=[[0,0],[5.5,0],[6,2],[7,14],[8,30],[9,48],[10,66],[11,84],[12,97],[12.5,100],[13,97],[14,84],[15,66],[16,48],[17,30],[18,14],[19,2],[19.5,0],[24,0]];
+  const tmp=[[0,38],[2,32],[4,26],[6,22],[7,24],[8,30],[10,46],[12,62],[13,72],[14,80],[15,85],[16,83],[17,78],[18,71],[20,57],[22,46],[24,39]];
+  return lineChart({ title:"하루 동안의 일사량과 기온", sub:"맑은 날의 태양 복사(일사량)와 기온 변화 — 상대값", ylabel:"상대 크기 (%)",
+    src:"자료: 기상 관측", xmin:0, xmax:24, ymin:0, ymax:112, yticks:[0,25,50,75,100],
+    xticks:[0,6,12,18,24], xfmt:t=>t+"시",
+    series:[ {pts:sun, color:"#e09b00", label:"일사량(받는 에너지)"}, {pts:tmp, color:"#d64545", label:"기온"} ],
+    marks:[[12.5,100,"일사 최대 — 남중(약 12시 30분)","start",-12],[15,85,"기온 최대 15시","start",24]] });
+}
+function chartSVG(t){ return [chartPinatubo, chartMoon, chartAlbedo, chartEEI, chartDay][t-1](); }
+
+/* ── 배분 다이어그램 (미션 ①) ── */
+function fatArrow(x1,y1,x2,y2,w,fill,stroke){
+  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L, px=-uy, py=ux;
+  const hl=Math.min(w*1.7, L*.4), hw=w*2.1, bx=x2-ux*hl, by=y2-uy*hl, h=w/2;
+  const P=(x,y)=>`${x.toFixed(1)},${y.toFixed(1)}`;
+  return `<polygon points="${P(x1+px*h,y1+py*h)} ${P(bx+px*h,by+py*h)} ${P(bx+px*hw/2,by+py*hw/2)} ${P(x2,y2)} ${P(bx-px*hw/2,by-py*hw/2)} ${P(bx-px*h,by-py*h)} ${P(x1-px*h,y1-py*h)}" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round" opacity=".95"/>`;
+}
+function allocSVG(r, a, s){
+  const has = v => v !== undefined && v !== null && v !== "";
+  const num = v => has(v) ? +v : 0;
+  const lab = v => has(v) ? v : "?";
+  const wv = v => Math.max(3, num(v)*0.42);
+  const SOL="#ffc93c", SOLS="#e09b00";
+  const sum = num(r)+num(a)+num(s);
+  const sumOK = sum === 100 && has(r);
+  return `<svg viewBox="0 0 820 430" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="aatm" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#aecfee"/><stop offset="1" stop-color="#dcebfa"/></linearGradient>
+      <linearGradient id="aspc" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#101b36"/><stop offset="1" stop-color="#2b4573"/></linearGradient>
+    </defs>
+    <rect x="0" y="0" width="820" height="64" fill="url(#aspc)"/>
+    <g fill="#fff" opacity=".8"><circle cx="90" cy="16" r="1.5"/><circle cx="300" cy="44" r="1.2"/><circle cx="500" cy="14" r="1.5"/><circle cx="740" cy="48" r="1.2"/></g>
+    <rect x="0" y="64" width="820" height="286" fill="url(#aatm)"/>
+    <rect x="0" y="350" width="820" height="44" fill="#cdbf9f"/>
+    <rect x="0" y="394" width="820" height="36" fill="#b3a184"/>
+    <rect x="12" y="18" width="54" height="28" rx="14" fill="#5b7cad"/><text x="39" y="38" text-anchor="middle" font-size="16" font-weight="900" fill="#fff">우주</text>
+    <rect x="12" y="190" width="54" height="28" rx="14" fill="#3f6ea8"/><text x="39" y="210" text-anchor="middle" font-size="16" font-weight="900" fill="#fff">대기</text>
+    <rect x="12" y="382" width="54" height="28" rx="14" fill="#7a674a"/><text x="39" y="402" text-anchor="middle" font-size="16" font-weight="900" fill="#fff">지표</text>
+    <circle cx="150" cy="34" r="22" fill="#ffd23c" stroke="#e09b00" stroke-width="3"/>
+    ${fatArrow(150,58, 150,180, 30, SOL, SOLS)}
+    <text x="150" y="118" text-anchor="middle" font-size="19" font-weight="900" fill="#8a6a2a">태양 복사 100</text>
+    ${fatArrow(185,195, 300,58, wv(r), "#ffe28a", SOLS)}
+    <text x="318" y="96" font-size="18" font-weight="900" fill="#fff">반사 및 산란 ${lab(r)}</text>
+    <text x="318" y="118" font-size="13" font-weight="700" fill="#cdd9ec">우주로 되돌아감 — 지구를 데우지 못함</text>
+    ${fatArrow(175,215, 410,246, wv(a), "#9b7dd9", "#7a4fc9")}
+    <circle cx="452" cy="250" r="${18+num(a)*0.28}" fill="#9b7dd9" opacity=".45"/>
+    <text x="452" y="256" text-anchor="middle" font-size="18" font-weight="900" fill="#5e3a7d">${lab(a)}</text>
+    <text x="452" y="300" text-anchor="middle" font-size="17" font-weight="900" fill="#5e3a7d">대기의 흡수</text>
+    ${fatArrow(150,200, 150,342, wv(s), "#f0845c", "#d1532c")}
+    <ellipse cx="150" cy="356" rx="${30+num(s)*0.9}" ry="12" fill="#e8603c" opacity=".4"/>
+    <text x="225" y="330" font-size="18" font-weight="900" fill="#7a2f14">지표면 흡수 ${lab(s)}</text>
+    <rect x="590" y="16" width="214" height="60" rx="10" fill="${sumOK ? "#e7f5ec" : "#fde8e8"}" stroke="${sumOK ? "#1A9A3E" : "#d64545"}" stroke-width="2.5"/>
+    <text x="697" y="41" text-anchor="middle" font-size="15" font-weight="700" fill="#3d4652">세 갈래의 합계</text>
+    <text x="697" y="67" text-anchor="middle" font-size="22" font-weight="900" fill="${sumOK ? "#136e2e" : "#a02b2b"}">${has(r)||has(a)||has(s) ? sum : "?"} / 100</text>
+  </svg>`;
+}
+
+const $ = id => document.getElementById(id);
+const views = ["vJoin","vLobby","vPredict","vAlloc","vData","vVote","vEnd"];
+function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v));
+  document.body.classList.toggle("wide", v==="vAlloc" || v==="vData"); }
+
+let uid = null, uidKey = "och_uid", meKey = "och_me";
+let me = null;            // {name, team, leader}
+let myDoc = {};           // 서버에 저장된 내 데이터
+let state = {};           // 진행 상태
+let team = 0, joined = false, inited = false;
+let stuUnsub = null;
+function subMe(){         // 내 문서 구독 — uid가 바뀌면 다시 건다
+  if(stuUnsub) stuUnsub();
+  stuUnsub = onSnapshot(doc(db, COL, "stu_"+uid), snap => { myDoc = snap.data() || {}; render(); });
+}
+function newUid(){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem(uidKey, uid); }
+
+/* ── 입장 ── */
+const tg = $("teamGrid");
+for(let i=1;i<=5;i++){
+  const b = document.createElement("button");
+  b.textContent = i + "모둠";
+  b.onclick = () => { team = i; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===i-1)); };
+  tg.appendChild(b);
+}
+let leaderSel = false;
+$("btnLeader").onclick = () => { leaderSel = !leaderSel; $("btnLeader").classList.toggle("on", leaderSel); };
+
+$("btnJoin").onclick = async () => {
+  if(!inited){ alert("서버에 연결 중입니다. 잠시 후 다시 눌러 주세요."); return; }
+  const name = $("inName").value.trim();
+  if(!name){ alert("이름을 입력하세요"); return; }
+  if(!team){ alert("모둠을 선택하세요"); return; }
+  if(me && me.name && me.name !== name){ newUid(); myDoc = {}; subMe(); }   // 같은 기기, 다른 학생 — 이전 기록 보존
+  me = {name, team, leader: leaderSel};
+  localStorage.setItem(meKey, JSON.stringify(me));
+  try{
+    await setDoc(doc(db, COL, "stu_"+uid), { name, team, leader: leaderSel, joinedAt: serverTimestamp() }, {merge:true});
+    joined = true;
+    $("meLine").innerHTML = `호남고등학교 · <b>${team}모둠 ${name}</b>`;
+    render();
+  }catch(e){ alert("접속 오류: 선생님께 알려주세요\n" + e.message); }
+};
+
+/* ── 반 연동 — 선생님이 고른 반의 저장소로 접속 ── */
+let liveCls = null;
+onSnapshot(doc(db, COLBASE, "live"), snap => {
+  const c = +((snap.data() || {}).cls || 0);
+  if(liveCls === null){ liveCls = c; init(c); }
+  else if(c !== liveCls){ location.reload(); }   // 수업 반이 바뀌면 새로 입장
+}, () => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
+
+function init(cls){
+  CLS = cls; COL = cls ? COLBASE + "_c" + cls : COLBASE;
+  const K = cls ? "och_c" + cls + "_" : "och_";   // 반별 기기 식별 — 다음 교시 다른 반과 안 섞이게
+  uidKey = K + "uid"; meKey = K + "me";
+  uid = localStorage.getItem(uidKey);
+  if(!uid) newUid();
+  me = JSON.parse(localStorage.getItem(meKey) || "null");
+  if(me){ $("inName").value = me.name; team = me.team; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1));
+    leaderSel = !!me.leader; $("btnLeader").classList.toggle("on", leaderSel); }
+
+  onSnapshot(doc(db, COL, "state"), snap => {
+    state = snap.data() || {};
+    $("conn").className = "conn on"; $("conn").textContent = CLS ? `실시간 · 1-${CLS}반` : "실시간 연결됨";
+    render();
+  }, err => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
+
+  subMe();
+
+  onSnapshot(collection(db, COL), snap => {
+    let n = 0; snap.forEach(d => { if(d.id.startsWith("stu_") && d.data().name) n++; });
+    $("lobbyN").textContent = n;
+  });
+  inited = true;
+  render();
+}
+
+/* 같은 노트북을 다른 학생이 쓰게 된 경우 — 새 식별자로 다시 입장(이전 학생 기록은 그대로 보존) */
+$("btnRejoin").onclick = () => {
+  if(!inited) return;
+  newUid();
+  localStorage.removeItem(meKey);
+  me = null; myDoc = {}; joined = false; team = 0; leaderSel = false;
+  $("inName").value = "";
+  [...tg.children].forEach(c => c.classList.remove("on"));
+  $("btnLeader").classList.remove("on");
+  $("meLine").textContent = "호남고등학교";
+  subMe(); show("vJoin");
+};
+
+async function save(data){
+  try{ await setDoc(doc(db, COL, "stu_"+uid), data, {merge:true}); }
+  catch(e){ alert("전송 오류: " + e.message); }
+}
+
+/* ── 렌더 ── */
+function render(){
+  if(!joined && !(me && myDoc.name)){ show("vJoin"); return; }
+  if(me && myDoc.name && !joined){ joined = true; $("meLine").innerHTML = `호남고등학교 · <b>${me.team}모둠 ${me.name}</b>`; }
+
+  const ph = state.phase || "lobby";
+  if(ph === "lobby"){ show("vLobby"); }
+  else if(ph === "predict"){ renderPredict(); }
+  else if(ph === "alloc"){ renderAlloc(); }
+  else if(ph === "data"){ renderData(); }
+  else if(ph === "vote"){ renderVote(); }
+  else if(ph === "end"){ renderEnd(); }
+}
+
+/* 예측 */
+$("predRange").oninput = e => { $("predNum").textContent = e.target.value; };
+$("btnPredict").onclick = () => { save({ predict: +$("predRange").value }); };
+function renderPredict(){
+  show("vPredict");
+  const done = myDoc.predict !== undefined;
+  $("btnPredict").disabled = done || !state.predictOpen;
+  $("btnPredict").textContent = done ? `제출 완료 (${myDoc.predict} / 100)` : (state.predictOpen ? "제출하기" : "잠시 후 열립니다");
+}
+
+/* ── 모둠 보드 (배분 + 데이터 공용 문서 board_<모둠>) ── */
+let boardDoc = {}, boardUnsub = null, boardInit = false, boardSaveT = null;
+const isLeader = () => !!(me && me.leader);
+const BD_FIELDS = ["bd_ref","bd_atm","bd_srf","bd_rule","bd_find","bd_evid","bd_link"];
+const fieldKey = id => id.slice(3);   // bd_ref → ref
+
+function boardSave(){
+  if(!isLeader() || !me) return;
+  const data = {team:me.team, leaderName:me.name, ts:Date.now()};
+  BD_FIELDS.forEach(id => data[fieldKey(id)] = $(id).value.trim());
+  setDoc(doc(db, COL, "board_"+me.team), data, {merge:true})
+    .then(() => { $("allocSaved").textContent = $("dataSaved").textContent = "✓ 실시간 저장됨 — 선생님 화면과 연동 중"; })
+    .catch(e => { $("allocSaved").textContent = $("dataSaved").textContent = "저장 오류: " + e.message; });
+}
+BD_FIELDS.forEach(id => { $(id).oninput = () => {
+  if(id==="bd_ref"||id==="bd_atm"||id==="bd_srf") syncAllocUI();
+  clearTimeout(boardSaveT); boardSaveT = setTimeout(boardSave, 600); }; });
+
+function boardLoad(){
+  BD_FIELDS.forEach(id => { const v = boardDoc[fieldKey(id)]; if(v !== undefined && v !== "") $(id).value = v; });
+  syncAllocUI();
+}
+function subBoard(){
+  if(boardUnsub || !me || !me.team) return;
+  boardUnsub = onSnapshot(doc(db, COL, "board_"+me.team), s => {
+    boardDoc = s.data() || {};
+    if(isLeader() && !boardInit){ boardInit = true; boardLoad(); }
+    const ph = state.phase || "";
+    if(ph === "alloc") renderAlloc(); else if(ph === "data") renderData();
+  });
+}
+function claim(){
+  me.leader = true; localStorage.setItem(meKey, JSON.stringify(me));
+  save({leader:true});
+  boardInit = true; boardLoad();
+  render();
+}
+$("btnClaimA").onclick = claim;
+$("btnClaimD").onclick = claim;
+
+/* 전개1: 에너지 100 배분 */
+function syncAllocUI(){
+  const r = +$("bd_ref").value, a = +$("bd_atm").value, s = +$("bd_srf").value;
+  $("avRef").textContent = r; $("avAtm").textContent = a; $("avSrf").textContent = s;
+  const sum = r+a+s;
+  $("sumVal").textContent = sum;
+  $("sumLine").className = "sumline " + (sum===100 ? "ok" : "no");
+  if(isLeader()) $("allocFig").innerHTML = allocSVG(r, a, s);
+}
+function setView(id, val){
+  const el = $(id), has = val !== undefined && String(val).trim() !== "";
+  el.textContent = has ? val : "아직 입력 전…";
+  el.classList.toggle("empty", !has);
+}
+function renderAlloc(){
+  show("vAlloc"); subBoard();
+  const lead = isLeader();
+  $("allocReal").classList.toggle("hidden", !state.allocReveal);
+  $("allocClaim").classList.toggle("hidden", lead);
+  $("allocEdit").classList.toggle("hidden", !lead);
+  $("allocView").classList.toggle("hidden", lead);
+  if(lead){ syncAllocUI(); }
+  else{
+    $("allocFig").innerHTML = allocSVG(boardDoc.ref, boardDoc.atm, boardDoc.srf);
+    const has = boardDoc.ref !== undefined && boardDoc.ref !== "";
+    setView("avView", has ? `반사 및 산란 ${boardDoc.ref} · 대기의 흡수 ${boardDoc.atm} · 지표면 흡수 ${boardDoc.srf}` : "");
+    setView("avRule", boardDoc.rule);
+  }
+}
+
+/* 전개2: 데이터 분석 */
+let chartDrawn = 0;
+function renderData(){
+  show("vData"); subBoard();
+  const ds = DATASETS[me.team];
+  $("dataTitle").textContent = `미션 ② 데이터 탐정 — ${me.team}모둠: ${ds.name}`;
+  $("dataSub").innerHTML = ds.sub;
+  $("dataHint").innerHTML = ds.hint;
+  if(chartDrawn !== me.team){ $("chartBox").innerHTML = chartSVG(me.team); chartDrawn = me.team; }
+  const lead = isLeader();
+  $("dataClaim").classList.toggle("hidden", lead);
+  $("dataEdit").classList.toggle("hidden", !lead);
+  $("dataView").classList.toggle("hidden", lead);
+  if(!lead){ setView("dvFind", boardDoc.find); setView("dvEvid", boardDoc.evid); setView("dvLink", boardDoc.link); }
+}
+
+/* 투표 */
+function renderVote(){
+  show("vVote");
+  const g = $("voteGrid");
+  const sents = state.sentences || {};   // {1:{ds,text}, ...}
+  g.innerHTML = "";
+  for(let t=1;t<=5;t++){
+    const s = sents[t];
+    if(!s || !s.text) continue;
+    const b = document.createElement("button");
+    b.innerHTML = `<b>${t}모둠 · ${s.ds || ""}</b>${s.text}`;
+    if(t === me.team){ b.disabled = true; b.innerHTML += " (우리 모둠)"; }
+    if(myDoc.vote === t) b.classList.add("on");
+    b.onclick = () => { save({ vote: t }); };
+    g.appendChild(b);
+  }
+  if(myDoc.vote) [...g.children].forEach(b => b.disabled = true);
+}
+
+/* 정리: 나의 생각 */
+$("btnOpinion").onclick = () => {
+  const t = $("inOpinion").value.trim();
+  if(!t){ alert("한 문장만 적어 주세요!"); return; }
+  save({ opinion: t, opinionTs: Date.now() });
+  $("opinionDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다음 시간, 이 질문의 답을 찾으러 갑니다 🌍";
+};
+function renderEnd(){
+  show("vEnd");
+  if(myDoc.opinion){ $("inOpinion").value = myDoc.opinion;
+    $("opinionDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다시 제출하면 덮어써요."; }
+}
+</script>
+</body>
+</html>
