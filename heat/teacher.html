@@ -454,12 +454,12 @@ function svgHB(step){
       + fatArrow(575,170, 575,64, 7, RAD, RADS) + `
       <text x="590" y="110" font-size="15" font-weight="900" fill="#fff">우주로 손실 12</text>`
       + fatArrow(680,430, 680,320, 11, EVP, EVPS) + `
-      <text x="692" y="366" font-size="15" font-weight="900" fill="#1d5f86">물의 증발 24</text>`
+      <text x="668" y="366" text-anchor="end" font-size="15" font-weight="900" fill="#1d5f86">물의 증발 24</text>`
       + fatArrow(745,430, 745,352, 6, EVP, EVPS) + `
       <text x="757" y="392" font-size="14" font-weight="900" fill="#1d5f86">대류와 전도 5</text>`)}
     ${S(5, fatArrow(870,230, 870,428, 18, RAD, RADS) + `
-      <text x="800" y="258" font-size="16" font-weight="900" fill="#b02d55">대기의 재복사 98</text>
-      <text x="800" y="280" font-size="13" font-weight="700" fill="#7a3350">지표로 되돌아옴 — 온실효과!</text>`
+      <text x="848" y="258" text-anchor="end" font-size="16" font-weight="900" fill="#b02d55">대기의 재복사 98</text>
+      <text x="848" y="280" text-anchor="end" font-size="13" font-weight="700" fill="#7a3350">지표로 되돌아옴 — 온실효과!</text>`
       + fatArrow(712,210, 712,64, 13, RAD, RADS) + `
       <text x="726" y="86" font-size="16" font-weight="900" fill="#fff">대기의 복사 58</text>
       <rect x="620" y="8" width="326" height="48" rx="10" fill="#0B3E86"/>
@@ -891,24 +891,22 @@ slide(() => {
     ["베스트 공개", "green", () => setState({voteDone:true})],
   ]; } });
 
-/* 10 정리 — 가계부 결산 */
+/* 10 정리 — 가계부 결산 (완자 열수지 그림 + 수지표) */
 slide(() => `
   <div class="kicker">정리 — 지구 열수지 (완자 120쪽 그대로, 시험에 나옵니다)</div>
   <h2 class="mid" style="margin-bottom:1vh">흡수량 = 방출량, 그래서 지구의 체온은 일정하다</h2>
-  <div class="sumflow">
-    <div class="sumbox">태양 복사<br>100</div><span class="sumarrow">→</span>
-    <div class="sumbox">반사 및 산란 30<small>대기 23 + 지표면 7<br>지구를 데우지 못함</small></div>
-    <div class="sumbox">지구가 흡수 70<small>대기의 흡수 23<br>지표면 흡수 47</small></div><span class="sumarrow">→</span>
-    <div class="sumbox" style="border-color:var(--red);color:var(--red)">지구 복사 70 방출<small>우주로 손실 12<br>대기의 복사 58</small></div><span class="sumarrow">→</span>
-    <div class="sumbox" style="border-color:var(--green);color:var(--green)">복사 평형<small>평균 기온 일정</small></div>
-  </div>
-  <div class="ledger">
-    <div><b>📒 대기의 가계부</b>흡수 23+104+24+5 = <b style="display:inline;font-size:inherit">156</b> &nbsp;=&nbsp; 방출 58+98 = <b style="display:inline;font-size:inherit">156</b></div>
-    <div><b>📒 지표면의 가계부</b>흡수 47+98 = <b style="display:inline;font-size:inherit">145</b> &nbsp;=&nbsp; 방출 116+24+5 = <b style="display:inline;font-size:inherit">145</b></div>
-    <div><b>📒 지구 전체의 가계부</b>흡수 100−30 = <b style="display:inline;font-size:inherit">70</b> &nbsp;=&nbsp; 방출 12+58 = <b style="display:inline;font-size:inherit">70</b></div>
-  </div>
-  <div style="margin-top:auto;font-size:2.3vh;font-weight:700;color:var(--soft);line-height:1.8">
-    🎯 <b style="color:var(--navy)">시험 포인트</b> — ① 복사 평형이면 <b style="color:var(--navy)">각 영역에서 흡수량=방출량</b> 등식을 세울 수 있다 &nbsp;② 지구의 반사율은 <b style="color:var(--navy)">30 %</b>(23+7 — "23 %" 함정 주의!) &nbsp;③ 대기는 태양 복사(23)보다 <b style="color:var(--navy)">지표면 방출(104)을 더 많이</b> 흡수한다</div>`);
+  <div style="flex:1;display:flex;gap:2vw;min-height:0;align-items:center">
+    <div class="svgwrap" style="flex:1.5;min-width:0">${svgHB(5)}</div>
+    <div style="flex:1;display:flex;flex-direction:column;gap:1.4vh;min-width:0">
+      <div class="ledger" style="flex-direction:column;gap:1.2vh;margin-top:0">
+        <div><b>📒 대기의 가계부</b>흡수 23+104+24+5 = <b style="display:inline;font-size:inherit">156</b> &nbsp;=&nbsp; 방출 58+98 = <b style="display:inline;font-size:inherit">156</b></div>
+        <div><b>📒 지표면의 가계부</b>흡수 47+98 = <b style="display:inline;font-size:inherit">145</b> &nbsp;=&nbsp; 방출 116+24+5 = <b style="display:inline;font-size:inherit">145</b></div>
+        <div><b>📒 지구 전체의 가계부</b>흡수 100−30 = <b style="display:inline;font-size:inherit">70</b> &nbsp;=&nbsp; 방출 12+58 = <b style="display:inline;font-size:inherit">70</b></div>
+      </div>
+      <div style="font-size:2.1vh;font-weight:700;color:var(--soft);line-height:1.8;background:var(--lt);border-radius:1vh;padding:1.4vh 1.8vh">
+        🎯 <b style="color:var(--navy)">시험 포인트</b><br>① 복사 평형이면 <b style="color:var(--navy)">각 영역에서 흡수량=방출량</b> 등식을 세울 수 있다<br>② 지구의 반사율은 <b style="color:var(--navy)">30 %</b>(23+7 — "23 %" 함정 주의!)<br>③ 대기는 태양 복사(23)보다 <b style="color:var(--navy)">지표면 방출(104)을 더 많이</b> 흡수한다</div>
+    </div>
+  </div>`);
 
 /* 11 전체 공유 — 위도별로 보면? */
 slide(() => `
