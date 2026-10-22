@@ -120,10 +120,10 @@ body.has-acts .slide{ bottom:12vh; }
 .bcard.click{ cursor:pointer; }
 .bcard.click:hover{ border-color:var(--navy); }
 .bcard.hl{ border-color:var(--gold); background:#fffaf0; box-shadow:0 0 0 .5vh rgba(245,179,1,.4); }
-.donebdg{ font-size:1.6vh; color:var(--green); font-weight:900; }
-.bcard h4{ display:flex; align-items:center; gap:.6vw; font-size:2.2vh; color:var(--navy); margin-bottom:.8vh; }
-.bcard h4 .sp{ flex:1; }
-.bcard .meta{ font-size:1.6vh; color:var(--soft); font-weight:700; }
+.donebdg{ font-size:1.6vh; color:var(--green); font-weight:900; flex-shrink:0; white-space:nowrap; }
+.bcard h4{ display:flex; align-items:center; gap:.6vw; font-size:2.2vh; color:var(--navy); margin-bottom:.8vh; min-width:0; }
+.bcard h4 .sp{ flex:1; min-width:.5vw; }
+.bcard .meta{ font-size:1.6vh; color:var(--soft); font-weight:700; max-width:28vh; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .bcard.note{ cursor:default; background:var(--lt); border-style:dashed; font-size:2vh; line-height:1.8;
   color:var(--soft); font-weight:500; justify-content:center; padding:1.5vh 2vh; }
 .btext{ flex:1; font-size:2.2vh; font-weight:700; line-height:1.5; overflow:hidden; }

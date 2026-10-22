@@ -1,0 +1,891 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>지구 배달 주식회사 — 대기 대순환과 해수의 표층 순환</title>
+<style>
+:root{
+  --navy:#0B3E86; --navy2:#092f66; --gold:#F5B301; --gold-d:#c8920a;
+  --green:#1A9A3E; --red:#d64545; --ink:#141a24; --soft:#3d4652; --line:#b9c4d4; --lt:#eef3fa;
+}
+*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; }
+body{ font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo",sans-serif;
+  color:var(--ink); background:#f4f7fb; word-break:keep-all; display:flex; flex-direction:column; overflow-x:hidden; }
+header{ background:linear-gradient(135deg,var(--navy),var(--navy2)); color:#fff; padding:14px 18px 12px; flex-shrink:0; }
+header .tag{ font-size:11px; font-weight:700; color:var(--gold); letter-spacing:.12em; }
+header h1{ font-size:18px; font-weight:900; letter-spacing:-.02em; }
+header .me{ font-size:12px; font-weight:500; opacity:.9; margin-top:2px; }
+header .me b{ color:var(--gold); }
+main{ flex:1; overflow-y:auto; padding:20px 18px 30px; max-width:480px; width:100%; margin:0 auto; }
+body.wide main{ max-width:860px; }
+.hidden{ display:none !important; }
+
+.card{ background:#fff; border:2px solid var(--line); border-radius:14px; padding:20px 18px; }
+.card h2{ font-size:17px; font-weight:900; color:var(--navy2); margin-bottom:6px; }
+.card p.desc{ font-size:13px; color:var(--soft); line-height:1.6; margin-bottom:14px; }
+
+label{ display:block; font-size:12px; font-weight:700; color:var(--navy); margin:12px 0 5px; }
+input[type=text]{ width:100%; font:inherit; font-size:16px; font-weight:700; padding:12px 14px;
+  border:2px solid var(--line); border-radius:10px; outline:none; }
+input[type=text]:focus{ border-color:var(--navy); }
+.teamgrid{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
+.teamgrid button{ font:inherit; font-size:13px; font-weight:900; padding:13px 0; border-radius:10px;
+  border:2px solid var(--line); background:#fff; color:var(--soft); }
+.teamgrid button.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
+
+.big{ display:block; width:100%; font:inherit; font-size:17px; font-weight:900; color:#fff;
+  background:var(--navy); border:none; border-radius:12px; padding:16px 0; margin-top:18px; cursor:pointer; }
+.big:disabled{ background:#9fb0c6; }
+.big.gold{ background:var(--gold); color:var(--navy2); }
+
+.wait{ text-align:center; padding:44px 10px; }
+.wait .dot{ font-size:40px; }
+.wait h2{ font-size:18px; font-weight:900; color:var(--navy2); margin-top:10px; }
+.wait p{ font-size:13px; color:var(--soft); margin-top:6px; line-height:1.6; }
+
+/* 팀장/보드 공용 */
+.leaderToggle{ width:100%; font:inherit; font-size:14px; font-weight:900; padding:12px 0; margin-top:2px;
+  border:2px solid var(--line); border-radius:10px; background:#fff; color:var(--soft); }
+.leaderToggle.on{ border-color:var(--gold-d); background:#fffaf0; color:var(--gold-d); }
+textarea{ width:100%; font:inherit; font-size:15px; font-weight:500; line-height:1.6; padding:12px 14px;
+  border:2px solid var(--line); border-radius:10px; outline:none; min-height:84px; resize:none; }
+textarea:focus{ border-color:var(--navy); }
+.savedot{ font-size:11.5px; color:var(--green); font-weight:700; margin-top:8px; }
+.mission{ background:var(--lt); border-left:5px solid var(--gold); border-radius:8px;
+  padding:12px 14px; font-size:13px; line-height:1.7; margin-bottom:12px; }
+.mission b{ color:var(--navy); }
+.viewbox{ background:var(--lt); border-radius:10px; padding:12px 14px; margin-top:12px; }
+.viewbox h4{ font-size:12px; font-weight:900; color:var(--navy); margin-bottom:4px; }
+.viewbox p{ font-size:14px; font-weight:700; line-height:1.55; min-height:20px; }
+.viewbox p.empty{ color:#a8b2c0; font-weight:500; }
+
+/* 차트·노선도 */
+.chartwrap{ border:2px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; margin:4px 0 12px; }
+.chartwrap svg{ width:100%; height:auto; display:block; }
+
+/* 조사 수첩 (단서 카드) */
+.dots{ display:flex; gap:6px; justify-content:center; margin-bottom:14px; }
+.dots span{ width:28px; height:28px; border-radius:50%; background:#e3e9f2; color:#8a93a1; font-size:12px;
+  font-weight:900; display:flex; align-items:center; justify-content:center; }
+.dots span.done{ background:var(--green); color:#fff; }
+.dots span.cur{ outline:3px solid var(--gold); }
+.qline{ font-size:15px; font-weight:900; color:var(--navy2); line-height:1.5; margin:4px 0 10px; }
+.optgrid{ display:grid; gap:8px; }
+.optgrid button{ font:inherit; text-align:left; font-size:14px; font-weight:700; line-height:1.5;
+  padding:12px 14px; border-radius:10px; border:2px solid var(--line); background:#fff; color:var(--ink); }
+.optgrid button.on{ border-color:var(--gold); background:#fffaf0; }
+.optgrid button:disabled:not(.on){ opacity:.45; }
+.expbox{ background:#f0faf3; border-left:5px solid var(--green); border-radius:8px; padding:11px 13px;
+  font-size:13px; line-height:1.65; margin-top:10px; font-weight:500; }
+.navrow{ display:flex; gap:8px; margin-top:14px; }
+.navrow button{ flex:1; font:inherit; font-size:14px; font-weight:900; padding:12px 0; border-radius:10px;
+  border:2px solid var(--line); background:#fff; color:var(--soft); }
+.navrow button.goldbtn{ background:var(--gold); border-color:var(--gold); color:var(--navy2); }
+.navrow button:disabled{ opacity:.4; }
+.badge{ text-align:center; padding:26px 10px; }
+.badge .bg{ font-size:54px; }
+.badge h3{ font-size:19px; font-weight:900; color:var(--navy2); margin-top:8px; }
+.badge p{ font-size:13px; color:var(--soft); margin-top:6px; line-height:1.6; }
+
+/* 노선 설계 */
+.dirgrid{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
+.dirgrid button{ font:inherit; font-size:13.5px; font-weight:900; padding:11px 0; border-radius:10px;
+  border:2px solid var(--line); background:#fff; color:var(--soft); }
+.dirgrid button.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
+.evidrow{ display:grid; grid-template-columns:repeat(6,1fr); gap:6px; }
+.evidrow button{ font:inherit; font-size:12px; font-weight:900; padding:9px 0; border-radius:10px;
+  border:2px solid var(--line); background:#fff; color:var(--soft); }
+.evidrow button.on{ background:var(--gold); border-color:var(--gold); color:var(--navy2); }
+
+/* 1차 블라인드 가투자 */
+.candcard{ border:2px solid var(--line); border-radius:12px; padding:12px; margin-bottom:12px; background:#fff; }
+.candcard.on{ border-color:var(--gold); background:#fffaf0; }
+.candcard h3{ font-size:14px; font-weight:900; color:var(--navy2); margin-bottom:6px; }
+.candcard .sales{ font-size:13px; font-weight:700; color:var(--soft); line-height:1.5; margin:6px 0 10px; }
+.candcard .pick{ width:100%; font:inherit; font-size:14px; font-weight:900; padding:11px 0; border-radius:10px;
+  border:2px solid var(--line); background:#fff; color:var(--soft); }
+.candcard.on .pick{ background:var(--gold); border-color:var(--gold); color:var(--navy2); }
+.candcard .pick:disabled{ opacity:.55; }
+
+/* 2차 투자 경매 */
+.coin{ text-align:center; font-size:13px; font-weight:700; color:var(--soft); background:var(--lt);
+  border-radius:10px; padding:10px; margin-bottom:12px; }
+.coin b{ font-size:22px; color:var(--navy); }
+.invrow{ display:flex; align-items:center; gap:8px; border:2px solid var(--line); border-radius:12px;
+  padding:10px 12px; margin-bottom:8px; }
+.invrow .nm{ flex:1; font-size:13.5px; font-weight:900; color:var(--navy2); min-width:0; overflow:hidden; }
+.invrow button{ flex-shrink:0; width:38px; height:38px; font:inherit; font-size:19px; font-weight:900;
+  border-radius:10px; border:2px solid var(--line); background:#fff; color:var(--navy); }
+.invrow button:disabled{ opacity:.35; }
+.invrow .amt{ flex-shrink:0; width:52px; text-align:center; font-size:18px; font-weight:900; color:var(--gold-d); }
+.sumline{ display:flex; align-items:center; justify-content:space-between; margin-top:12px;
+  border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:13px; font-weight:700; color:var(--soft); }
+.sumline b{ font-size:22px; font-weight:900; }
+.sumline.ok{ border-color:var(--green); background:#f0faf3; } .sumline.ok b{ color:var(--green); }
+.sumline.no b{ color:var(--red); }
+
+/* 정리 요점 카드 */
+.wrapcard{ border:2px solid var(--navy); border-radius:14px; padding:16px; }
+.wrapcard h3{ font-size:16px; font-weight:900; color:var(--navy2); margin-bottom:10px; }
+.wrapcard li{ font-size:13.5px; line-height:1.7; margin:6px 0 6px 18px; }
+.wrapcard b{ color:var(--navy); }
+
+footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; padding:8px 0 12px; }
+.conn{ position:fixed; top:10px; right:12px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:12px; z-index:5; }
+.conn.on{ background:#e7f5ec; color:#136e2e; } .conn.off{ background:#fde8e8; color:#a02b2b; }
+</style>
+</head>
+<body>
+<div id="conn" class="conn off">연결 중…</div>
+<header>
+  <div class="tag">통합과학2 · 지구 환경 변화 2/3</div>
+  <h1>지구 배달 주식회사 — 대기 대순환과 해수의 표층 순환</h1>
+  <div class="me" id="meLine">호남고등학교</div>
+</header>
+<main>
+
+  <!-- 입장 (입사 지원) -->
+  <section id="vJoin" class="card">
+    <h2>입사 지원 — 수업 입장</h2>
+    <p class="desc">발주처 「지구」가 에너지 배달 업체를 모집 중! 이름을 쓰고 회사(모둠)를 고른 뒤 입장하면 <b>조사관으로 채용</b>됩니다.</p>
+    <label>이름</label>
+    <input type="text" id="inName" maxlength="10" placeholder="예) 김호남">
+    <label>회사 (모둠)</label>
+    <div class="teamgrid" id="teamGrid"></div>
+    <label>회사 대표 기기(팀장 노트북)인가요?</label>
+    <button class="leaderToggle" id="btnLeader" type="button">👑 이 노트북을 회사 상황판(팀장 보드)으로 쓸게요</button>
+    <button class="big" id="btnJoin">입사 지원하기</button>
+  </section>
+
+  <!-- 대기 -->
+  <section id="vLobby" class="wait hidden">
+    <div class="dot">🚚</div>
+    <h2 id="lobbyMsg">채용 완료!</h2>
+    <p id="lobbySub">입찰이 시작되면 화면이 자동으로 바뀝니다.<br>현재 <b id="lobbyN">0</b>명 출근 중</p>
+    <button id="btnRejoin" style="margin-top:20px;font:inherit;font-size:12px;font-weight:700;color:var(--soft);background:#fff;border:2px solid var(--line);border-radius:10px;padding:8px 14px">↩ 내가 아니에요 — 다른 이름으로 다시 입장</button>
+  </section>
+
+  <!-- 1단계: 현장 조사 수첩 -->
+  <section id="vScout" class="card hidden">
+    <h2>현장 조사 수첩 — 단서 카드 6장</h2>
+    <p class="desc">노선 설계의 근거가 될 단서를 수집하세요. 체크 질문에 답하면 다음 단서가 열립니다.</p>
+    <div id="scoutBox"></div>
+  </section>
+
+  <!-- 2단계: 노선 설계 회의 -->
+  <section id="vDesign" class="card hidden">
+    <h2>노선 설계 회의 — 입찰서 작성</h2>
+    <div class="mission">
+      <b>MISSION</b> — 수집한 단서를 근거로 <b>에너지 배달 노선</b>을 설계하세요.<br>
+      ❶ 지상 노선 — 북반구 위도 3구간의 바람 방향 (방향은 <b>바람이 흘러가는 쪽</b> 기준!)<br>
+      ❷ 해상 노선 — 북태평양 바닷물의 순환 방향<br>
+      ❸ 회사 이름 · 세일즈 포인트 한 문장 · 결정적 단서 카드
+    </div>
+    <div class="chartwrap" id="dsFig"></div>
+    <div id="dsClaim" class="hidden">
+      <button class="big" id="btnClaimDs" style="margin-top:0">👑 이 노트북을 회사 상황판(팀장 보드)으로 쓰기</button>
+    </div>
+    <div id="dsEdit">
+      <label>🌬 지상 1구간 — 위도 0°~30°의 바람은 어느 쪽으로 흘러갈까?</label>
+      <div class="dirgrid" id="wRow1"></div>
+      <label>🌬 지상 2구간 — 위도 30°~60°</label>
+      <div class="dirgrid" id="wRow2"></div>
+      <label>🌬 지상 3구간 — 위도 60°~90°</label>
+      <div class="dirgrid" id="wRow3"></div>
+      <label>🌊 해상 노선 — 북태평양 바닷물의 순환 방향</label>
+      <div class="dirgrid" id="gyreRow"></div>
+      <label>🏢 회사 이름</label>
+      <input type="text" id="bd_company" maxlength="12" placeholder="예) 번개배송 주식회사">
+      <label>📣 세일즈 포인트 (한 문장)</label>
+      <textarea id="bd_sales" maxlength="80" style="min-height:60px" placeholder="예) 무역풍 구간 직통! 적도의 재고를 가장 빠르게 …"></textarea>
+      <label>🗂 결정적 근거가 된 단서 카드</label>
+      <div class="evidrow" id="evidRow"></div>
+      <p class="savedot" id="dsSaved">고르면 자동 저장됩니다 — 선생님 화면과 실시간 연동</p>
+    </div>
+    <div id="dsView" class="hidden">
+      <p class="desc" style="margin:10px 0 0">👀 우리 회사 상황판을 실시간으로 보는 중 — 함께 토의하세요!</p>
+      <div class="viewbox"><h4>🏢 회사 이름</h4><p id="dvCompany" class="empty">아직 입력 전…</p></div>
+      <div class="viewbox"><h4>📣 세일즈 포인트</h4><p id="dvSales" class="empty">아직 입력 전…</p></div>
+      <div class="viewbox"><h4>🗂 결정적 단서</h4><p id="dvEvid" class="empty">아직 선택 전…</p></div>
+    </div>
+  </section>
+
+  <!-- 1차 서류 심사: 블라인드 가투자 -->
+  <section id="vInv1" class="card hidden">
+    <h2>1차 서류 심사 — 블라인드 가투자</h2>
+    <p class="desc">회사명을 가린 <b>후보 A~E</b>의 노선도와 세일즈 문장만 보고, 가장 믿음이 가는 <b>1곳에 가투자</b>(원픽)하세요. 결과는 봉인 — 낙찰 발표 때 공개됩니다!</p>
+    <div id="inv1Box"></div>
+  </section>
+
+  <!-- 입찰 PT 관람 -->
+  <section id="vPT" class="card hidden">
+    <h2>입찰 PT 진행 중</h2>
+    <p class="desc">📺 <b>앞 화면을 보세요!</b> 각 회사의 발표를 듣고 심사 기준(단서 근거 · 노선 정확성 · 설득력)으로 평가해 두세요. 발표가 끝나면 <b>진짜 투자</b>가 시작됩니다.</p>
+    <div class="chartwrap" id="ptFig"></div>
+    <div class="viewbox"><h4>📣 우리 회사의 세일즈 포인트</h4><p id="ptSales" class="empty">아직 입력 전…</p></div>
+  </section>
+
+  <!-- 2차 본 심사: 배달코인 투자 경매 -->
+  <section id="vInv2" class="card hidden">
+    <h2>2차 본 심사 — 배달코인 투자</h2>
+    <p class="desc">발표를 들었으니 이제 진짜 투자! <b>우리 회사를 제외한 4개 회사</b>에 억 단위로 나눠 투자하세요. 한 곳에 몰빵해도 됩니다.</p>
+    <div class="coin">내 배달코인 &nbsp;<b>10억</b></div>
+    <div id="inv2Box"></div>
+    <div class="sumline" id="invSumLine">투자 합계 (10억을 맞추세요)<b id="invSum">0억</b></div>
+    <button class="big gold" id="btnInv2">투자 제출하기</button>
+    <p class="desc" id="inv2Done" style="margin-top:10px"></p>
+  </section>
+
+  <!-- 정리: 요점 카드 3장 -->
+  <section id="vWrap" class="card hidden">
+    <h2>정리 — 지구는 이미 46억 년째 운영 중</h2>
+    <p class="desc">선생님 설명을 따라, 요점 카드 3장을 넘기며 확인하세요. (완자 123쪽 — 시험에 나옵니다)</p>
+    <div id="wrapBox"></div>
+  </section>
+
+  <!-- 생각 한 문장 -->
+  <section id="vEnd" class="card hidden">
+    <h2>생각 한 문장 — 만약 무역풍이 파업한다면?</h2>
+    <p class="desc">오늘의 마지막 질문 — <b>낙찰 노선의 무역풍 구간이 파업(약화)한다면, 바다와 날씨에는 무슨 일이 생길까요?</b><br>오늘 완성한 노선도를 떠올리며 1~2문장으로 적어 보세요. 이 질문이 다음 수업(배달 사고 — 엘니뇨와 사막화)의 출발점이 됩니다!</p>
+    <textarea id="inOpinion" maxlength="160" style="min-height:110px" placeholder="예) 서쪽으로 가던 따뜻한 바닷물이 멈추면 …"></textarea>
+    <button class="big" id="btnOpinion">제출하기</button>
+    <p class="desc" id="opinionDone" style="margin-top:10px"></p>
+  </section>
+
+</main>
+<footer>제작 · 호남고 조영신</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, onSnapshot, collection, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBotwjsJxit4SbOzXVVOov37Po97AieoxM",
+  authDomain: "sangdam-b97c1.firebaseapp.com",
+  projectId: "sangdam-b97c1",
+  storageBucket: "sangdam-b97c1.firebasestorage.app",
+  messagingSenderId: "389048360844",
+  appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
+};
+const COLBASE = "pw_openclass_circ";
+let COL = COLBASE, CLS = 0;   // 선생님이 고른 반의 저장소(pw_openclass_circ_c<N>)로 자동 연결
+const db = getFirestore(initializeApp(firebaseConfig));
+
+/* ── 공용 그림 도우미 (교사 모듈과 동일 로직) ── */
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+function AR(x1,y1,x2,y2,w,fill,stroke){   // 굵은 화살표 (fatArrow)
+  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L, px=-uy, py=ux;
+  const hl=Math.min(w*1.7, L*.4), hw=w*2.1, bx=x2-ux*hl, by=y2-uy*hl, h=w/2;
+  const P=(x,y)=>`${x.toFixed(1)},${y.toFixed(1)}`;
+  return `<polygon points="${P(x1+px*h,y1+py*h)} ${P(bx+px*h,by+py*h)} ${P(bx+px*hw/2,by+py*hw/2)} ${P(x2,y2)} ${P(bx-px*hw/2,by-py*hw/2)} ${P(bx-px*h,by-py*h)} ${P(x1-px*h,y1-py*h)}" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round" opacity=".95"/>`;
+}
+const TRI = (x,y,dx,dy,s,fill) => {       // 작은 화살촉
+  const L=Math.hypot(dx,dy)||1, ux=dx/L, uy=dy/L, px=-uy, py=ux;
+  return `<polygon points="${x.toFixed(1)},${y.toFixed(1)} ${(x-ux*s*1.9+px*s).toFixed(1)},${(y-uy*s*1.9+py*s).toFixed(1)} ${(x-ux*s*1.9-px*s).toFixed(1)},${(y-uy*s*1.9-py*s).toFixed(1)}" fill="${fill}"/>`;
+};
+const VT = (x,y,s,fill="#6b5a3e") => `<text x="${x}" y="${y}" text-anchor="middle" font-size="14" font-weight="900" fill="${fill}">${[...s].map((ch,i)=>`<tspan x="${x}" dy="${i?16:0}">${ch}</tspan>`).join("")}</text>`;
+
+/* ── 단서 카드 6장 (교사 모듈과 동일) ── */
+function svgC1(){
+  return `<svg viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg">
+    <rect width="820" height="340" fill="#fff"/>
+    <circle cx="200" cy="178" r="128" fill="#eef3fa" stroke="#b9c4d4" stroke-width="3"/>
+    <path d="M 330,178 A 130,130 0 0 0 200,48" fill="none" stroke="#1f6fd6" stroke-width="6"/>
+    ${TRI(200,48,-1,0,12,"#1f6fd6")}
+    <path d="M 70,178 A 130,130 0 0 0 200,308" fill="none" stroke="#1f6fd6" stroke-width="6"/>
+    ${TRI(200,308,1,0,12,"#1f6fd6")}
+    <text x="322" y="300" font-size="14" font-weight="900" fill="#1f6fd6">자전 방향</text>
+    <circle cx="200" cy="178" r="8" fill="#092f66"/>
+    <text x="200" y="76" text-anchor="middle" font-size="22">🎯</text>
+    <line x1="200" y1="168" x2="200" y2="86" stroke="#3d4652" stroke-width="3" stroke-dasharray="6 5"/>
+    <text x="138" y="130" text-anchor="end" font-size="13" font-weight="700" fill="#3d4652">겨눈 방향</text>
+    <path d="M 200,170 Q 238,128 268,96" fill="none" stroke="#d64545" stroke-width="5"/>
+    ${TRI(268,96,0.7,-0.7,11,"#d64545")}
+    <text x="284" y="92" font-size="22" font-weight="900" fill="#d64545">?</text>
+    <text x="430" y="86" font-size="20" font-weight="900" fill="#092f66">빙글빙글 도는 원판(지구) 위에서</text>
+    <text x="430" y="116" font-size="20" font-weight="900" fill="#092f66">정면의 과녁을 향해 공을 던졌다!</text>
+    <text x="430" y="158" font-size="15" font-weight="700" fill="#3d4652">· 지구는 하루에 한 바퀴, 쉬지 않고 자전 중</text>
+    <text x="430" y="184" font-size="15" font-weight="700" fill="#3d4652">· 바람도 바닷물도 '도는 지구 위에서' 움직인다</text>
+    <text x="430" y="228" font-size="17" font-weight="900" fill="#c8920a">공은 과연 어디로 갈까?</text>
+  </svg>`;
+}
+function svgC2(){
+  return `<svg viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg">
+    <rect width="820" height="340" fill="#fff"/>
+    <text x="410" y="40" text-anchor="middle" font-size="15" font-weight="700" fill="#3d4652">태평양 왕복 — 실제 운항 시간표 기준</text>
+    <rect x="40" y="56" width="740" height="236" rx="14" fill="#eaf3fb"/>
+    <circle cx="150" cy="175" r="9" fill="#0B3E86"/>
+    <text x="150" y="212" text-anchor="middle" font-size="17" font-weight="900" fill="#092f66">인천</text>
+    <circle cx="670" cy="175" r="9" fill="#0B3E86"/>
+    <text x="670" y="212" text-anchor="middle" font-size="17" font-weight="900" fill="#092f66">로스앤젤레스(LA)</text>
+    <path d="M 150,160 Q 410,70 670,160" fill="none" stroke="#1A9A3E" stroke-width="5"/>
+    ${TRI(670,160,1,0.35,12,"#1A9A3E")}
+    <text x="410" y="86" text-anchor="middle" font-size="18" font-weight="900" fill="#136e2e">갈 때 · 인천 → LA — 약 10시간 30분 ✈️</text>
+    <path d="M 670,195 Q 410,288 150,195" fill="none" stroke="#d64545" stroke-width="5"/>
+    ${TRI(150,195,-1,-0.37,12,"#d64545")}
+    <text x="410" y="282" text-anchor="middle" font-size="18" font-weight="900" fill="#b02d55">올 때 · LA → 인천 — 약 13시간 ✈️</text>
+    <text x="410" y="180" text-anchor="middle" font-size="17" font-weight="900" fill="#c8920a">거의 같은 길인데, 왜 2시간 30분이나 차이 날까?</text>
+  </svg>`;
+}
+function svgC3(){
+  return `<svg viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg">
+    <rect width="820" height="340" fill="#fff"/>
+    <rect x="40" y="50" width="740" height="250" fill="#d4e7f7" rx="12"/>
+    <path d="M 40,50 L 150,50 L 128,110 L 150,170 L 120,240 L 140,300 L 40,300 Z" fill="#cdbf9f"/>
+    <text x="86" y="182" text-anchor="middle" font-size="15" font-weight="900" fill="#6b5a3e">아메리카</text>
+    <path d="M 780,50 L 672,50 L 700,120 L 668,190 L 696,300 L 780,300 Z" fill="#cdbf9f"/>
+    <text x="736" y="108" text-anchor="middle" font-size="15" font-weight="900" fill="#6b5a3e">유럽</text>
+    <text x="734" y="244" text-anchor="middle" font-size="15" font-weight="900" fill="#6b5a3e">아프리카</text>
+    ${AR(640,245, 185,245, 13, "#F5B301", "#c8920a")}
+    <text x="412" y="222" text-anchor="middle" font-size="17" font-weight="900" fill="#8a6a2a">⛵ 갈 때 — 저위도 항로 (동 → 서)</text>
+    ${AR(190,110, 640,110, 13, "#1f6fd6", "#0B3E86")}
+    <text x="412" y="88" text-anchor="middle" font-size="17" font-weight="900" fill="#0B3E86">⛵ 올 때 — 고위도 항로 (서 → 동)</text>
+    <text x="412" y="286" text-anchor="middle" font-size="14" font-weight="700" fill="#3d4652">대항해시대의 범선 — 엔진 없이 바람이 전부!</text>
+    <text x="412" y="326" text-anchor="middle" font-size="15" font-weight="900" fill="#c8920a">콜럼버스는 왜 갈 때와 올 때 길을 바꿨을까?</text>
+  </svg>`;
+}
+function svgC4(){
+  const lat = d => 170 - d*1.4;
+  return `<svg viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg">
+    <rect width="820" height="340" fill="#fff"/>
+    <rect x="60" y="${lat(90)}" width="700" height="${lat(-90)-lat(90)}" fill="#eaf3fb" rx="10"/>
+    <rect x="60" y="${lat(35)}" width="700" height="${lat(25)-lat(35)}" fill="#F5B301" opacity=".28"/>
+    <rect x="60" y="${lat(-25)}" width="700" height="${lat(-35)-lat(-25)}" fill="#F5B301" opacity=".28"/>
+    <line x1="60" y1="${lat(0)}" x2="760" y2="${lat(0)}" stroke="#d64545" stroke-width="2" stroke-dasharray="7 5"/>
+    <text x="52" y="${lat(0)+5}" text-anchor="end" font-size="13" font-weight="700" fill="#d64545">적도 0°</text>
+    <line x1="60" y1="${lat(30)}" x2="760" y2="${lat(30)}" stroke="#b9c4d4" stroke-width="1.5"/>
+    <text x="52" y="${lat(30)+5}" text-anchor="end" font-size="13" font-weight="700" fill="#3d4652">30°N</text>
+    <line x1="60" y1="${lat(-30)}" x2="760" y2="${lat(-30)}" stroke="#b9c4d4" stroke-width="1.5"/>
+    <text x="52" y="${lat(-30)+5}" text-anchor="end" font-size="13" font-weight="700" fill="#3d4652">30°S</text>
+    <ellipse cx="400" cy="${lat(23)}" rx="52" ry="14" fill="#d8b24a"/>
+    <text x="400" y="${lat(23)-20}" text-anchor="middle" font-size="14" font-weight="900" fill="#8a6a2a">사하라</text>
+    <ellipse cx="496" cy="${lat(27)}" rx="24" ry="10" fill="#d8b24a"/>
+    <text x="526" y="${lat(27)-10}" font-size="13" font-weight="700" fill="#8a6a2a">아라비아</text>
+    <ellipse cx="170" cy="${lat(31)}" rx="22" ry="9" fill="#d8b24a"/>
+    <text x="170" y="${lat(31)-14}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#8a6a2a">북미 남서부</text>
+    <ellipse cx="640" cy="${lat(-27)}" rx="34" ry="12" fill="#d8b24a"/>
+    <text x="640" y="${lat(-27)+32}" text-anchor="middle" font-size="14" font-weight="900" fill="#8a6a2a">오스트레일리아</text>
+    <ellipse cx="238" cy="${lat(-25)}" rx="12" ry="11" fill="#d8b24a"/>
+    <text x="238" y="${lat(-25)+30}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#8a6a2a">아타카마</text>
+    <ellipse cx="438" cy="${lat(-28)}" rx="16" ry="9" fill="#d8b24a"/>
+    <text x="438" y="${lat(-28)+28}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#8a6a2a">칼라하리</text>
+    <text x="410" y="326" text-anchor="middle" font-size="15" font-weight="900" fill="#c8920a">세계의 큰 사막들 — 주소가 묘하게 비슷하다?</text>
+  </svg>`;
+}
+function svgC5(){
+  return `<svg viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg">
+    <rect width="820" height="340" fill="#fff"/>
+    <text x="410" y="34" text-anchor="middle" font-size="15" font-weight="700" fill="#3d4652">북태평양 표층 수온 지도 (단순화)</text>
+    <rect x="120" y="50" width="580" height="250" fill="#d4e7f7"/>
+    <rect x="66" y="50" width="54" height="250" fill="#cdbf9f"/>
+    <rect x="700" y="50" width="54" height="250" fill="#cdbf9f"/>
+    ${VT(93,140,"아시아")}
+    ${VT(727,110,"북아메리카")}
+    <text x="134" y="72" font-size="13" font-weight="700" fill="#3d4652">↑ 고위도</text>
+    <text x="560" y="292" font-size="13" font-weight="700" fill="#3d4652">↓ 저위도(적도 쪽)</text>
+    <path d="M 120,86 C 300,108 500,134 700,172" fill="none" stroke="#1f6fd6" stroke-width="4.5"/>
+    <text x="150" y="80" font-size="15" font-weight="900" fill="#1f6fd6">15℃</text>
+    <path d="M 120,150 C 300,172 500,196 700,232" fill="none" stroke="#e09b00" stroke-width="4.5"/>
+    <text x="150" y="144" font-size="15" font-weight="900" fill="#e09b00">20℃</text>
+    <path d="M 120,214 C 300,232 500,252 700,280" fill="none" stroke="#d64545" stroke-width="4.5"/>
+    <text x="150" y="208" font-size="15" font-weight="900" fill="#d64545">25℃</text>
+    <text x="238" y="118" font-size="14" font-weight="900" fill="#b02d55">서쪽 — 고위도 쪽으로 휨</text>
+    <text x="470" y="258" font-size="14" font-weight="900" fill="#0B3E86">동쪽 — 저위도 쪽으로 휨</text>
+    <text x="410" y="328" text-anchor="middle" font-size="15" font-weight="900" fill="#c8920a">같은 수온을 이은 선(등수온선)이 좌우로 비스듬하다 — 왜?</text>
+  </svg>`;
+}
+function svgC6(){
+  return `<svg viewBox="0 0 820 340" xmlns="http://www.w3.org/2000/svg">
+    <rect width="820" height="340" fill="#fff"/>
+    <line x1="60" y1="92" x2="760" y2="92" stroke="#3d4652" stroke-width="2" stroke-dasharray="7 5"/>
+    <text x="410" y="78" text-anchor="middle" font-size="15" font-weight="900" fill="#3d4652">북위 51° — 두 도시는 거의 같은 위도!</text>
+    <line x1="120" y1="230" x2="700" y2="230" stroke="#b9c4d4" stroke-width="2"/>
+    <text x="112" y="235" text-anchor="end" font-size="13" font-weight="700" fill="#3d4652">0℃</text>
+    <rect x="205" y="230" width="76" height="60" rx="6" fill="#1f6fd6"/>
+    <text x="243" y="315" text-anchor="middle" font-size="22" font-weight="900" fill="#1f6fd6">−15℃</text>
+    <text x="243" y="128" text-anchor="middle" font-size="17" font-weight="900" fill="#092f66">🍁 캐나다 동부 해안</text>
+    <text x="243" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="#3d4652">1월 평균기온</text>
+    <rect x="539" y="210" width="76" height="20" rx="6" fill="#d64545"/>
+    <text x="577" y="198" text-anchor="middle" font-size="22" font-weight="900" fill="#d64545">+5℃</text>
+    <text x="577" y="128" text-anchor="middle" font-size="17" font-weight="900" fill="#092f66">🇬🇧 런던</text>
+    <text x="577" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="#3d4652">1월 평균기온</text>
+    <text x="410" y="262" text-anchor="middle" font-size="14" font-weight="700" fill="#3d4652">두 도시 사이에는 대서양</text>
+    <text x="410" y="332" text-anchor="middle" font-size="15" font-weight="900" fill="#c8920a">같은 위도인데 20℃ 차이 — 런던의 보온 비결은?</text>
+  </svg>`;
+}
+const CARDS = [
+  { emoji:"🌀", title:"돌고 있는 지구",
+    q:"북반구에서, 정면의 과녁을 향해 던진 공(움직이는 공기·물도 똑같다)은 어떻게 될까?",
+    opts:["겨눈 대로 똑바로 날아간다","진행 방향의 오른쪽으로 휜다","진행 방향의 왼쪽으로 휜다"], ans:1,
+    exp:"지구는 하루에 한 바퀴 자전 중 — 그 효과로 북반구에서 움직이는 모든 것(바람·바닷물 포함)은 진행 방향의 오른쪽으로 휘어 보입니다.",
+    svg:svgC1 },
+  { emoji:"✈️", title:"수상한 비행시간",
+    q:"거의 같은 길을 왕복하는데, 인천→LA는 약 10시간 30분 · LA→인천은 약 13시간. 이유로 가장 그럴듯한 것은?",
+    opts:["지구가 둥글어서 돌아올 때 거리가 더 멀다","하늘 높은 곳에 서쪽→동쪽으로 부는 강한 바람이 있다","돌아올 때는 연료를 가득 실어 비행기가 무겁다"], ans:1,
+    exp:"중위도 상공에는 서→동으로 부는 강한 바람이 늘 불어요. 갈 때(동쪽행)는 뒤에서 밀어주는 순풍, 올 때는 맞바람!",
+    svg:svgC2 },
+  { emoji:"⛵", title:"콜럼버스의 지혜",
+    q:"대항해시대 범선 선원들이 갈 때는 저위도, 올 때는 고위도 항로를 고집한 까닭은?",
+    opts:["위도대마다 '늘 부는 바람'의 방향이 서로 다르기 때문","저위도 바다가 더 잔잔해서 가기 편했기 때문","고위도 항로에서 보급품을 구하기 쉬웠기 때문"], ans:0,
+    exp:"저위도에서는 동→서로, 중위도에서는 서→동으로 부는 바람이 1년 내내 꾸준히 붑니다. 돛단배는 '바람의 지도'를 알아야 바다를 건넜어요.",
+    svg:svgC3 },
+  { emoji:"🏜️", title:"사막의 주소",
+    q:"사하라·아라비아·오스트레일리아… 세계의 큰 사막이 몰려 있는 곳은?",
+    opts:["적도(위도 0°) 부근","위도 30° 부근","위도 60° 부근"], ans:1,
+    exp:"큰 사막들의 주소는 위도 30° 부근 — 이 위도에서 비가 잘 내리지 않는 특별한 일이 일어나고 있다는 단서입니다.",
+    svg:svgC4 },
+  { emoji:"🌡️", title:"휘어진 등수온선",
+    q:"등수온선이 대양의 서쪽에서는 고위도 쪽으로, 동쪽에서는 저위도 쪽으로 휘어 있다. 이것이 말해 주는 것은?",
+    opts:["서쪽 바다가 동쪽 바다보다 더 깊다","따뜻한 물과 찬 물이 남북으로 이동하고 있다","인공위성의 측정 오류일 뿐이다"], ans:1,
+    exp:"대양 서쪽에서는 따뜻한 물이 고위도로 올라가고, 동쪽에서는 찬 물이 저위도로 내려오는 중 — 바닷물이 열을 싣고 움직인다는 증거!",
+    svg:svgC5 },
+  { emoji:"🇬🇧", title:"런던의 비밀",
+    q:"런던(1월 약 +5℃)이 비슷한 위도의 캐나다 동부 해안(약 −15℃)보다 훨씬 따뜻한 이유는?",
+    opts:["런던은 대도시라 건물의 열기 때문에","따뜻한 바닷물이 유럽 앞바다로 흘러들기 때문에","런던이 사실은 훨씬 남쪽에 있기 때문에"], ans:1,
+    exp:"저위도에서 데워진 바닷물이 대서양을 건너 유럽 앞바다까지 흘러갑니다. 바닷물은 거대한 '보온 배달부'!",
+    svg:svgC6 },
+];
+
+/* ── 노선도 (교사 모듈과 동일 로직 — 같은 그림이 나오게) ── */
+function routeSVG(b, name){
+  b = b || {};
+  const DIR = { SW:[-1,-1], NE:[1,1], E:[1,0], W:[-1,0] };   // [동서, 남북(북+)] — 바람이 흘러가는 쪽
+  const WLBL = { SW:"↙ 남서쪽으로", NE:"↗ 북동쪽으로", E:"→ 동쪽으로", W:"← 서쪽으로" };
+  let g = "";
+  const bands = [
+    {k:"w3", y0:84,  name:"3구간 · 위도 60°~90°", col:"#e3edf8"},
+    {k:"w2", y0:194, name:"2구간 · 위도 30°~60°", col:"#eaf4ec"},
+    {k:"w1", y0:304, name:"1구간 · 위도 0°~30°",  col:"#fdf2da"},
+  ];
+  bands.forEach(bd => {
+    g += `<rect x="36" y="${bd.y0}" width="356" height="110" fill="${bd.col}" stroke="#b9c4d4"/>
+      <text x="46" y="${bd.y0+22}" font-size="14.5" font-weight="700" fill="#3d4652">${bd.name}</text>`;
+    const v = b[bd.k], cx = 214, cy = bd.y0+60;
+    if(v && DIR[v]){
+      const [dx,dy] = DIR[v], L = (dx&&dy) ? 38 : 56;
+      g += AR(cx-dx*L, cy+dy*L, cx+dx*L, cy-dy*L, 19, "#F5B301", "#c8920a")
+        + `<text x="384" y="${bd.y0+103}" text-anchor="end" font-size="15" font-weight="900" fill="#0B3E86">${WLBL[v]}</text>`;
+    }else{
+      g += `<circle cx="${cx}" cy="${cy}" r="26" fill="#fff" stroke="#b9c4d4" stroke-width="2" stroke-dasharray="5 4"/>
+        <text x="${cx}" y="${cy+8}" text-anchor="middle" font-size="24" font-weight="900" fill="#a8b2c0">?</text>`;
+    }
+  });
+  g += `<text x="36" y="438" font-size="13" font-weight="700" fill="#3d4652">↓ 아래가 적도 쪽 (0°)</text>`;
+  g += `<rect x="420" y="84" width="370" height="330" fill="#d8eafa" stroke="#b9c4d4"/>
+    <rect x="420" y="84" width="34" height="330" fill="#cdbf9f"/>
+    <rect x="756" y="84" width="34" height="330" fill="#cdbf9f"/>
+    ${VT(437,160,"아시아")}${VT(773,140,"북아메리카")}
+    <text x="605" y="404" text-anchor="middle" font-size="13" font-weight="700" fill="#3d4652">↓ 적도 쪽</text>`;
+  const gv = b.gyre, cx=605, cy=242, rx=112, ry=104;
+  if(gv === "cw" || gv === "ccw"){
+    const B = "#5b9bd5", BS = "#1f6fd6";
+    if(gv === "cw"){
+      g += AR(cx-58,cy-ry, cx+58,cy-ry, 15, B, BS) + AR(cx+rx,cy-56, cx+rx,cy+56, 15, B, BS)
+         + AR(cx+58,cy+ry, cx-58,cy+ry, 15, B, BS) + AR(cx-rx,cy+56, cx-rx,cy-56, 15, B, BS);
+    }else{
+      g += AR(cx+58,cy-ry, cx-58,cy-ry, 15, B, BS) + AR(cx-rx,cy-56, cx-rx,cy+56, 15, B, BS)
+         + AR(cx-58,cy+ry, cx+58,cy+ry, 15, B, BS) + AR(cx+rx,cy+56, cx+rx,cy-56, 15, B, BS);
+    }
+    g += `<text x="${cx}" y="${cy+7}" text-anchor="middle" font-size="19" font-weight="900" fill="#0B3E86">${gv==="cw"?"시계 방향 ⟳":"반시계 방향 ⟲"}</text>`;
+  }else{
+    g += `<circle cx="${cx}" cy="${cy}" r="30" fill="#fff" stroke="#b9c4d4" stroke-width="2" stroke-dasharray="5 4"/>
+      <text x="${cx}" y="${cy+9}" text-anchor="middle" font-size="26" font-weight="900" fill="#a8b2c0">?</text>`;
+  }
+  return `<svg viewBox="0 0 820 470" xmlns="http://www.w3.org/2000/svg">
+    <rect width="820" height="470" fill="#fff"/>
+    <text x="410" y="32" text-anchor="middle" font-size="20" font-weight="900" fill="#092f66">🚚 ${esc(name) || esc(b.company) || "회사 이름 미정"} — 배달 노선도</text>
+    <text x="410" y="54" text-anchor="middle" font-size="13" font-weight="700" fill="#c8920a">화살표 = 바람과 바닷물이 흘러가는 방향</text>
+    <text x="214" y="76" text-anchor="middle" font-size="16" font-weight="900" fill="#092f66">🌬 지상 노선 — 북반구의 바람</text>
+    <text x="605" y="76" text-anchor="middle" font-size="16" font-weight="900" fill="#092f66">🌊 해상 노선 — 북태평양</text>
+    ${g}
+    <text x="410" y="458" text-anchor="middle" font-size="13" font-weight="700" fill="#8a93a1">지구 배달 주식회사 — 입찰 노선도</text>
+  </svg>`;
+}
+
+/* ── 정리 요점 카드 3장 (완자 123쪽) ── */
+const WRAPS = [
+  { t:"① 대기 대순환 — 하늘의 노선", items:[
+    "원인: 위도에 따른 <b>에너지 불균형</b> + <b>지구의 자전</b>",
+    "지구 전체 규모의 순환 — <b>3개의 순환</b>이 나타난다",
+    "<b>무역풍</b> — 적도~위도 30° (저위도)",
+    "<b>편서풍</b> — 위도 30°~60° (중위도)",
+    "<b>극동풍</b> — 위도 60°~극 (고위도)" ]},
+  { t:"② 해수의 표층 순환 — 바다의 노선", items:[
+    "원인: <b>대기 대순환의 바람</b>이 수면 위를 지속적으로 불어서",
+    "북반구와 남반구에서 <b>거의 대칭</b>으로 순환",
+    "북태평양(시계 방향): <b>북적도 해류 → 쿠로시오 해류 → 북태평양 해류 → 캘리포니아 해류</b>",
+    "난류(붉은색) = 따뜻한 물 · 한류(푸른색) = 찬 물" ]},
+  { t:"③ 결론 — 왜 '배달'인가", items:[
+    "대기와 해수의 순환은 <b>저위도의 남는 에너지를 고위도로 수송</b>",
+    "<b>위도 38° 부근</b>에서 에너지 이동이 가장 활발",
+    "그래서 적도는 계속 뜨거워지지 않고, 극은 계속 차가워지지 않는다" ]},
+];
+
+const $ = id => document.getElementById(id);
+const views = ["vJoin","vLobby","vScout","vDesign","vInv1","vPT","vInv2","vWrap","vEnd"];
+function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v));
+  document.body.classList.toggle("wide", v==="vScout" || v==="vDesign" || v==="vPT" || v==="vInv1"); }
+
+let uid = null, uidKey = "occ_uid", meKey = "occ_me";
+let me = null;            // {name, team, leader}
+let myDoc = {};           // 서버에 저장된 내 데이터
+let state = {};           // 진행 상태 (선생님 콘솔이 갱신)
+let team = 0, joined = false, inited = false;
+let stuUnsub = null;
+function subMe(){         // 내 문서 구독 — uid가 바뀌면 다시 건다
+  if(stuUnsub) stuUnsub();
+  stuUnsub = onSnapshot(doc(db, COL, "stu_"+uid), snap => { myDoc = snap.data() || {}; render(); });
+}
+function newUid(){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem(uidKey, uid); }
+
+/* ── 입장 ── */
+const tg = $("teamGrid");
+for(let i=1;i<=5;i++){
+  const b = document.createElement("button");
+  b.textContent = i + "회사";
+  b.onclick = () => { team = i; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===i-1)); };
+  tg.appendChild(b);
+}
+let leaderSel = false;
+$("btnLeader").onclick = () => { leaderSel = !leaderSel; $("btnLeader").classList.toggle("on", leaderSel); };
+
+$("btnJoin").onclick = async () => {
+  if(!inited){ alert("서버에 연결 중입니다. 잠시 후 다시 눌러 주세요."); return; }
+  const name = $("inName").value.trim();
+  if(!name){ alert("이름을 입력하세요"); return; }
+  if(!team){ alert("회사(모둠)를 선택하세요"); return; }
+  if(me && me.name && me.name !== name){ newUid(); myDoc = {}; subMe(); }   // 같은 기기, 다른 학생 — 이전 기록 보존
+  me = {name, team, leader: leaderSel};
+  localStorage.setItem(meKey, JSON.stringify(me));
+  try{
+    await setDoc(doc(db, COL, "stu_"+uid), { name, team, leader: leaderSel, joinedAt: serverTimestamp() }, {merge:true});
+    joined = true;
+    $("meLine").innerHTML = `호남고등학교 · <b>${team}회사 ${leaderSel ? "팀장" : "조사관"} ${name}</b>`;
+    render();
+  }catch(e){ alert("접속 오류: 선생님께 알려주세요\n" + e.message); }
+};
+
+/* ── 반 연동 — 선생님이 고른 반의 저장소로 접속 ── */
+let liveCls = null;
+onSnapshot(doc(db, COLBASE, "live"), snap => {
+  const c = +((snap.data() || {}).cls || 0);
+  if(liveCls === null){ liveCls = c; init(c); }
+  else if(c !== liveCls){ location.reload(); }   // 수업 반이 바뀌면 새로 입장
+}, () => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
+
+function init(cls){
+  CLS = cls; COL = cls ? COLBASE + "_c" + cls : COLBASE;
+  const K = cls ? "occ_c" + cls + "_" : "occ_";   // 반별 기기 식별 — 다음 교시 다른 반과 안 섞이게
+  uidKey = K + "uid"; meKey = K + "me";
+  uid = localStorage.getItem(uidKey);
+  if(!uid) newUid();
+  me = JSON.parse(localStorage.getItem(meKey) || "null");
+  if(me){ $("inName").value = me.name; team = me.team; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1));
+    leaderSel = !!me.leader; $("btnLeader").classList.toggle("on", leaderSel); }
+
+  onSnapshot(doc(db, COL, "state"), snap => {
+    state = snap.data() || {};
+    $("conn").className = "conn on"; $("conn").textContent = CLS ? `실시간 · 1-${CLS}반` : "실시간 연결됨";
+    render();
+  }, err => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
+
+  subMe();
+
+  onSnapshot(collection(db, COL), snap => {
+    let n = 0; snap.forEach(d => { if(d.id.startsWith("stu_") && d.data().name) n++; });
+    $("lobbyN").textContent = n;
+  });
+  inited = true;
+  render();
+}
+
+/* 같은 노트북을 다른 학생이 쓰게 된 경우 — 새 식별자로 다시 입장(이전 학생 기록은 그대로 보존) */
+$("btnRejoin").onclick = () => {
+  if(!inited) return;
+  newUid();
+  localStorage.removeItem(meKey);
+  me = null; myDoc = {}; joined = false; team = 0; leaderSel = false;
+  $("inName").value = "";
+  [...tg.children].forEach(c => c.classList.remove("on"));
+  $("btnLeader").classList.remove("on");
+  $("meLine").textContent = "호남고등학교";
+  subMe(); show("vJoin");
+};
+
+async function save(data){
+  try{ await setDoc(doc(db, COL, "stu_"+uid), data, {merge:true}); }
+  catch(e){ alert("전송 오류: " + e.message); }
+}
+
+/* ── 렌더 ── */
+function render(){
+  if(!joined && !(me && myDoc.name)){ show("vJoin"); return; }
+  if(me && myDoc.name && !joined){ joined = true;
+    $("meLine").innerHTML = `호남고등학교 · <b>${me.team}회사 ${me.leader ? "팀장" : "조사관"} ${me.name}</b>`; }
+
+  const ph = state.phase || "lobby";
+  if(ph === "lobby"){ renderLobby(); }
+  else if(ph === "scout"){ renderScout(); }
+  else if(ph === "design"){ renderDesign(); }
+  else if(ph === "invest1"){ renderInv1(); }
+  else if(ph === "pt"){ renderPT(); }
+  else if(ph === "invest2"){ renderInv2(); }
+  else if(ph === "wrap"){ renderWrap(); }
+  else if(ph === "end"){ renderEnd(); }
+}
+
+/* 대기(채용 완료) */
+function renderLobby(){
+  show("vLobby");
+  if(me) $("lobbyMsg").textContent = `${me.name}님, ${me.team}회사 ${me.leader ? "팀장" : "조사관"}으로 채용되었습니다!`;
+}
+
+/* ── 1단계: 현장 조사 수첩 ── */
+let viewCard = 0;   // 1~6 = 단서 카드, 7 = 완료 배지, 0 = 자동(첫 미완료 카드)
+const cardsOf = () => myDoc.cards || {};
+function firstUndone(){ const c = cardsOf(); for(let i=1;i<=6;i++) if(c["c"+i]===undefined) return i; return 7; }
+function renderScout(){
+  show("vScout");
+  const c = cardsOf();
+  if(viewCard === 0) viewCard = firstUndone();
+  if(viewCard === 7 && firstUndone() !== 7) viewCard = firstUndone();
+  const box = $("scoutBox");
+  const dots = `<div class="dots">${[1,2,3,4,5,6].map(i =>
+    `<span class="${c["c"+i]!==undefined?"done":""} ${viewCard===i?"cur":""}">${c["c"+i]!==undefined?"✓":i}</span>`).join("")}</div>`;
+  if(viewCard === 7){
+    box.innerHTML = dots + `
+      <div class="badge"><div class="bg">🎖️</div>
+        <h3>현장 조사 완료!</h3>
+        <p>단서 6개를 모두 수집했습니다.<br>곧 시작될 <b>노선 설계 회의</b>에서 이 단서들이 근거가 됩니다.</p>
+        <button class="big" id="scReview" style="max-width:220px;margin:18px auto 0">🔎 단서 다시 보기</button>
+      </div>`;
+    $("scReview").onclick = () => { viewCard = 1; renderScout(); };
+    return;
+  }
+  const i = viewCard, K = CARDS[i-1], sel = c["c"+i];
+  const answered = sel !== undefined;
+  box.innerHTML = dots + `
+    <h2 style="font-size:16px;font-weight:900;color:var(--navy2)">단서 ${i}/6 — ${K.emoji} ${K.title}</h2>
+    <div class="chartwrap" style="margin-top:8px">${K.svg()}</div>
+    <p class="qline">✅ 체크 질문 — ${K.q}</p>
+    <div class="optgrid">${K.opts.map((o,j) =>
+      `<button data-j="${j}" class="${answered && sel===j ? "on" : ""}" ${answered ? "disabled" : ""}>${"①②③"[j]} ${o}</button>`).join("")}
+    </div>
+    ${answered ? `<div class="expbox">📝 <b>기록 완료</b> — ${K.exp}</div>` : ""}
+    <div class="navrow">
+      <button id="scPrev" ${i===1 ? "disabled" : ""}>◀ 이전</button>
+      <button id="scNext" class="goldbtn" ${answered ? "" : "disabled"}>${i===6 ? "조사 마치기 ▶" : "다음 단서 ▶"}</button>
+    </div>`;
+  box.querySelectorAll(".optgrid button").forEach(b => b.onclick = () => { save({cards:{["c"+i]: +b.dataset.j}}); });
+  $("scPrev").onclick = () => { viewCard = Math.max(1, viewCard-1); renderScout(); };
+  $("scNext").onclick = () => { viewCard = (viewCard===6) ? 7 : viewCard+1; renderScout(); };
+}
+
+/* ── 2단계: 노선 설계 (팀장 보드 board_<회사>) ── */
+let boardDoc = {}, boardUnsub = null, boardInit = false, boardSaveT = null;
+const isLeader = () => !!(me && me.leader);
+let sel = { w1:"", w2:"", w3:"", gyre:"", evid:0 };   // 팀장 로컬 선택 상태 (텍스트는 input에서 직접)
+
+const DIRL = [["SW","↙ 남서쪽으로"],["NE","↗ 북동쪽으로"],["E","→ 동쪽으로"],["W","← 서쪽으로"]];
+[["wRow1","w1"],["wRow2","w2"],["wRow3","w3"]].forEach(([rid,k]) => {
+  const row = $(rid);
+  DIRL.forEach(([v,lb]) => {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = lb; b.dataset.v = v;
+    b.onclick = () => { sel[k] = v; syncDesignUI(); boardSave(); };
+    row.appendChild(b);
+  });
+});
+[["cw","⟳ 시계 방향"],["ccw","⟲ 반시계 방향"]].forEach(([v,lb]) => {
+  const b = document.createElement("button"); b.type = "button"; b.textContent = lb; b.dataset.v = v;
+  b.onclick = () => { sel.gyre = v; syncDesignUI(); boardSave(); };
+  $("gyreRow").appendChild(b);
+});
+CARDS.forEach((K,i) => {
+  const b = document.createElement("button"); b.type = "button"; b.textContent = `${i+1} ${K.emoji}`; b.dataset.v = i+1;
+  b.onclick = () => { sel.evid = i+1; syncDesignUI(); boardSave(); };
+  $("evidRow").appendChild(b);
+});
+["bd_company","bd_sales"].forEach(id => { $(id).oninput = () => {
+  syncDesignUI();
+  clearTimeout(boardSaveT); boardSaveT = setTimeout(boardSave, 600); }; });
+
+function curBoard(){   // 팀장 화면 기준 현재 입력값
+  return { w1:sel.w1, w2:sel.w2, w3:sel.w3, gyre:sel.gyre,
+    company:$("bd_company").value.trim(), sales:$("bd_sales").value.trim(), evid:+sel.evid||0 };
+}
+function syncDesignUI(){
+  [["wRow1","w1"],["wRow2","w2"],["wRow3","w3"]].forEach(([rid,k]) => {
+    [...$(rid).children].forEach(btn => btn.classList.toggle("on", btn.dataset.v === sel[k]));
+  });
+  [...$("gyreRow").children].forEach(btn => btn.classList.toggle("on", btn.dataset.v === sel.gyre));
+  [...$("evidRow").children].forEach(btn => btn.classList.toggle("on", +btn.dataset.v === +sel.evid));
+  $("dsFig").innerHTML = routeSVG(curBoard());
+}
+function boardSave(){
+  if(!isLeader() || !me) return;
+  const data = { team:me.team, leaderName:me.name, ts:Date.now(), ...curBoard() };
+  setDoc(doc(db, COL, "board_"+me.team), data, {merge:true})
+    .then(() => { $("dsSaved").textContent = "✓ 실시간 저장됨 — 선생님 화면과 연동 중"; })
+    .catch(e => { $("dsSaved").textContent = "저장 오류: " + e.message; });
+}
+function boardLoad(){
+  ["w1","w2","w3","gyre"].forEach(k => { if(boardDoc[k]) sel[k] = boardDoc[k]; });
+  if(boardDoc.evid) sel.evid = +boardDoc.evid;
+  if(boardDoc.company !== undefined && boardDoc.company !== "") $("bd_company").value = boardDoc.company;
+  if(boardDoc.sales !== undefined && boardDoc.sales !== "") $("bd_sales").value = boardDoc.sales;
+  syncDesignUI();
+}
+function subBoard(){
+  if(boardUnsub || !me || !me.team) return;
+  boardUnsub = onSnapshot(doc(db, COL, "board_"+me.team), s => {
+    boardDoc = s.data() || {};
+    if(isLeader() && !boardInit){ boardInit = true; boardLoad(); }
+    const ph = state.phase || "";
+    if(ph === "design") renderDesign(); else if(ph === "pt") renderPT();
+  });
+}
+function claim(){
+  me.leader = true; localStorage.setItem(meKey, JSON.stringify(me));
+  save({leader:true});
+  boardInit = true; boardLoad();
+  render();
+}
+$("btnClaimDs").onclick = claim;
+
+const setView = (id, val) => {
+  const el = $(id), has = val !== undefined && String(val).trim() !== "";
+  el.textContent = has ? val : el.id==="dvEvid" ? "아직 선택 전…" : "아직 입력 전…";
+  el.classList.toggle("empty", !has);
+};
+function renderDesign(){
+  show("vDesign"); subBoard();
+  const lead = isLeader();
+  $("dsClaim").classList.toggle("hidden", lead);
+  $("dsEdit").classList.toggle("hidden", !lead);
+  $("dsView").classList.toggle("hidden", lead);
+  if(lead){ syncDesignUI(); }
+  else{
+    $("dsFig").innerHTML = routeSVG(boardDoc);
+    setView("dvCompany", boardDoc.company);
+    setView("dvSales", boardDoc.sales);
+    setView("dvEvid", boardDoc.evid ? `단서 ${boardDoc.evid} — ${CARDS[boardDoc.evid-1].emoji} ${CARDS[boardDoc.evid-1].title}` : "");
+  }
+}
+
+/* ── 1차 서류 심사: 블라인드 가투자 (원픽) ── */
+function renderInv1(){
+  show("vInv1");
+  const box = $("inv1Box");
+  const cand = state.cand || [], routes = state.routes || {};
+  if(cand.length !== 5){ box.innerHTML = '<p class="desc">후보 명단을 준비하는 중입니다…</p>'; return; }
+  const myPick = myDoc.inv1;   // "A"~"E"
+  box.innerHTML = cand.map((t,i) => {
+    const L = "ABCDE"[i], r = routes[t] || {};
+    return `
+    <div class="candcard ${myPick===L ? "on" : ""}">
+      <h3>🔒 후보 ${L}</h3>
+      <div class="chartwrap" style="margin:0 0 4px">${routeSVG(r, `후보 ${L}`)}</div>
+      <div class="sales">${r.sales ? "📣 " + esc(r.sales) : "세일즈 문장 없음"}</div>
+      <button class="pick" data-l="${L}" data-t="${t}" ${myPick ? "disabled" : ""}>${myPick===L ? "✓ 가투자 완료 (봉인됨)" : `후보 ${L}에 가투자`}</button>
+    </div>`;
+  }).join("") + (myPick ? '<p class="desc" style="text-align:center">🔐 가투자가 봉인되었습니다 — 결과는 낙찰 발표 때 공개!</p>' : "");
+  box.querySelectorAll(".pick").forEach(b => b.onclick = () => {
+    if(myDoc.inv1) return;
+    save({ inv1: b.dataset.l, inv1Team: +b.dataset.t, inv1Ts: Date.now() });
+  });
+}
+
+/* ── 입찰 PT 관람 ── */
+function renderPT(){
+  show("vPT"); subBoard();
+  $("ptFig").innerHTML = routeSVG(boardDoc);
+  const el = $("ptSales"), has = boardDoc.sales && String(boardDoc.sales).trim() !== "";
+  el.textContent = has ? boardDoc.sales : "아직 입력 전…";
+  el.classList.toggle("empty", !has);
+}
+
+/* ── 2차 본 심사: 배달코인 10억 분산 투자 ── */
+let inv2 = null;   // {회사번호: 억} — 자기 회사 제외
+function inv2Targets(){ return [1,2,3,4,5].filter(t => t !== (me && me.team)); }
+function inv2Sum(){ return inv2Targets().reduce((a,t) => a + (+inv2[t]||0), 0); }
+function renderInv2(){
+  show("vInv2");
+  const names = state.companies || {};
+  const done = !!myDoc.inv2;
+  if(!inv2){ inv2 = {}; inv2Targets().forEach(t => inv2[t] = 0); }
+  const box = $("inv2Box");
+  if(done){
+    box.innerHTML = inv2Targets().map(t => `
+      <div class="invrow"><div class="nm">🚚 ${esc(names[t] || t + "회사")}</div>
+        <div class="amt">${+(myDoc.inv2[t]||0)}억</div></div>`).join("");
+    $("invSumLine").className = "sumline ok";
+    $("invSum").textContent = "10억";
+    $("btnInv2").disabled = true;
+    $("btnInv2").textContent = "투자 제출 완료";
+    $("inv2Done").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 선생님 화면의 실시간 유치 레이스를 지켜보세요 📈";
+    return;
+  }
+  box.innerHTML = inv2Targets().map(t => `
+    <div class="invrow">
+      <div class="nm">🚚 ${esc(names[t] || t + "회사")}</div>
+      <button data-t="${t}" data-d="-1" ${(+inv2[t]||0) <= 0 ? "disabled" : ""}>−</button>
+      <div class="amt">${+inv2[t]||0}억</div>
+      <button data-t="${t}" data-d="1" ${inv2Sum() >= 10 ? "disabled" : ""}>＋</button>
+    </div>`).join("");
+  const sum = inv2Sum();
+  $("invSumLine").className = "sumline " + (sum === 10 ? "ok" : "no");
+  $("invSum").textContent = sum + "억";
+  $("btnInv2").disabled = sum !== 10;
+  $("btnInv2").textContent = sum === 10 ? "투자 제출하기" : `투자 제출하기 (${10-sum}억 남음)`;
+  $("inv2Done").textContent = "";
+  box.querySelectorAll("button").forEach(b => b.onclick = () => {
+    const t = +b.dataset.t, d = +b.dataset.d;
+    inv2[t] = Math.max(0, Math.min(10, (+inv2[t]||0) + d));
+    renderInv2();
+  });
+}
+$("btnInv2").onclick = () => {
+  if(myDoc.inv2) return;
+  if(inv2Sum() !== 10){ alert("합계 10억을 정확히 맞춰 주세요!"); return; }
+  const data = {};
+  [1,2,3,4,5].forEach(t => data[t] = (me && t === me.team) ? 0 : (+inv2[t]||0));
+  save({ inv2: data, inv2Ts: Date.now() });
+};
+
+/* ── 정리: 요점 카드 3장 ── */
+let wrapIdx = 0;
+function renderWrap(){
+  show("vWrap");
+  const K = WRAPS[wrapIdx];
+  $("wrapBox").innerHTML = `
+    <div class="wrapcard">
+      <h3>${K.t}</h3>
+      <ul>${K.items.map(it => `<li>${it}</li>`).join("")}</ul>
+    </div>
+    <div class="navrow">
+      <button id="wrPrev" ${wrapIdx===0 ? "disabled" : ""}>◀ 이전</button>
+      <button disabled style="flex:.6;opacity:1;color:var(--navy);font-weight:900">${wrapIdx+1} / 3</button>
+      <button id="wrNext" class="goldbtn" ${wrapIdx===2 ? "disabled" : ""}>다음 ▶</button>
+    </div>`;
+  $("wrPrev").onclick = () => { wrapIdx = Math.max(0, wrapIdx-1); renderWrap(); };
+  $("wrNext").onclick = () => { wrapIdx = Math.min(2, wrapIdx+1); renderWrap(); };
+}
+
+/* ── 생각 한 문장 ── */
+$("btnOpinion").onclick = () => {
+  const t = $("inOpinion").value.trim();
+  if(!t){ alert("한 문장만 적어 주세요!"); return; }
+  save({ opinion: t, opinionTs: Date.now() });
+  $("opinionDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다음 시간, '배달 사고' 현장에서 확인합니다 🌊";
+};
+function renderEnd(){
+  show("vEnd");
+  if(myDoc.opinion){ $("inOpinion").value = myDoc.opinion;
+    $("opinionDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다시 제출하면 덮어써요."; }
+}
+</script>
+</body>
+</html>

@@ -3,6 +3,13 @@
    colbase = 그 수업의 Firestore 컬렉션 접두사(반별 _c<N>), clsKey = 교사 반 복원용 localStorage 키 — 수업별로 반드시 달라야 함. */
 export const LESSONS = [
   {
+    id: "circ", emoji: "🚚",
+    title: "지구 배달 주식회사", subtitle: "대기 대순환과 해수의 표층 순환",
+    unit: "통합과학2 · 지구 환경 변화 2/3",
+    student: "https://zeroyoung-collab.github.io/hn-sci/circ/",
+    colbase: "pw_openclass_circ", clsKey: "occ_teacher_cls",
+  },
+  {
     id: "heat", emoji: "☀️",
     title: "지구의 가계부", subtitle: "열수지와 복사 평형",
     unit: "통합과학2 · 지구 환경 변화 1/3",
