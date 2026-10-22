@@ -165,10 +165,10 @@ let live = null, redirT = null, lastLesson = null, qrDrawn = false;
 /* 교사 모드 전환 */
 $("tLink").onclick = () => {
   if(teacher){ render(); return; }
-  const v = prompt("교사용 비밀번호를 입력하세요");
+  const v = prompt("교사용 비밀번호를 입력하세요 (영문 자판)");
   if(v === null) return;
-  if(v === "honam1234"){ teacher = true; localStorage.setItem(TKEY, "1"); render(); }
-  else alert("비밀번호가 맞지 않습니다.");
+  if(v.trim() === "honam1234"){ teacher = true; localStorage.setItem(TKEY, "1"); render(); }
+  else alert("비밀번호가 맞지 않습니다.\n키보드가 영문 자판(한/영 전환)인지 확인해 주세요.");
 };
 $("btnStu").onclick = () => {
   localStorage.removeItem(TKEY); teacher = false;

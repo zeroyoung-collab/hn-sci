@@ -195,8 +195,33 @@ body.has-acts .slide{ bottom:12vh; }
   <div style="font-size:22px;font-weight:900">참여형 수업 · 교사 콘솔</div>
   <input type="password" id="gatePw" placeholder="비밀번호">
   <button id="gateBtn" style="font:inherit;font-size:18px;font-weight:900;padding:10px 20px;border-radius:10px;border:none;background:var(--gold);color:var(--navy2);margin-left:8px;cursor:pointer">입장</button><br>
-  <div style="font-size:12px;opacity:.6;margin-top:10px">Enter 또는 입장 버튼</div>
+  <div style="font-size:12px;opacity:.6;margin-top:10px">Enter 또는 입장 버튼 · 영문 자판으로 입력</div>
 </div></div>
+
+<script>
+/* 게이트는 모듈과 분리된 일반 스크립트 — 구형 브라우저·모듈 로드 실패 시에도 동작 */
+(function(){
+  var gp = document.getElementById("gatePw"), gb = document.getElementById("gateBtn");
+  function tryGate(){
+    var v = (gp.value || "").trim();
+    if(v === "honam1234"){ var g = document.getElementById("gate"); if(g) g.remove(); }
+    else if(v){
+      alert("비밀번호가 맞지 않습니다.\n키보드가 영문 자판(한/영 전환)인지 확인하고 다시 입력해 주세요.");
+      gp.value = ""; gp.focus();
+    }
+  }
+  gp.addEventListener("keydown", function(e){ if(e.key === "Enter" || e.keyCode === 13) tryGate(); });
+  gb.addEventListener("click", tryGate);
+  if(location.search.indexOf("pw=honam1234") !== -1){ var g = document.getElementById("gate"); if(g) g.remove(); }
+  /* 모듈(수업 목록)이 4초 내 로드되지 않으면 안내 표시 */
+  setTimeout(function(){
+    var lb = document.getElementById("lsnBtns");
+    if(lb && !lb.children.length){
+      lb.innerHTML = '<div style="color:#ffb3b3;font-size:14px;line-height:1.8;text-align:center">수업 목록을 불러오지 못했습니다.<br>인터넷 연결을 확인하고 새로고침(F5) 해 주세요.<br>전자칠판 내장 브라우저 등 구형 환경이라면 최신 크롬/엣지로 열어 주세요.</div>';
+    }
+  }, 4000);
+})();
+</script>
 
 <div id="lsnPick"><div class="box">
   <h2>오늘은 어떤 수업인가요?</h2>
@@ -250,13 +275,7 @@ const qs = new URLSearchParams(location.search);
 let META = null, COLBASE = "", COL = "", CLS = null;
 let state = {}, students = [], boards = {};
 
-/* ── 게이트 ── */
-const tryGate = () => {
-  if(document.getElementById("gatePw").value === "honam1234") document.getElementById("gate").remove();
-};
-document.getElementById("gatePw").addEventListener("keydown", e => { if(e.key === "Enter") tryGate(); });
-document.getElementById("gateBtn").addEventListener("click", tryGate);
-if(qs.get("pw") === "honam1234"){ document.getElementById("gate").remove(); }
+/* 게이트는 상단 인라인 스크립트가 담당(모듈 실패에도 동작) */
 
 /* ── 수업 선택 ── */
 const lb = document.getElementById("lsnBtns");
