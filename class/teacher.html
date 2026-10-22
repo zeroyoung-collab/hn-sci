@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>참여형 수업 — 교사 콘솔</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+:root{
+  --navy:#0B3E86; --navy2:#092f66; --gold:#F5B301; --gold-d:#c8920a;
+  --green:#1A9A3E; --red:#d64545; --ink:#141a24; --soft:#3d4652; --line:#b9c4d4; --lt:#eef3fa;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+html,body{ height:100%; overflow:hidden; overscroll-behavior:none; }
+body{ font-family:'Noto Sans KR',sans-serif; color:var(--ink); background:#0d1524; word-break:keep-all;
+  touch-action:manipulation; -webkit-user-select:none; user-select:none; -webkit-tap-highlight-color:transparent; }
+input, textarea{ -webkit-user-select:text; user-select:text; }
+
+/* 잠금 */
+#gate{ position:fixed; inset:0; background:#0d1524; z-index:99; display:flex; align-items:center; justify-content:center; }
+#gate .box{ text-align:center; color:#fff; }
+#gate input{ font:inherit; font-size:18px; padding:10px 16px; border-radius:10px; border:none; text-align:center; margin-top:14px; }
+
+/* 수업 선택 */
+#lsnPick{ position:fixed; inset:0; background:#0d1524; z-index:97; display:flex; align-items:center; justify-content:center; }
+#lsnPick .box{ color:#fff; max-width:520px; width:100%; padding:0 20px; }
+#lsnPick h2{ font-size:24px; font-weight:900; text-align:center; }
+#lsnPick .hint{ font-size:13px; opacity:.65; text-align:center; margin-top:8px; line-height:1.6; }
+#lsnBtns{ margin-top:22px; }
+#lsnBtns button{ display:flex; align-items:center; gap:14px; width:100%; text-align:left; font:inherit;
+  background:#fff; color:var(--ink); border:none; border-radius:14px; padding:14px 18px; margin-bottom:12px; cursor:pointer; }
+#lsnBtns button:hover{ outline:3px solid var(--gold); }
+#lsnBtns .em{ font-size:32px; flex-shrink:0; }
+#lsnBtns .unit{ font-size:11px; font-weight:700; color:var(--gold-d); letter-spacing:.04em; }
+#lsnBtns .tt{ font-size:18px; font-weight:900; color:var(--navy2); }
+#lsnBtns .sub{ font-size:12.5px; font-weight:700; color:var(--soft); }
+
+/* 반 선택 */
+#clsPick{ position:fixed; inset:0; background:#0d1524; z-index:96; display:none; align-items:center; justify-content:center; }
+#clsPick.show{ display:flex; }
+#clsPick .box{ text-align:center; color:#fff; max-width:440px; padding:0 20px; }
+#clsBtns{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:20px; }
+#clsBtns button{ font:inherit; font-size:19px; font-weight:900; padding:16px 0; border-radius:12px;
+  border:none; background:#fff; color:var(--navy2); cursor:pointer; }
+#clsBtns button.ghost{ grid-column:span 3; background:#2a3a57; color:#9fb0c6; font-size:14px; padding:12px 0; }
+
+/* 슬라이드 */
+.slide{ position:absolute; inset:0; display:none; flex-direction:column; background:#fff; padding:4.5vh 5vw; }
+.slide.on{ display:flex; }
+.kicker{ font-size:2vh; font-weight:700; color:var(--gold-d); letter-spacing:.14em; margin-bottom:1vh; }
+h1.big{ font-size:7.5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02em; line-height:1.2; }
+h2.mid{ font-size:5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02em; margin-bottom:2.5vh; }
+.rule{ height:.7vh; width:18vh; background:linear-gradient(90deg,var(--gold),var(--green)); border-radius:4px; margin:2.5vh 0; }
+
+/* 하단 진행바 */
+#hud{ position:fixed; left:0; right:0; bottom:0; height:5.2vh; background:#0d1524; color:#8fa2c0;
+  display:flex; align-items:center; gap:2vw; padding:0 1.6vw; font-size:1.9vh; z-index:50; }
+#hud .sp{ flex:1; }
+#hud b{ color:#fff; }
+#hud .live{ color:#5fd08a; font-weight:700; }
+#hud .dead{ color:#e07f7f; font-weight:700; }
+#hud button.nav{ font:inherit; font-size:2.3vh; font-weight:900; color:#fff; background:#23407a;
+  border:none; border-radius:.8vh; padding:.5vh 2.6vh; cursor:pointer; }
+#hud button.nav:active{ background:var(--gold); color:var(--navy2); }
+.slide{ bottom:5.2vh; }
+
+/* 액션 버튼 — 하단 가로 툴바(콘텐츠와 안 겹침) */
+.acts{ position:fixed; left:1.6vw; right:1.6vw; bottom:6.4vh; display:flex; flex-direction:row;
+  justify-content:flex-end; align-items:flex-end; flex-wrap:wrap; gap:.8vh 1vh; z-index:60; pointer-events:none; }
+.acts button{ pointer-events:auto; font:inherit; font-size:2vh; font-weight:900; padding:1.2vh 2.2vh; border-radius:1.2vh;
+  border:none; background:var(--navy); color:#fff; cursor:pointer; box-shadow:0 .4vh 1.2vh rgba(0,0,0,.25); }
+.acts button.gold{ background:var(--gold); color:var(--navy2); }
+.acts button.green{ background:var(--green); }
+.acts button.ghost{ background:#e7ecf4; color:var(--soft); }
+.acts button:disabled{ opacity:.4; cursor:default; }
+body.has-acts .slide{ bottom:12vh; }
+
+/* 로비 */
+.lobbywrap{ flex:1; display:flex; gap:4vw; align-items:center; }
+.lobbyL{ flex:1.2; }
+.lobbyL .url{ font-size:2.6vh; font-weight:700; color:var(--navy); background:var(--lt); border-radius:1vh; padding:1.4vh 2vh; display:inline-block; margin-top:2vh; }
+.lobbyR{ flex:1; display:flex; flex-direction:column; align-items:center; gap:2vh; }
+#qr{ background:#fff; padding:1.5vh; border:.4vh solid var(--navy); border-radius:1.5vh; }
+#qr img, #qr canvas{ width:30vh !important; height:30vh !important; }
+.joined{ flex-shrink:0; margin-top:2vh; }
+.joined .cnt{ font-size:3vh; font-weight:900; color:var(--navy); margin-bottom:1vh; }
+.joined .cnt b{ font-size:5vh; color:var(--green); }
+.teamsrow{ display:grid; grid-template-columns:repeat(5,1fr); gap:1vw; }
+.teambox{ border:.25vh solid var(--line); border-radius:1vh; padding:1vh 1.2vh; min-height:11vh; }
+.teambox h4{ font-size:1.9vh; color:var(--navy); border-bottom:.2vh solid var(--line); padding-bottom:.6vh; margin-bottom:.7vh; }
+.teambox span{ display:inline-block; font-size:1.8vh; font-weight:700; background:var(--lt); border-radius:.6vh; padding:.2vh 1vh; margin:0 .4vh .5vh 0; }
+
+/* 예측 */
+.qbig{ font-size:4.6vh; font-weight:900; color:var(--ink); line-height:1.5; }
+.qbig b{ color:var(--navy); }
+#hist{ flex:1; display:flex; align-items:flex-end; gap:1vw; padding:3vh 2vw 0; }
+.hbar{ flex:1; display:flex; flex-direction:column; align-items:center; gap:.8vh; }
+.hbar .bar{ width:100%; background:var(--navy); border-radius:.8vh .8vh 0 0; min-height:.5vh; transition:height .4s; }
+.hbar.hot .bar{ background:var(--gold); }
+.hbar .lb{ font-size:1.7vh; font-weight:700; color:var(--soft); }
+.hbar .n{ font-size:2.2vh; font-weight:900; color:var(--navy); }
+.predmeta{ font-size:2.8vh; font-weight:700; color:var(--soft); margin-top:1.5vh; }
+.predmeta b{ color:var(--gold-d); font-size:3.4vh; }
+
+/* 목표/텍스트 슬라이드 */
+.goals{ font-size:3.4vh; line-height:1.9; font-weight:500; }
+.goals b{ color:var(--navy); font-weight:900; }
+.goals .num{ display:inline-block; width:4.6vh; height:4.6vh; line-height:4.6vh; text-align:center;
+  background:var(--navy); color:#fff; border-radius:50%; font-weight:900; margin-right:1.6vh; font-size:2.6vh; }
+
+/* SVG 영역 */
+.svgwrap{ flex:1; display:flex; align-items:center; justify-content:center; min-height:0; }
+.svgwrap svg{ max-width:100%; max-height:100%; }
+
+/* 모둠 보드 그리드 */
+.bgrid{ flex:1; display:grid; grid-template-columns:repeat(3,1fr); gap:1.5vh 1vw; min-height:0; margin-top:1vh; }
+.bcard{ border:.3vh solid var(--line); border-radius:1.2vh; padding:1.4vh 1.6vh; display:flex; flex-direction:column;
+  min-height:0; overflow:hidden; background:#fff; }
+.bcard.click{ cursor:pointer; }
+.bcard.click:hover{ border-color:var(--navy); }
+.bcard.hl{ border-color:var(--gold); background:#fffaf0; box-shadow:0 0 0 .5vh rgba(245,179,1,.4); }
+.donebdg{ font-size:1.6vh; color:var(--green); font-weight:900; }
+.bcard h4{ display:flex; align-items:center; gap:.6vw; font-size:2.2vh; color:var(--navy); margin-bottom:.8vh; }
+.bcard h4 .sp{ flex:1; }
+.bcard .meta{ font-size:1.6vh; color:var(--soft); font-weight:700; }
+.bcard.note{ cursor:default; background:var(--lt); border-style:dashed; font-size:2vh; line-height:1.8;
+  color:var(--soft); font-weight:500; justify-content:center; padding:1.5vh 2vh; }
+.btext{ flex:1; font-size:2.2vh; font-weight:700; line-height:1.5; overflow:hidden; }
+.btext .dim2{ color:#a8b2c0; font-weight:500; }
+.minichart{ border:.2vh solid var(--line); border-radius:.8vh; overflow:hidden; margin-bottom:.8vh; }
+.minichart svg{ width:100%; height:auto; display:block; }
+.bans{ background:var(--lt); border-left:.6vh solid var(--gold); border-radius:.8vh;
+  padding:1.3vh 1.8vh; font-size:2.5vh; line-height:1.55; font-weight:700; }
+.bans b{ display:block; font-size:1.8vh; color:var(--navy); margin-bottom:.4vh; }
+.dim2{ color:#a8b2c0; font-weight:500; }
+
+/* 시뮬 온도 기록 (지구의 체온) */
+.temps{ display:flex; gap:.8vw; margin-bottom:1vh; }
+.temps div{ flex:1; background:var(--lt); border-radius:.8vh; text-align:center; padding:.8vh .4vh; }
+.temps div small{ display:block; font-size:1.4vh; font-weight:700; color:var(--soft); }
+.temps div b{ font-size:3vh; color:var(--navy); }
+.temps div b.none{ color:#a8b2c0; font-weight:500; }
+
+/* 배분 막대 (지구의 가계부) */
+.abar{ display:flex; height:4.2vh; border-radius:.8vh; overflow:hidden; border:.25vh solid var(--line); margin-bottom:.8vh; }
+.abar div{ display:flex; align-items:center; justify-content:center; font-size:1.9vh; font-weight:900; color:#fff; min-width:0; overflow:hidden; }
+.anum{ font-size:1.95vh; font-weight:700; color:var(--soft); margin-bottom:.6vh; }
+.anum b{ color:var(--navy); }
+.asum{ font-weight:900; }
+.asum.ok{ color:var(--green); } .asum.no{ color:var(--red); }
+
+/* 투표 */
+.sents{ flex:1; display:flex; flex-direction:column; gap:1.6vh; justify-content:center; }
+.sent{ display:flex; align-items:center; gap:1.6vw; border:.3vh solid var(--line); border-radius:1.4vh; padding:1.8vh 2.2vh; }
+.sent .tno{ flex-shrink:0; font-size:2.4vh; font-weight:900; color:#fff; background:var(--navy); border-radius:1vh; padding:.8vh 1.6vh; }
+.sent .ds{ flex-shrink:0; font-size:2vh; font-weight:900; color:var(--gold-d); background:#fdf3d7; border-radius:1vh; padding:.8vh 1.4vh; }
+.sent .tx{ flex:1; font-size:2.9vh; font-weight:700; line-height:1.5; }
+.sent .vt{ flex-shrink:0; font-size:2.6vh; font-weight:900; color:var(--gold-d); }
+.sent.best{ border-color:var(--gold); background:#fffaf0; }
+.sent.empty .tx{ color:#a8b2c0; font-weight:500; }
+
+/* 정리 */
+.sumflow{ display:flex; align-items:center; justify-content:center; gap:1.5vw; margin:2vh 0; }
+.sumbox{ text-align:center; border:.4vh solid var(--navy); border-radius:1.6vh; padding:2.2vh 2vh; font-size:2.7vh; font-weight:900; color:var(--navy2); line-height:1.5; }
+.sumbox small{ display:block; font-size:1.9vh; font-weight:700; color:var(--soft); margin-top:.6vh; }
+.sumarrow{ font-size:4.5vh; font-weight:900; color:var(--gold-d); }
+.ledger{ display:flex; gap:1.5vw; margin-top:1vh; }
+.ledger div{ flex:1; background:var(--lt); border-left:.6vh solid var(--gold); border-radius:1vh; padding:1.5vh 1.8vh; font-size:2.3vh; font-weight:700; line-height:1.6; }
+.ledger div b{ color:var(--navy); display:block; font-size:2vh; }
+
+/* 생각 피드 */
+.opfeed{ flex:1; overflow:hidden; display:grid; grid-template-columns:1fr 1fr; gap:1.2vh 1.5vw; margin-top:1.5vh; align-content:start; }
+.opline{ font-size:2.4vh; font-weight:500; line-height:1.5; background:var(--lt); border-left:.5vh solid var(--gold); border-radius:.8vh; padding:1.2vh 1.6vh; }
+.opline b{ color:var(--navy); font-weight:900; margin-right:1vh; }
+
+/* 4:3 등 좁은 비율(아이패드) 조율 */
+@media (max-aspect-ratio: 3/2){
+  h1.big{ font-size:6vh; }
+  h2.mid{ font-size:4.2vh; }
+  .qbig{ font-size:3.8vh; }
+  .goals{ font-size:2.9vh; }
+  .sumflow{ flex-wrap:wrap; }
+  .sumbox{ font-size:2.2vh; padding:1.8vh 1.5vh; }
+  .sumarrow{ font-size:3.6vh; }
+  .sent .tx{ font-size:2.5vh; }
+  .bans{ font-size:2.2vh; }
+  .ledger{ flex-direction:column; gap:1vh; }
+}
+</style>
+</head>
+<body>
+
+<div id="gate"><div class="box">
+  <div style="font-size:22px;font-weight:900">참여형 수업 · 교사 콘솔</div>
+  <input type="password" id="gatePw" placeholder="비밀번호">
+  <button id="gateBtn" style="font:inherit;font-size:18px;font-weight:900;padding:10px 20px;border-radius:10px;border:none;background:var(--gold);color:var(--navy2);margin-left:8px;cursor:pointer">입장</button><br>
+  <div style="font-size:12px;opacity:.6;margin-top:10px">Enter 또는 입장 버튼</div>
+</div></div>
+
+<div id="lsnPick"><div class="box">
+  <h2>오늘은 어떤 수업인가요?</h2>
+  <div class="hint">수업을 고르면 반 선택으로 이어집니다.<br>학생 입장(런처)도 이 수업으로 자동 연결돼요.</div>
+  <div id="lsnBtns"></div>
+</div></div>
+
+<div id="clsPick"><div class="box">
+  <div style="font-size:24px;font-weight:900" id="clsTitle">어느 반 수업인가요?</div>
+  <div style="font-size:13px;opacity:.65;margin-top:8px;line-height:1.6" id="clsHint">반별로 기록이 <b style="color:var(--gold)">따로 저장</b>됩니다.<br>같은 반을 다시 선택하면 제출 기록이 그대로 열려요.</div>
+  <div id="clsBtns"></div>
+</div></div>
+
+<div id="stage"></div>
+
+<div class="acts" id="acts"></div>
+
+<div id="hud">
+  <span id="hudConn" class="dead">연결 중…</span>
+  <span><b id="hudCls">—</b></span>
+  <span>접속 <b id="hudN">0</b>명</span>
+  <span style="opacity:.55">제작 · 호남고 조영신</span>
+  <span class="sp"></span>
+  <span>←/→·스와이프 슬라이드 · Space 진행</span>
+  <button class="nav" id="navLsn">수업</button>
+  <button class="nav" id="navPrev">◀</button>
+  <span><b id="hudPg">1</b> / <span id="hudTot">?</span></span>
+  <button class="nav" id="navNext">▶</button>
+  <button class="nav" id="navFull">⛶</button>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, setDoc, deleteDoc, onSnapshot, collection, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { LESSONS } from "./lessons/registry.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBotwjsJxit4SbOzXVVOov37Po97AieoxM",
+  authDomain: "sangdam-b97c1.firebaseapp.com",
+  projectId: "sangdam-b97c1",
+  storageBucket: "sangdam-b97c1.firebasestorage.app",
+  messagingSenderId: "389048360844",
+  appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
+};
+const db = getFirestore(initializeApp(firebaseConfig));
+const ENTRY = "https://zeroyoung-collab.github.io/hn-sci/class/";   // 학생 고정 입장 주소(런처)
+const LAUNCHER_COL = "pw_class_launcher";
+const qs = new URLSearchParams(location.search);
+
+let META = null, COLBASE = "", COL = "", CLS = null;
+let state = {}, students = [], boards = {};
+
+/* ── 게이트 ── */
+const tryGate = () => {
+  if(document.getElementById("gatePw").value === "honam1234") document.getElementById("gate").remove();
+};
+document.getElementById("gatePw").addEventListener("keydown", e => { if(e.key === "Enter") tryGate(); });
+document.getElementById("gateBtn").addEventListener("click", tryGate);
+if(qs.get("pw") === "honam1234"){ document.getElementById("gate").remove(); }
+
+/* ── 수업 선택 ── */
+const lb = document.getElementById("lsnBtns");
+LESSONS.forEach(L => {
+  const b = document.createElement("button");
+  b.innerHTML = `<span class="em">${L.emoji}</span><span style="min-width:0">
+    <span class="unit">${L.unit}</span><br><span class="tt">${L.title}</span><br><span class="sub">${L.subtitle}</span></span>`;
+  b.onclick = () => pickLesson(L.id);
+  lb.appendChild(b);
+});
+
+async function pickLesson(id){
+  META = LESSONS.find(x => x.id === id);
+  if(!META){ alert("등록되지 않은 수업입니다: " + id); return; }
+  COLBASE = META.colbase;
+  document.title = `${META.title} — 교사 콘솔`;
+  document.getElementById("lsnPick").remove();
+  document.getElementById("clsTitle").textContent = `${META.emoji} ${META.title} — 어느 반 수업인가요?`;
+  if(META.clsHint) document.getElementById("clsHint").innerHTML =
+    `반별로 기록이 <b style="color:var(--gold)">따로 저장</b>됩니다.<br>${META.clsHint}`;
+  try{
+    const mod = await import(`./lessons/${META.id}.js`);
+    mod.default(E);
+  }catch(e){
+    alert("수업 모듈을 불러오지 못했습니다: " + e.message);
+    return;
+  }
+  document.getElementById("hudTot").textContent = slides.length;
+
+  // 반 선택 — ?class=0~6 직행, 아니면 50분 이내 이어하던 반 자동 복원(수업별 키)
+  const clsRaw = qs.get("class");
+  if(clsRaw !== null && +clsRaw >= 0 && +clsRaw <= 6){ startClass(+clsRaw); return; }
+  try{
+    const saved = JSON.parse(localStorage.getItem(META.clsKey) || "null");
+    if(saved && saved.cls >= 0 && Date.now() - saved.ts < 50*60*1000){ startClass(saved.cls); return; }
+  }catch(e){}
+  document.getElementById("clsPick").classList.add("show");
+}
+const lsnParam = qs.get("lesson");
+if(lsnParam && LESSONS.some(x => x.id === lsnParam)) pickLesson(lsnParam);
+
+/* ── 반 선택 ── */
+const clsBtns = document.getElementById("clsBtns");
+for(let n=1;n<=6;n++){
+  const b = document.createElement("button");
+  b.textContent = `1-${n}`;
+  b.onclick = () => startClass(n);
+  clsBtns.appendChild(b);
+}
+const rb = document.createElement("button");
+rb.textContent = "리허설 (공용 — 반 기록에 안 남음)"; rb.className = "ghost";
+rb.onclick = () => startClass(0);
+clsBtns.appendChild(rb);
+
+function startClass(n){
+  CLS = n; COL = n ? `${COLBASE}_c${n}` : COLBASE;
+  localStorage.setItem(META.clsKey, JSON.stringify({cls:n, ts:Date.now()}));
+  setDoc(doc(db, COLBASE, "live"), {cls:n, ts:Date.now()});                    // 학생 앱이 이 반 저장소로 따라오게
+  setDoc(doc(db, LAUNCHER_COL, "live"), {lesson: META.id, ts:Date.now()});     // 런처 학생 입장도 이 수업으로 자동 연결
+  document.getElementById("clsPick").remove();
+  document.getElementById("hudCls").textContent = `${META.emoji} ${n ? `1-${n}반` : "리허설"}`;
+  startRealtime();
+  go(Math.min(slides.length-1, Math.max(0, +(qs.get("slide") || 0))));
+}
+const uiLocked = () => document.getElementById("gate") || document.getElementById("lsnPick") || document.getElementById("clsPick");
+
+/* ── 실시간 데이터 ── */
+function startRealtime(){
+  onSnapshot(doc(db, COL, "state"), s => {
+    state = s.data() || {};
+    document.getElementById("hudConn").className = "live";
+    document.getElementById("hudConn").textContent = "● 실시간";
+    render();
+  }, () => {
+    document.getElementById("hudConn").className = "dead";
+    document.getElementById("hudConn").textContent = "연결 오류";
+  });
+  onSnapshot(collection(db, COL), snap => {
+    students = []; boards = {};
+    snap.forEach(d => {
+      if(d.id.startsWith("stu_")){ const v = d.data(); if(v.name) students.push({id:d.id, ...v}); }
+      else if(d.id.startsWith("board_")){ const v = d.data(); if(v.team) boards[v.team] = v; }
+    });
+    document.getElementById("hudN").textContent = students.length;
+    render();
+  });
+}
+const setState = data => setDoc(doc(db, COL, "state"), data, {merge:true});
+
+/* ── 차트 라이브러리 (다중 선·범례·notes 지원 확장판) ── */
+function lineChart(o){
+  const w=820, h=500, ml=o.ml||86, mr=30, mt=92, mb=62;
+  const iw=w-ml-mr, ih=h-mt-mb;
+  const X=x=>ml+(x-o.xmin)/(o.xmax-o.xmin)*iw;
+  const Y=y=>mt+ih-(y-o.ymin)/(o.ymax-o.ymin)*ih;
+  let g = "";
+  (o.yticks||[]).forEach(t=>{ g += `<line x1="${ml}" y1="${Y(t)}" x2="${w-mr}" y2="${Y(t)}" stroke="#e3e9f2" stroke-width="1.5"/>
+    <text x="${ml-10}" y="${Y(t)+5}" text-anchor="end" font-size="16" fill="#3d4652">${t}</text>`; });
+  (o.xticks||[]).forEach(t=>{ g += `<text x="${X(t)}" y="${h-mb+26}" text-anchor="middle" font-size="16" fill="#3d4652">${o.xfmt?o.xfmt(t):t}</text>`; });
+  if(o.zero !== undefined) g += `<line x1="${ml}" y1="${Y(o.zero)}" x2="${w-mr}" y2="${Y(o.zero)}" stroke="#3d4652" stroke-width="2" stroke-dasharray="5 4"/>`;
+  g += `<line x1="${ml}" y1="${mt-6}" x2="${ml}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>
+        <line x1="${ml}" y1="${h-mb}" x2="${w-mr}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>`;
+  const line = pts => pts.map(p=>`${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(" ");
+  const series = o.series || [{pts:o.pts, color:o.color, dots:o.dots}];
+  series.forEach(s=>{
+    g += `<polyline points="${line(s.pts)}" fill="none" stroke="${s.color||"#d64545"}" stroke-width="3.5" stroke-linejoin="round"/>`;
+    if(s.dots) s.pts.forEach(p=>{ g += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="5" fill="${s.color||"#d64545"}"/>`; });
+  });
+  const leg = series.filter(s=>s.label);
+  leg.forEach((s,i)=>{ const lx=w-mr-184, ly=mt-58+i*26;
+    g += `<line x1="${lx}" y1="${ly}" x2="${lx+34}" y2="${ly}" stroke="${s.color}" stroke-width="5"/>
+      <text x="${lx+42}" y="${ly+6}" font-size="16" font-weight="700" fill="#3d4652">${s.label}</text>`; });
+  (o.marks||[]).forEach(m=>{ g += `<circle cx="${X(m[0])}" cy="${Y(m[1])}" r="6.5" fill="#0B3E86"/>
+    <text x="${X(m[0])+(m[3]==="end"?-14:14)}" y="${Y(m[1])+(m[4]||5)}" text-anchor="${m[3]||"start"}" font-size="17" font-weight="900" fill="#0B3E86">${m[2]}</text>`; });
+  (o.notes||[]).forEach(n=>{ g += `<text x="${X(n[0])}" y="${Y(n[1])}" text-anchor="${n[3]||"middle"}" font-size="16" font-weight="900" fill="${n[4]||"#c8920a"}">${n[2]}</text>`; });
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${w}" height="${h}" fill="#fff"/>
+    <text x="30" y="40" font-size="24" font-weight="900" fill="#092f66">${o.title}</text>
+    <text x="30" y="66" font-size="15" font-weight="700" fill="#3d4652">${o.sub}</text>
+    <text x="26" y="${mt+ih/2}" text-anchor="middle" font-size="15" font-weight="900" fill="#0B3E86" transform="rotate(-90 26 ${mt+ih/2})">${o.ylabel||""}</text>
+    ${g}
+    <text x="${w-24}" y="${h-16}" text-anchor="end" font-size="12.5" fill="#8a93a1">${o.src} · 관측값 기반(수업용 재구성)</text>
+  </svg>`;
+}
+function barChart(o){
+  const w=820, h=500, ml=o.ml||86, mr=30, mt=92, mb=70;
+  const iw=w-ml-mr, ih=h-mt-mb;
+  const Y=v=>mt+ih-(v-o.ymin)/(o.ymax-o.ymin)*ih;
+  const base = o.zero !== undefined ? o.zero : o.ymin;
+  const n=o.cats.length, bw=iw/n*0.56;
+  let g = "";
+  (o.yticks||[]).forEach(t=>{ g += `<line x1="${ml}" y1="${Y(t)}" x2="${w-mr}" y2="${Y(t)}" stroke="#e3e9f2" stroke-width="1.5"/>
+    <text x="${ml-10}" y="${Y(t)+5}" text-anchor="end" font-size="16" fill="#3d4652">${t}</text>`; });
+  g += `<line x1="${ml}" y1="${mt-6}" x2="${ml}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>
+        <line x1="${ml}" y1="${Y(base)}" x2="${w-mr}" y2="${Y(base)}" stroke="#3d4652" stroke-width="2.5"/>`;
+  o.cats.forEach((c,i)=>{
+    const cx = ml+iw/n*(i+0.5);
+    const yA = Y(Math.max(c.val, base)), yB = Y(Math.min(c.val, base));
+    g += `<rect x="${(cx-bw/2).toFixed(1)}" y="${yA.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2,yB-yA).toFixed(1)}" rx="6" fill="${c.color}"/>
+      <text x="${cx}" y="${c.val>=base ? yA-10 : yB+24}" text-anchor="middle" font-size="19" font-weight="900" fill="#092f66">${c.vlabel!==undefined?c.vlabel:c.val}</text>
+      <text x="${cx}" y="${h-mb+30}" text-anchor="middle" font-size="16" font-weight="700" fill="#3d4652">${c.label}</text>`;
+  });
+  (o.notes||[]).forEach(nn=>{ const cx = ml+iw/n*(nn[0]+0.5);
+    g += `<text x="${cx}" y="${Y(nn[1])}" text-anchor="middle" font-size="17" font-weight="900" fill="${nn[3]||"#c8920a"}">${nn[2]}</text>`; });
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${w}" height="${h}" fill="#fff"/>
+    <text x="30" y="40" font-size="24" font-weight="900" fill="#092f66">${o.title}</text>
+    <text x="30" y="66" font-size="15" font-weight="700" fill="#3d4652">${o.sub}</text>
+    <text x="26" y="${mt+ih/2}" text-anchor="middle" font-size="15" font-weight="900" fill="#0B3E86" transform="rotate(-90 26 ${mt+ih/2})">${o.ylabel||""}</text>
+    ${g}
+    <text x="${w-24}" y="${h-16}" text-anchor="end" font-size="12.5" fill="#8a93a1">${o.src} · 관측값 기반(수업용 재구성)</text>
+  </svg>`;
+}
+function interp(A, x){
+  for(let i=0;i<A.length-1;i++) if(x>=A[i][0] && x<=A[i+1][0]){
+    const t=(x-A[i][0])/(A[i+1][0]-A[i][0]); return A[i][1]+t*(A[i+1][1]-A[i][1]); }
+  return A[A.length-1][1];
+}
+function fatArrow(x1,y1,x2,y2,w,fill,stroke){
+  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L, px=-uy, py=ux;
+  const hl=Math.min(w*1.7, L*.4), hw=w*2.1, bx=x2-ux*hl, by=y2-uy*hl, h=w/2;
+  const P=(x,y)=>`${x.toFixed(1)},${y.toFixed(1)}`;
+  return `<polygon points="${P(x1+px*h,y1+py*h)} ${P(bx+px*h,by+py*h)} ${P(bx+px*hw/2,by+py*hw/2)} ${P(x2,y2)} ${P(bx-px*hw/2,by-py*hw/2)} ${P(bx-px*h,by-py*h)} ${P(x1-px*h,y1-py*h)}" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round" opacity=".95"/>`;
+}
+
+/* ── 슬라이드 등록·타이머 ── */
+let cur = 0, timerSec = 480, timerOn = false, timerId = null;
+const slides = [];
+const slide = (fn, opts={}) => slides.push({fn, ...opts});
+function timerActs(resetSec){
+  return [
+    [timerOn ? "타이머 정지" : "타이머 시작", timerOn ? "ghost" : "gold", () => {
+      timerOn = !timerOn;
+      if(timerOn){ timerId = setInterval(() => { if(timerSec>0){ timerSec--; render(); } else { clearInterval(timerId); timerOn=false; } }, 1000); }
+      else clearInterval(timerId);
+    }],
+    [`${resetSec/60}분 리셋`, "ghost", () => { timerSec = resetSec; clearInterval(timerId); timerOn = false; render(); }],
+  ];
+}
+const timerHTML = () => {
+  const m = String(Math.floor(timerSec/60)), s = String(timerSec%60).padStart(2,"0");
+  return `<div style="margin:auto;text-align:center;font-size:15vh;font-weight:900;color:${timerSec<=60?"var(--red)":"var(--navy)"}">${m}:${s}</div>`;
+};
+
+/* ── 발표 진행 (뽑기·발표자) — 수업 공용 ── */
+function makePresenter(){
+  const P = { team:0, presented:new Set(), drawing:false, hl:0, speaker:"" };
+  P.open = t => { P.team = t; P.presented.add(t); P.speaker = ""; render(); };
+  P.back = () => { P.team = 0; P.speaker = ""; render(); };
+  P.reset = () => { P.presented.clear(); render(); };
+  P.drawTeam = () => {
+    if(P.drawing) return;
+    const pool = [1,2,3,4,5].filter(t => !P.presented.has(t));
+    if(!pool.length){ alert("모든 모둠이 발표를 마쳤습니다. '뽑기 초기화'를 누르면 처음부터 다시 뽑을 수 있어요."); return; }
+    P.drawing = true;
+    const winner = pool[Math.floor(Math.random()*pool.length)];
+    const total = 12 + Math.floor(Math.random()*6);
+    let step = 0;
+    const spin = () => {
+      P.hl = step >= total ? winner : pool[step % pool.length];
+      render();
+      if(step >= total){ setTimeout(() => { P.drawing = false; P.hl = 0; P.open(winner); }, 900); return; }
+      step++;
+      setTimeout(spin, 70 + step*step*1.1);
+    };
+    spin();
+  };
+  P.drawSpeaker = () => {
+    const pool = students.filter(s => s.team === P.team).map(s => s.name);
+    if(!pool.length){ alert("이 모둠으로 입장한 학생이 없어요."); return; }
+    const winner = pool[Math.floor(Math.random()*pool.length)];
+    const total = 12 + Math.floor(Math.random()*6);
+    let step = 0;
+    const spin = () => {
+      P.speaker = step >= total ? winner : pool[step % pool.length];
+      render();
+      if(step < total){ step++; setTimeout(spin, 60 + step*step); }
+    };
+    spin();
+  };
+  return P;
+}
+
+/* ── 수업 모듈에 주입하는 엔진 API ── */
+const E = {
+  slide, setState, lineChart, barChart, interp, fatArrow,
+  timerHTML, timerActs,
+  setTimer: s => { timerSec = s; },
+  render: () => render(),
+  ENTRY,
+  get state(){ return state; },
+  get students(){ return students; },
+  get boards(){ return boards; },
+  get CLS(){ return CLS; },
+  get meta(){ return META; },
+  get studentUrl(){ return META.student; },
+  clsLabel(){ return CLS ? `1학년 ${CLS}반` : "리허설"; },
+  clsShort(){ return CLS ? `1-${CLS}반` : "리허설"; },
+  collectSentences(DATASETS){
+    const out = {};
+    for(let t=1;t<=5;t++){
+      const b = boards[t] || {};
+      if(b.find) out[t] = { ds: DATASETS[t].name, text: b.find };
+    }
+    return out;
+  },
+  lobbyQR(){
+    const el = document.getElementById("qr");
+    if(el && window.QRCode){ el.innerHTML = ""; new QRCode(el, {text:ENTRY, width:280, height:280, correctLevel:QRCode.CorrectLevel.M}); }
+  },
+  resetAct(){
+    return ["전체 초기화", "ghost", async () => {
+      const who = CLS ? `1-${CLS}반` : "리허설(공용)";
+      const typed = prompt(`${who}의 학생 데이터와 진행 상태를 모두 삭제합니다 — 접속 중인 학생 전원이 대기화면으로 돌아갑니다.\n정말 초기화하려면 "초기화"라고 입력하세요.`);
+      if(typed !== "초기화") return;
+      const snap = await getDocs(collection(db, COL));
+      for(const d of snap.docs) await deleteDoc(d.ref);
+      await setDoc(doc(db, COL, "state"), {phase:"lobby"});
+      await setDoc(doc(db, COLBASE, "live"), {cls:CLS, ts:Date.now()});
+      alert(`${who} 초기화 완료`);
+    }];
+  },
+  presenter: null,
+};
+E.presenter = makePresenter();
+
+/* ── 렌더/네비 ── */
+const stage = document.getElementById("stage");
+const actsEl = document.getElementById("acts");
+function render(){
+  if(!slides.length) return;
+  const s = slides[cur];
+  stage.innerHTML = `<div class="slide on">${s.fn()}</div>`;
+  document.getElementById("hudPg").textContent = cur+1;
+  actsEl.innerHTML = "";
+  (s.acts ? s.acts() : []).forEach(([label, cls, fn, disabled]) => {
+    const b = document.createElement("button");
+    b.textContent = label; b.className = cls; b.disabled = !!disabled; b.onclick = fn;
+    actsEl.appendChild(b);
+  });
+  document.body.classList.toggle("has-acts", actsEl.children.length > 0);
+  if(s.after) s.after();
+}
+function go(n){
+  if(n < 0 || n >= slides.length) return;
+  cur = n;
+  const s = slides[cur];
+  if(s.enter) s.enter();
+  render();
+}
+function fwd(){
+  const s = slides[cur];
+  if(!(s.space && s.space())) go(cur+1);
+}
+function goFullscreen(){
+  const el = document.documentElement;
+  if(el.requestFullscreen) el.requestFullscreen();
+  else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+}
+document.addEventListener("keydown", e => {
+  if(uiLocked()) return;
+  if(e.key === "ArrowRight" || e.key === "PageDown") go(cur+1);
+  else if(e.key === "ArrowLeft" || e.key === "PageUp") go(cur-1);
+  else if(e.key === " "){ e.preventDefault(); fwd(); }
+  else if(e.key === "f" || e.key === "F") goFullscreen();
+});
+document.getElementById("navPrev").onclick = () => { if(!uiLocked()) go(cur-1); };
+document.getElementById("navNext").onclick = () => { if(!uiLocked()) fwd(); };
+document.getElementById("navFull").onclick = goFullscreen;
+document.getElementById("navLsn").onclick = () => { location.href = location.pathname + "?pw=honam1234"; };
+let swX = null, swY = null;
+document.addEventListener("touchstart", e => {
+  if(e.touches.length !== 1){ swX = null; return; }
+  swX = e.touches[0].clientX; swY = e.touches[0].clientY;
+}, {passive:true});
+document.addEventListener("touchend", e => {
+  if(swX === null || uiLocked()) return;
+  if(e.target.closest("button, input, textarea, #hud, .acts")){ swX = null; return; }
+  const dx = e.changedTouches[0].clientX - swX, dy = e.changedTouches[0].clientY - swY;
+  swX = null;
+  if(Math.abs(dx) > 70 && Math.abs(dx) > Math.abs(dy) * 1.5){ dx < 0 ? fwd() : go(cur-1); }
+}, {passive:true});
+</script>
+</body>
+</html>
