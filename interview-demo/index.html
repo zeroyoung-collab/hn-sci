@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>면접 준비 워크북 예시 · 호남고등학교</title>
+<style>
+  :root{
+    --navy:#0B3E86; --navy2:#092f66; --gold:#F5B301; --gold-d:#c8920a;
+    --green:#1A9A3E; --ink:#141a24; --soft:#3d4652; --line:#d4ddea;
+    --lt:#eef3fa;
+  }
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-text-size-adjust:100%; }
+  html,body{ width:100%; overflow-x:hidden; }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+    color:var(--ink); background:#f4f7fc; line-height:1.6;
+    word-break:keep-all; -webkit-font-smoothing:antialiased;
+  }
+  .wrap{ max-width:520px; margin:0 auto; padding:0 16px 40px; }
+
+  /* 헤더 */
+  .top{ background:linear-gradient(150deg,#0B3E86,#0d4b9e,#092f66); color:#fff; padding:22px 18px 26px; border-radius:0 0 22px 22px; position:relative; overflow:hidden; }
+  .top::after{ content:""; position:absolute; left:0; right:0; bottom:0; height:4px; background:linear-gradient(90deg,var(--gold),var(--green)); }
+  .brand{ display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .brand img{ width:38px; height:38px; display:block; background:#fff; border-radius:50%; padding:3px; }
+  .brand .bt{ font-size:13px; font-weight:800; letter-spacing:.2px; }
+  .brand .bt small{ display:block; font-weight:600; opacity:.85; font-size:11px; }
+  .badge{ display:inline-flex; align-items:center; gap:6px; background:var(--gold); color:var(--navy2); font-weight:900; font-size:12px; padding:5px 11px; border-radius:20px; margin-bottom:10px; }
+  .badge::before{ content:""; width:7px; height:7px; border-radius:50%; background:var(--navy2); }
+  h1{ font-size:23px; font-weight:900; letter-spacing:-.03em; line-height:1.3; }
+  .sub{ margin-top:8px; font-size:13.5px; opacity:.92; }
+  .who{ margin-top:12px; display:inline-block; background:rgba(255,255,255,.14); border:1px solid rgba(255,255,255,.3); padding:6px 12px; border-radius:10px; font-size:12.5px; font-weight:700; }
+
+  /* 섹션 */
+  section{ margin-top:22px; }
+  .lab{ display:flex; align-items:center; gap:9px; font-weight:900; color:var(--navy); font-size:16.5px; letter-spacing:-.02em; margin-bottom:12px; }
+  .lab::before{ content:""; width:6px; height:18px; background:var(--gold); border-radius:3px; flex-shrink:0; }
+  .card{ background:#fff; border:2px solid var(--line); border-radius:15px; padding:16px; }
+
+  /* 1. 지원 정보 카드 */
+  .appl{ background:linear-gradient(135deg,#0d4b9e,#092f66); color:#fff; border-radius:16px; padding:18px; position:relative; overflow:hidden; }
+  .appl::after{ content:""; position:absolute; right:-28px; bottom:-28px; width:120px; height:120px; border-radius:50%; background:rgba(245,179,1,.12); }
+  .appl .univ{ font-size:12px; font-weight:800; color:var(--gold); letter-spacing:.3px; }
+  .appl .dept{ font-size:22px; font-weight:900; letter-spacing:-.02em; margin:3px 0 2px; }
+  .appl .dept small{ font-size:13px; font-weight:700; opacity:.85; }
+  .info-row{ display:flex; gap:8px; margin-top:14px; position:relative; z-index:1; }
+  .info{ flex:1; background:rgba(255,255,255,.12); border:1px solid rgba(255,255,255,.22); border-radius:11px; padding:10px 9px; }
+  .info .k{ font-size:11px; font-weight:700; opacity:.82; }
+  .info .v{ font-size:14px; font-weight:900; margin-top:2px; line-height:1.35; }
+
+  /* 2. 인재상 역량 */
+  .traits{ display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+  .trait{ background:var(--lt); border:1.5px solid #c6d4e8; border-radius:12px; padding:12px; }
+  .trait .tn{ display:inline-flex; width:24px; height:24px; border-radius:7px; background:var(--navy); color:#fff; font-size:13px; font-weight:900; align-items:center; justify-content:center; margin-bottom:7px; }
+  .trait:nth-child(2) .tn,.trait:nth-child(3) .tn{ background:var(--green); }
+  .trait .tt{ font-size:14px; font-weight:900; color:var(--navy2); margin-bottom:3px; letter-spacing:-.01em; }
+  .trait .td{ font-size:12.5px; font-weight:600; color:var(--soft); line-height:1.5; }
+  .want{ margin-top:12px; background:#fff; border:2px solid var(--line); border-left:6px solid var(--green); border-radius:12px; padding:13px 14px; font-size:13.5px; font-weight:600; color:var(--soft); line-height:1.55; }
+  .want strong{ color:var(--ink); }
+
+  /* 3. 예상 질문 */
+  .q{ background:#fff; border:2px solid var(--line); border-radius:14px; padding:15px; margin-top:12px; }
+  .q .qh{ display:flex; gap:10px; align-items:flex-start; }
+  .q .qn{ flex-shrink:0; width:30px; height:30px; border-radius:9px; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:14px; }
+  .q .qtxt{ font-size:15px; font-weight:900; color:var(--navy2); line-height:1.4; }
+  .q .ans{ margin-top:11px; }
+  .q .ans .al{ font-size:11.5px; font-weight:900; color:var(--gold-d); letter-spacing:.3px; margin-bottom:6px; }
+  .q .ans ul{ list-style:none; }
+  .q .ans li{ position:relative; padding-left:17px; font-size:13.5px; font-weight:600; color:var(--soft); line-height:1.55; margin-bottom:6px; }
+  .q .ans li:last-child{ margin-bottom:0; }
+  .q .ans li::before{ content:""; position:absolute; left:0; top:8px; width:7px; height:7px; border-radius:2px; background:var(--gold); }
+  .q .ans li strong{ color:var(--ink); font-weight:800; }
+  .follow{ margin-top:11px; background:var(--lt); border:1.5px dashed #9db6dc; border-radius:11px; padding:12px; }
+  .follow .fl{ font-size:11.5px; font-weight:900; color:var(--navy); margin-bottom:5px; }
+  .follow .fq{ font-size:13.5px; font-weight:800; color:var(--navy2); margin-bottom:6px; line-height:1.45; }
+  .follow .fa{ font-size:13px; font-weight:600; color:var(--soft); line-height:1.55; }
+
+  /* 4. 모의면접 피드백 */
+  .coach{ display:flex; gap:12px; align-items:flex-start; background:#fff; border:2px solid var(--line); border-radius:13px; padding:14px; margin-top:11px; }
+  .coach .n{ flex-shrink:0; width:34px; height:34px; border-radius:10px; background:var(--navy); color:#fff; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:15px; }
+  .coach:nth-child(2) .n{ background:var(--green); }
+  .coach .ct{ font-weight:900; color:var(--navy2); font-size:14.5px; margin-bottom:3px; }
+  .coach .cb{ font-size:13.5px; color:var(--soft); font-weight:600; line-height:1.55; }
+  .coach .cb strong{ color:var(--ink); }
+
+  /* 5. 체크리스트 */
+  .check{ background:#fff; border:2px solid var(--line); border-radius:15px; padding:8px 16px; }
+  .check .ci{ display:flex; align-items:center; gap:11px; padding:12px 0; border-bottom:1px solid var(--line); }
+  .check .ci:last-child{ border-bottom:0; }
+  .check .box{ flex-shrink:0; width:22px; height:22px; border-radius:6px; background:var(--green); display:flex; align-items:center; justify-content:center; }
+  .check .box svg{ width:14px; height:14px; }
+  .check .ct2{ font-size:14px; font-weight:700; color:var(--ink); line-height:1.4; }
+  .check .ct2 span{ display:block; font-size:12px; font-weight:600; color:var(--soft); margin-top:1px; }
+
+  /* 밀착지도 메시지 */
+  .msg{ margin-top:22px; background:linear-gradient(135deg,var(--gold),#ffcf4d); border-radius:16px; padding:18px; color:var(--navy2); }
+  .msg .mt{ font-size:12.5px; font-weight:900; letter-spacing:.3px; }
+  .msg .mb{ font-size:16px; font-weight:900; letter-spacing:-.02em; margin:5px 0 7px; line-height:1.4; }
+  .msg .md{ font-size:13.5px; font-weight:700; line-height:1.55; }
+
+  .foot{ margin-top:30px; text-align:center; font-size:12px; color:var(--soft); }
+  .foot .disc{ background:#fff4f1; border:1.5px solid #f3c8bd; color:#a23a26; border-radius:11px; padding:11px 13px; font-size:12.5px; font-weight:700; line-height:1.5; margin-bottom:14px; }
+  .foot .cr{ font-weight:800; color:var(--navy); }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap" style="padding:0;">
+    <div class="brand">
+      <img src="honam_mark.png" alt="호남고 마크">
+      <div class="bt">호남고등학교 · 과학과<small>Honam High School</small></div>
+    </div>
+    <span class="badge">예시 화면 · 가상 데이터</span>
+    <h1>수시 면접, 직전까지<br>담임선생님과 함께 준비해요</h1>
+    <p class="sub">호남고는 지원 전형 분석부터 예상 질문·모의면접·당일 점검까지, 학생 한 명 한 명의 '면접 준비 워크북'을 함께 만들어 가요.</p>
+    <span class="who">예시 학생 · 3학년 수시 면접 준비 워크북</span>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- 1. 지원 정보 카드 -->
+  <section>
+    <div class="lab">① 지원 정보 한눈에 보기</div>
+    <div class="appl">
+      <div class="univ">ㅇㅇ대학교 (가상 예시)</div>
+      <div class="dept">ㅇㅇ학과 <small>학생부종합 면접형</small></div>
+      <div class="info-row">
+        <div class="info"><div class="k">전형 유형</div><div class="v">학생부종합<br>(서류 + 면접)</div></div>
+        <div class="info"><div class="k">면접 방식</div><div class="v">제출 서류<br>기반 개별 면접</div></div>
+        <div class="info"><div class="k">면접 시간</div><div class="v">약 10분<br>1:2 (교수 2인)</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 학교·학과 분석 -->
+  <section>
+    <div class="lab">② 학과가 원하는 인재상</div>
+    <div class="card">
+      <div style="font-size:13.5px;font-weight:700;color:var(--soft);line-height:1.55;">ㅇㅇ학과(가상)가 모집 요강·학과 소개에서 강조하는 핵심 역량을 함께 정리했어요.</div>
+      <div class="traits">
+        <div class="trait"><span class="tn">1</span><div class="tt">탐구·문제해결력</div><div class="td">스스로 질문을 세우고 끝까지 파고드는 힘</div></div>
+        <div class="trait"><span class="tn">2</span><div class="tt">전공 기초 역량</div><div class="td">관련 교과를 성실히 쌓아온 학업 바탕</div></div>
+        <div class="trait"><span class="tn">3</span><div class="tt">협업·소통</div><div class="td">팀 활동에서 역할을 나누고 조율하는 태도</div></div>
+        <div class="trait"><span class="tn">4</span><div class="tt">성장 의지</div><div class="td">꾸준히 배우고 나아지려는 자기주도성</div></div>
+      </div>
+      <div class="want">한마디로 <strong>"스스로 탐구하고, 함께 해결해 본 경험이 있는 학생"</strong>을 원해요. 그래서 면접도 생활기록부 속 활동을 '얼마나 깊이, 왜 했는지'로 확인하는 질문이 많아요.</div>
+    </div>
+  </section>
+
+  <!-- 3. 예상 질문 + 답변 준비 -->
+  <section>
+    <div class="lab">③ 예상 질문 &amp; 답변 준비</div>
+
+    <div class="q">
+      <div class="qh"><div class="qn">1</div><div class="qtxt">우리 학과에 지원하게 된 계기는 무엇인가요?</div></div>
+      <div class="ans">
+        <div class="al">답변 핵심 포인트</div>
+        <ul>
+          <li><strong>결론부터</strong> — "ㅇㅇ 문제를 해결하는 사람이 되고 싶어서"처럼 한 문장으로 먼저 말하기</li>
+          <li>생기부 속 <strong>구체적 계기 1가지</strong>와 연결 (예: 수업 중 탐구활동에서 생긴 궁금증)</li>
+          <li>그 궁금증을 어떻게 <strong>확장</strong>했는지 (독서·동아리·추가 조사)까지 이어 붙이기</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><div class="qn">2</div><div class="qtxt">생활기록부에 기록된 탐구 활동 중 가장 기억에 남는 것을 설명해 주세요.</div></div>
+      <div class="ans">
+        <div class="al">답변 핵심 포인트</div>
+        <ul>
+          <li><strong>상황 → 행동 → 결과</strong> 순서로 짧게 구성 (무엇을, 왜, 어떻게)</li>
+          <li>결과보다 <strong>과정에서의 고민·시행착오</strong>를 솔직하게 드러내기</li>
+          <li>그 경험으로 <strong>무엇을 배웠는지</strong>를 마지막에 한 줄로 정리</li>
+        </ul>
+      </div>
+      <div class="follow">
+        <div class="fl">▸ 예상 꼬리질문</div>
+        <div class="fq">"그 활동에서 아쉬웠던 점이나, 다시 한다면 바꾸고 싶은 부분이 있나요?"</div>
+        <div class="fa">→ 솔직하게 <strong>한계 1가지</strong>를 인정하고, "그래서 지금은 이렇게 보완하려 한다"는 <strong>개선 방향</strong>으로 마무리하면 성장 의지가 잘 보여요.</div>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><div class="qn">3</div><div class="qtxt">팀 활동에서 의견이 부딪혔을 때 어떻게 해결했나요?</div></div>
+      <div class="ans">
+        <div class="al">답변 핵심 포인트</div>
+        <ul>
+          <li>갈등 자체보다 <strong>조율한 방법</strong>에 초점 (경청 → 기준 제시 → 합의)</li>
+          <li>생기부 속 <strong>모둠·동아리 활동</strong>에서 실제 역할과 연결</li>
+          <li>"그 덕분에 결과가 이렇게 좋아졌다"는 <strong>구체적 성과</strong>로 닫기</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="q">
+      <div class="qh"><div class="qn">4</div><div class="qtxt">입학 후 학업 계획과 졸업 후 진로를 말해 주세요.</div></div>
+      <div class="ans">
+        <div class="al">답변 핵심 포인트</div>
+        <ul>
+          <li><strong>1~2학년 / 3~4학년</strong>으로 시기를 나눠 배우고 싶은 분야를 구체적으로</li>
+          <li>학과의 <strong>실제 교육과정·연구 분야</strong>를 한두 가지 언급 (사전 조사 티내기)</li>
+          <li>진로는 거창하지 않게, <strong>"어떤 문제를 해결하는 사람"</strong>으로 그리기</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 모의면접 피드백 -->
+  <section>
+    <div class="lab">④ 담임선생님 모의면접 코칭</div>
+    <div class="coach">
+      <div class="n">1</div>
+      <div><div class="ct">시선과 자세</div><div class="cb">답할 때 시선이 자꾸 아래로 내려가요. <strong>면접관을 보며 또박또박</strong> 말하는 연습을 하면 훨씬 자신감 있어 보여요.</div></div>
+    </div>
+    <div class="coach">
+      <div class="n">2</div>
+      <div><div class="ct">두괄식 논리</div><div class="cb">설명을 먼저 길게 하다 보니 결론이 묻혀요. <strong>"제 생각은 ~입니다. 왜냐하면~"</strong> 순서로, 결론부터 말하는 습관을 들여요.</div></div>
+    </div>
+    <div class="coach">
+      <div class="n">3</div>
+      <div><div class="ct">근거 보강</div><div class="cb">"열심히 했다"보다 <strong>숫자·사례 하나</strong>를 덧붙이면 설득력이 확 올라가요. 활동 결과를 구체적으로 기억해 두기로 했어요.</div></div>
+    </div>
+  </section>
+
+  <!-- 5. 준비 체크리스트 -->
+  <section>
+    <div class="lab">⑤ 면접 전 최종 점검</div>
+    <div class="check">
+      <div class="ci">
+        <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></div>
+        <div class="ct2">1분 자기소개 준비<span>강점 1가지 + 지원 동기로 간결하게</span></div>
+      </div>
+      <div class="ci">
+        <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></div>
+        <div class="ct2">생활기록부 다시 읽기<span>활동마다 "왜·어떻게" 한 줄씩 떠올리기</span></div>
+      </div>
+      <div class="ci">
+        <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></div>
+        <div class="ct2">전공 관련 이슈 1개 정리<span>최근 관심 주제를 내 생각으로 말할 수 있게</span></div>
+      </div>
+      <div class="ci">
+        <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></div>
+        <div class="ct2">학과·교육과정 분석<span>인재상과 배우는 과목 미리 확인</span></div>
+      </div>
+      <div class="ci">
+        <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></div>
+        <div class="ct2">복장·용모 점검<span>단정하고 편안한 차림, 전날 미리 준비</span></div>
+      </div>
+      <div class="ci">
+        <div class="box"><svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5L20 6"/></svg></div>
+        <div class="ct2">모의면접 2회 이상<span>담임선생님과 실전처럼 연습 + 녹화 점검</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 밀착지도 메시지 -->
+  <div class="msg">
+    <div class="mt">호남고의 약속</div>
+    <div class="mb">면접 당일 아침까지, 선생님이 곁에 있어요</div>
+    <div class="md">전형 분석부터 예상 질문·모의면접·마지막 점검까지. 혼자 막막하게 준비하지 않도록, 담임선생님이 끝까지 함께 만들어 가요. 🙌</div>
+  </div>
+
+  <div class="foot">
+    <div class="disc">※ 위 지원 정보·학과·질문·피드백은 모두 <strong>예시용 가상 데이터</strong>입니다. 실제 학생이나 특정 대학·학과의 자료가 아니에요. 입학 후에는 담임선생님이 여러분의 지원 전형에 맞춰 이런 면접 워크북을 직접 함께 만들어 드려요.</div>
+    <div class="cr">제작 · 호남고 조영신</div>
+  </div>
+
+</div>
+
+</body>
+</html>
