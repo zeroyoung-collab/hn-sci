@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<title>면접 워크북 예시 (가상) · 호남고등학교</title>
+<meta name="robots" content="noindex">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+:root{
+  --navy:#1C2B4A; --navy2:#2E4170; --paper:#F6F4EF; --ink:#1E2230; --muted:#6A6F7B;
+  --rule:#DDD7CB; --mist:#ECE8DF; --red:#D8432E; --redsoft:#FBE9E5;
+  --font:"Pretendard Variable",Pretendard,"Noto Sans KR","Malgun Gothic",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:#fff}
+body{font-family:var(--font);color:var(--ink);word-break:keep-all;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+@page{size:A4;margin:0}
+.page{width:210mm;height:297mm;padding:13mm 13mm 16mm;position:relative;overflow:hidden;background:#fff;page-break-after:always}
+.page:last-child{page-break-after:auto}
+.foot{position:absolute;left:13mm;right:13mm;bottom:7mm;display:flex;justify-content:space-between;font-size:8pt;color:var(--muted);border-top:.4pt solid var(--rule);padding-top:2.2mm}
+.rl{height:.7mm;background:var(--navy);margin-bottom:5mm}
+h2.sec{font-size:9pt;font-weight:800;color:var(--muted);letter-spacing:.06em;margin-bottom:2mm}
+
+/* cover */
+.cover{background:var(--paper)}
+.cover .top{display:flex;justify-content:space-between;font-size:9pt;font-weight:800;color:var(--navy);border-bottom:1mm solid var(--navy);padding-bottom:3mm}
+.cover h1{font-size:34pt;font-weight:900;letter-spacing:-.03em;line-height:1.14;color:var(--navy);margin:22mm 0 7mm}
+.exbadge{display:inline-block;background:var(--red);color:#fff;font-size:9.5pt;font-weight:800;padding:1.6mm 5mm;border-radius:20px;letter-spacing:.04em;margin-bottom:10mm}
+.cover .tgt{border-left:1.2mm solid var(--red);padding-left:5mm;font-size:12.5pt;font-weight:700;line-height:1.8}
+.cover .tgt small{display:block;font-size:9.5pt;color:var(--muted);font-weight:500}
+.stats{display:flex;border-top:.5pt solid var(--rule);margin-top:14mm}
+.stats div{flex:1;border-right:.5pt solid var(--rule);padding:5mm 4mm}
+.stats div:last-child{border-right:none}
+.stats b{display:block;font-size:22pt;font-weight:900;color:var(--navy)}
+.stats span{font-size:8.5pt;color:var(--muted)}
+.howto{margin-top:11mm}
+.howto h3{font-size:10.5pt;font-weight:800;margin-bottom:3mm}
+.howto .row{display:flex;gap:4mm}
+.howto .it{flex:1;border-top:1mm solid var(--navy);padding-top:2.5mm}
+.howto .it i{font-style:normal;color:var(--red);font-weight:800;font-size:10pt;display:block}
+.howto .it b{font-size:9.5pt;display:block;margin:.8mm 0}
+.howto .it p{font-size:8.3pt;color:var(--muted);line-height:1.5}
+.rednote{margin-top:9mm;font-size:9.5pt;line-height:1.7}
+.notice{position:absolute;left:13mm;right:13mm;bottom:16mm;font-size:8pt;color:var(--muted);line-height:1.6;border-top:.5pt solid var(--rule);padding-top:2.5mm}
+
+/* overview / analysis */
+.lead{font-size:9.6pt;line-height:1.7;margin-bottom:7mm;color:#3a3f4d}
+.gistbox{border:.6pt solid var(--rule);margin-bottom:8mm}
+.gistbox .hd{background:var(--navy);color:#fff;font-size:10pt;font-weight:800;padding:2.2mm 4mm}
+.gistbox table{width:100%;border-collapse:collapse}
+.gistbox td{border-top:.4pt solid var(--rule);padding:2.4mm 4mm;font-size:8.8pt;line-height:1.6;vertical-align:top}
+.gistbox td.k{width:26mm;font-weight:800;color:var(--navy)}
+.risk h3{font-size:12pt;font-weight:900;color:var(--navy);margin-bottom:3mm;border-bottom:.6pt solid var(--ink);padding-bottom:1.6mm}
+.risk table{width:100%;border-collapse:collapse}
+.risk td{border-bottom:.4pt solid var(--rule);padding:2.2mm 1.5mm;font-size:8.8pt;line-height:1.55;vertical-align:top}
+.risk td.k{width:46mm;font-weight:800;color:var(--red)}
+.risk td.c{width:16mm;color:var(--muted);text-align:right;white-space:nowrap}
+.axis{display:flex;gap:3mm;margin-top:6mm}
+.axis .it{flex:1;background:var(--mist);padding:3mm 3.4mm;border-top:1mm solid var(--navy)}
+.axis .it b{display:block;font-size:10pt;color:var(--navy);font-weight:900;margin-bottom:1mm}
+.axis .it p{font-size:8pt;color:var(--muted);line-height:1.5}
+
+/* card page */
+.chd{display:flex;align-items:flex-start;gap:4mm;margin-bottom:1mm}
+.chd .no{font-size:21pt;font-weight:900;color:var(--navy);line-height:1}
+.chd .mi{padding-top:.6mm}
+.chd .mi .l1{font-size:9pt}
+.chd .mi .l1 b{font-weight:800}
+.chd .mi .l1 span{color:var(--muted);margin-left:2mm;font-size:8pt}
+.badges{display:flex;gap:1.6mm;margin-top:1.4mm;align-items:center}
+.stg{display:flex}
+.stg span{font-size:7.4pt;border:.4pt solid var(--rule);color:var(--muted);padding:.5mm 2.4mm;font-weight:700}
+.stg span.on{background:var(--navy);border-color:var(--navy);color:#fff}
+.bdg{font-size:7.4pt;font-weight:800;padding:.5mm 2.4mm;border-radius:3mm;border:.5pt solid var(--rule);color:var(--muted)}
+.cq{font-size:14.5pt;font-weight:900;letter-spacing:-.015em;line-height:1.42;margin:3mm 0 2.6mm}
+.cbasis{background:var(--mist);border-left:1mm solid var(--navy);padding:2.2mm 3mm;font-size:7.9pt;line-height:1.6;color:#3a3f4d;margin-bottom:2.4mm}
+.cbasis b{color:var(--navy);font-weight:800}
+.ckc{font-size:8.2pt;margin-bottom:2.4mm}
+.ckc b{font-weight:800;color:var(--navy)}
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:1.8mm;margin-bottom:3mm}
+.flow .nd{border:.6pt solid var(--navy);border-radius:1.8mm;padding:1.7mm 2.2mm;position:relative}
+.flow .nd label{display:block;font-size:7pt;font-weight:800;color:var(--red)}
+.flow .nd div{font-size:8.2pt;font-weight:700;line-height:1.35;margin-top:.5mm}
+.flow .nd.fl div{color:var(--red)}
+.two{display:flex;gap:4mm}
+.two .l{flex:1.25}
+.two .r{flex:1}
+.bh{font-size:9.3pt;font-weight:900;color:var(--navy);margin-bottom:1.8mm}
+.bh small{font-weight:500;color:var(--muted);font-size:7.4pt;margin-left:1.6mm}
+.ansl .a{display:flex;gap:2mm;margin-bottom:1.7mm}
+.ansl .a i{font-style:normal;flex:none;width:4.2mm;height:4.2mm;border-radius:50%;background:var(--navy);color:#fff;font-size:7.4pt;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:.4mm}
+.ansl .a p{font-size:8.7pt;line-height:1.56}
+.logic{border:.6pt solid var(--ink);border-radius:1.6mm;padding:2mm 2.6mm;font-size:7.9pt;line-height:1.55;margin-bottom:2.2mm}
+.pitb{margin-bottom:1.8mm}
+.pitb .tag{display:inline-block;background:var(--red);color:#fff;font-size:7.2pt;font-weight:800;padding:.5mm 2mm;border-radius:.8mm;margin-bottom:.8mm}
+.pitb .qt{font-size:8.2pt;font-weight:800;color:#8a2619;text-decoration:line-through;text-decoration-color:rgba(216,67,46,.45)}
+.pitb .why{font-size:7.8pt;color:#3a3f4d;line-height:1.5;margin-top:.4mm}
+.tails{border-top:.6pt solid var(--ink);margin-top:2.6mm;padding-top:2mm}
+.tails .hd{font-size:8.8pt;font-weight:900;margin-bottom:1.6mm}
+.tails .hd small{font-weight:500;color:var(--muted);font-size:7.2pt;margin-left:1.6mm}
+.tl{margin-bottom:1.8mm}
+.tl .q{display:flex;gap:2mm;align-items:baseline}
+.tl .k{flex:none;font-size:7.2pt;font-weight:800;color:#fff;padding:.45mm 2mm;border-radius:.8mm;background:var(--navy)}
+.tl .k.k확장{background:#2e6b45}
+.tl .k.k검증{background:var(--red)}
+.tl .q b{font-size:8.5pt;font-weight:800;line-height:1.45}
+.tl .a{font-size:8.1pt;line-height:1.52;color:#3a3f4d;margin:.7mm 0 0 8.5mm}
+.caut{background:var(--redsoft);border-radius:1.2mm;padding:1.8mm 2.6mm;font-size:8pt;line-height:1.5;margin-top:2.2mm}
+.caut b{color:var(--red);font-weight:900}
+.mine{border-top:.8pt solid var(--ink);margin-top:2.6mm;padding-top:2mm}
+.mine .hd{font-size:8.8pt;font-weight:900;margin-bottom:1.6mm}
+.mybx{display:grid;grid-template-columns:repeat(4,1fr);gap:1.8mm;margin-bottom:2mm}
+.mybx span{border:.5pt solid #e4b8ae;border-radius:1.4mm;height:8.5mm}
+.lines div{border-bottom:.4pt solid #cfc8ba;height:6.4mm}
+.fill{background:var(--redsoft);color:var(--red);border-bottom:.5pt dashed var(--red);padding:0 .8mm;font-weight:700;border-radius:.6mm}
+
+/* feedback */
+.fbscore{width:100%;border-collapse:collapse;margin-bottom:7mm;border:.6pt solid var(--rule)}
+.fbscore td{border-top:.4pt solid var(--rule);padding:2.6mm 3mm;font-size:8.8pt;line-height:1.6;vertical-align:top}
+.fbscore tr:first-child td{border-top:none}
+.fbscore td.k{width:26mm;font-weight:800;color:var(--navy)}
+.fbscore td.lv{width:26mm;font-weight:800;color:var(--red)}
+.gi{display:flex;gap:2mm;margin-bottom:1.8mm}
+.gi i{font-style:normal;flex:none;width:4.2mm;height:4.2mm;border-radius:50%;color:#fff;font-size:7.4pt;font-weight:800;display:flex;align-items:center;justify-content:center;margin-top:.4mm}
+.gi.good i{background:#2e6b45}
+.gi.imp i{background:var(--red)}
+.gi p{font-size:9pt;line-height:1.56}
+
+/* checklist */
+.ckgroup{margin-bottom:6mm}
+.ckgroup h4{font-size:10.5pt;font-weight:900;color:var(--red);border-bottom:.6pt solid var(--red);padding-bottom:1.4mm;margin-bottom:2.6mm}
+.ckitem{display:flex;gap:3mm;align-items:flex-start;padding:1.9mm 0;border-bottom:.4pt solid var(--rule);font-size:9.2pt;line-height:1.55}
+.ckitem .bx{flex:none;width:4.6mm;height:4.6mm;border:.8pt solid var(--navy);border-radius:1mm;margin-top:.5mm}
+.closing{background:var(--mist);border-left:1mm solid var(--navy);padding:3.4mm 4mm;font-size:9.6pt;line-height:1.8;margin-top:7mm}
+.div h1{font-size:19pt;font-weight:900;color:var(--navy);letter-spacing:-.02em;margin-bottom:5mm}
+.div h1 small{display:block;font-size:9.5pt;color:var(--muted);font-weight:600;margin-top:1.6mm}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script src="cards_data.js"></script>
+<script>
+const R = document.getElementById('root');
+const esc = s => (s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const fl = s => esc(s).replace(/⟦/g,'<span class="fill">').replace(/⟧/g,'</span>');
+const M = DATA.meta;
+const cards = DATA.cards; cards.forEach((c,i)=>c.no=String(i+1).padStart(2,"0"));
+const nTails = cards.reduce((a,c)=>a+c.tails.length,0);
+function page(cls){ const d=document.createElement('div'); d.className='page'+(cls?' '+cls:''); R.appendChild(d); return d; }
+
+/* ── 1쪽: 표지 ── */
+(()=>{ const p=page('cover'); p.innerHTML = `
+<div class="top"><span>${esc(M.exam)}</span><span>면접 대비 워크북 · 대표 5쪽 예시</span></div>
+<h1>${esc(M.student)}<br>면접 워크북</h1>
+<span class="exbadge">예시 · 가상 데이터</span>
+<div class="tgt">${esc(M.univ)}<small>${esc(M.track)}</small><small>${esc(M.interview)}</small></div>
+<div class="stats">
+ <div><b>5</b><span>쪽 구성 (대표 예시)</span></div>
+ <div><b>${cards.length}</b><span>예상 질문 카드</span></div>
+ <div><b>${nTails}</b><span>꼬리질문</span></div>
+ <div><b>${DATA.feedback.scores.length}</b><span>모의면접 코칭</span></div>
+</div>
+<div class="howto"><h3>이렇게 쓰세요</h3><div class="row">
+${M.guide.map((g,i)=>`<div class="it"><i>${i+1}</i><b>${esc(g[0])}</b><p>${esc(g[1])}</p></div>`).join('')}
+</div></div>
+<div class="rednote">${esc(M.redNote).replace(/붉은 칸/,'<span class="fill">붉은 칸</span>')}</div>
+<div class="notice">${esc(M.notice)}</div>`; })();
+
+/* ── 2쪽: 지원 정보 · 학과 분석 ── */
+(()=>{ const A=DATA.analysis; const p=page(); p.innerHTML = `
+<div class="rl"></div>
+<h2 class="sec">01 · 지원 정보와 학과 분석</h2>
+<p class="lead">담임선생님과 함께 지원 전형의 구조·면접 방식·평가 요소를 먼저 분석합니다. 그다음, 생활기록부에서 질문이 나올 만한 '점검 포인트'를 미리 추려 둡니다.</p>
+<div class="gistbox"><div class="hd">면접 한눈에 보기 — ${esc(M.track)}</div><table>
+${A.summary.map(r=>`<tr><td class="k">${esc(r[0])}</td><td>${esc(r[1])}</td></tr>`).join('')}
+</table></div>
+<div class="risk"><h3>먼저 점검할 위험지점</h3><table>
+${A.checkpoints.map(r=>`<tr><td class="k">${esc(r[0])}</td><td>${esc(r[1])}</td><td class="c">카드 ${esc(r[2])}</td></tr>`).join('')}
+</table></div>
+<div class="axis">
+${M.evalPoints.map((e,i)=>`<div class="it"><b>${esc(e)}</b><p>${['탐구의 깊이와 원리 이해','전공과 이어지는 활동 서사','협업·소통과 책임감'][i]||''}</p></div>`).join('')}
+</div>
+<div class="foot"></div>`; })();
+
+/* ── 3쪽: 예상 질문 · 답변 준비 (카드) ── */
+const cardPages=[];
+(()=>{ const c=cards[0]; const p=page(); cardPages.push(p);
+ const stages=["도입","집중","확장"];
+ const stg = stages.includes(c.stage)
+  ? `<div class="stg">${stages.map(s=>`<span class="${s===c.stage?'on':''}">${s}</span>`).join('')}</div>`
+  : `<span class="bdg" style="background:var(--red);border-color:var(--red);color:#fff">기본 문항</span>`;
+ p.innerHTML = `
+ <div class="rl"></div>
+ <h2 class="sec">02 · 예상 질문과 답변 준비</h2>
+ <div class="chd"><div class="no">${c.no}</div><div class="mi">
+   <div class="l1"><b>${esc(c.src)}</b> &nbsp;${esc(c.topic)} <span>${esc(c.ref)}</span></div>
+   <div class="badges">${stg}<span class="bdg">공통 핵심 질문</span></div>
+ </div></div>
+ <div class="cq">${fl(c.q)}</div>
+ <div class="cbasis"><b>생기부 근거</b> &nbsp;${esc(c.basis)}</div>
+ ${c.kc?`<div class="ckc"><b>핵심 개념</b> &nbsp;${esc(c.kc)}</div>`:''}
+ <div class="flow">${c.flow.map(f=>`<div class="nd${f[2]?' fl':''}"><label>${esc(f[0])}</label><div>${esc(f[1])}</div></div>`).join('')}</div>
+ <div class="two">
+  <div class="l"><div class="bh">모범답안<small>외우지 말고 구조를 볼 것</small></div>
+   <div class="ansl">${c.ans.map((a,i)=>`<div class="a"><i>${i+1}</i><p>${fl(a)}</p></div>`).join('')}</div></div>
+  <div class="r">
+   <div class="bh">논리 점검</div><div class="logic">${fl(c.logic)}</div>
+   ${c.pit.map(pt=>`<div class="pitb"><span class="tag">${esc(pt[0])}</span><div class="qt">${esc(pt[1])}</div><div class="why">${esc(pt[2])}</div></div>`).join('')}
+  </div>
+ </div>
+ <div class="tails"><div class="hd">꼬리질문과 모범답안<small>확인 · 답이 모호할 때 / 확장 · 답이 충분할 때 / 검증 · 직접 했는지 확인할 때</small></div>
+  ${c.tails.map(t=>`<div class="tl"><div class="q"><span class="k k${t[0]}">${t[0]}</span><b>${fl(t[1])}</b></div><div class="a">${fl(t[2])}</div></div>`).join('')}
+ </div>
+ ${c.caution?`<div class="caut"><b>주의</b> &nbsp;${fl(c.caution)}</div>`:''}
+ <div class="mine"><div class="hd">내 키워드 흐름</div><div class="mybx"><span></span><span></span><span></span><span></span></div>
+  <div class="hd">내 답변 <small style="font-weight:500;color:var(--muted)">동기 → 수행 → 근거 → 결과·배운 점</small></div>
+  <div class="lines"><div></div><div></div><div></div></div>
+ </div>
+ <div class="foot"></div>`; })();
+
+/* ── 4쪽: 모의면접 피드백 ── */
+(()=>{ const F=DATA.feedback; const p=page(); p.innerHTML = `
+<div class="rl"></div>
+<h2 class="sec">03 · 담임선생님 모의면접 피드백</h2>
+<p class="lead">실전처럼 모의면접을 진행한 뒤, 평가 요소별로 지금 수준과 보완점을 함께 짚습니다.</p>
+<table class="fbscore">
+${F.scores.map(r=>`<tr><td class="k">${esc(r[0])}</td><td class="lv">${esc(r[1])}</td><td>${esc(r[2])}</td></tr>`).join('')}
+</table>
+<div class="two">
+ <div class="l"><div class="bh">잘한 점</div>
+  ${F.good.map((g,i)=>`<div class="gi good"><i>${i+1}</i><p>${esc(g)}</p></div>`).join('')}</div>
+ <div class="r"><div class="bh">보완할 점</div>
+  ${F.improve.map((g,i)=>`<div class="gi imp"><i>${i+1}</i><p>${esc(g)}</p></div>`).join('')}</div>
+</div>
+<div class="caut" style="margin-top:7mm"><b>오늘의 코칭 한마디</b> &nbsp;${esc(F.oneLine)}</div>
+<div class="foot"></div>`; })();
+
+/* ── 5쪽: 준비 체크리스트 · 마무리 ── */
+(()=>{ const K=DATA.checklist; const p=page(); p.innerHTML = `
+<div class="rl"></div>
+<h2 class="sec">04 · 면접 전 준비 체크리스트</h2>
+<p class="lead">면접 당일까지, 무엇을 언제 준비할지 시기별로 정리했습니다. 끝낸 항목은 네모 칸에 체크하세요.</p>
+${K.groups.map(g=>`<div class="ckgroup"><h4>${esc(g[0])}</h4>
+ ${g[1].map(it=>`<div class="ckitem"><span class="bx"></span><div>${esc(it)}</div></div>`).join('')}</div>`).join('')}
+<div class="closing">${esc(K.closing)}</div>
+<div class="foot"></div>`; })();
+
+/* ── 카드 페이지 넘침 자동 축소 (예비) ── */
+cardPages.forEach(p=>{
+  const over=()=>{ const f=p.querySelector('.foot'); const els=[...p.children].filter(e=>e!==f);
+    const bottom = p.getBoundingClientRect().top + p.clientHeight - 38;
+    return els.some(e=>e.getBoundingClientRect().bottom > bottom); };
+  if(over()) p.querySelectorAll('.lines div').forEach(d=>d.style.height='5.4mm');
+});
+
+/* ── 푸터 ── */
+const pages=[...document.querySelectorAll('.page')];
+pages.forEach((p,i)=>{ const f=p.querySelector('.foot'); if(f) f.innerHTML=`<span>${esc(M.student)} 면접 워크북 · 예시(가상) · 제작 호남고 조영신</span><span>${i+1} / ${pages.length}</span>`; });
+document.title = `${esc(M.student)} 면접 워크북 예시 (가상) · ${pages.length}p`;
+</script>
+</body>
+</html>
