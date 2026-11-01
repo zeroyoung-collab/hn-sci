@@ -95,11 +95,37 @@ textarea:focus{ border-color:var(--navy); }
 .votegrid button:disabled{ opacity:.4; }
 
 footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; padding:8px 0 12px; }
-.conn{ position:fixed; top:10px; right:12px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:12px; z-index:5; }
+.conn{ position:fixed; top:10px; right:12px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:12px; z-index:5; transition:top .15s ease; }
 .conn.on{ background:#e7f5ec; color:#136e2e; } .conn.off{ background:#fde8e8; color:#a02b2b; }
+
+/* 인앱 브라우저 안내 배너 + 로드 지연 안내(크롬·사파리 유도) */
+.topbar{ flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  flex-wrap:wrap; padding:10px 12px; font-size:12.5px; font-weight:700; line-height:1.5; }
+.iab{ background:#fff7e6; border-bottom:2px solid var(--gold); color:var(--navy2); }
+.iab b{ color:var(--gold-d); }
+.loadwarn{ background:#fde8e8; border-bottom:2px solid var(--red); color:#a02b2b; }
+.topbar .acts{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.topbar .tbtn{ font:inherit; font-size:12px; font-weight:900; padding:7px 12px; border-radius:8px;
+  border:none; background:var(--navy); color:#fff; cursor:pointer; white-space:nowrap;
+  min-height:44px; display:inline-flex; align-items:center; justify-content:center; }
+.topbar .tbtn.ghost{ background:#fff; color:var(--navy); border:2px solid var(--line); }
+.topbar .tx{ font:inherit; font-size:15px; font-weight:900; background:none; border:none; color:var(--soft); cursor:pointer; padding:2px 8px;
+  min-height:44px; min-width:44px; display:inline-flex; align-items:center; justify-content:center; }
 </style>
 </head>
 <body>
+<div id="iab" class="topbar iab hidden">
+  <div>⚠️ 원활한 접속을 위해 <b>크롬·사파리 등 기본 브라우저</b>로 열어 주세요.</div>
+  <div class="acts">
+    <button id="iabOpen" class="tbtn">크롬에서 열기</button>
+    <button id="iabCopy" class="tbtn ghost">주소 복사</button>
+    <button id="iabX" class="tx" aria-label="닫기">✕</button>
+  </div>
+</div>
+<div id="loadWarn" class="topbar loadwarn hidden">
+  <div>접속이 지연되고 있어요. <b>새로고침</b>하거나 <b>크롬·사파리</b> 등 기본 브라우저로 열어 주세요.</div>
+  <div class="acts"><button id="lwReload" class="tbtn">새로고침</button></div>
+</div>
 <div id="conn" class="conn off">연결 중…</div>
 <header>
   <div class="tag">통합과학2 · 지구 환경 변화 1/3</div>
@@ -219,7 +245,7 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, setDoc, onSnapshot, collection, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -411,17 +437,38 @@ const views = ["vJoin","vLobby","vPredict","vAlloc","vData","vVote","vEnd"];
 function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v));
   document.body.classList.toggle("wide", v==="vAlloc" || v==="vData"); }
 
-let uid = null, uidKey = "och_uid", meKey = "och_me";
+let uid = null, meKey = "och_me";
 let me = null;            // {name, team, leader}
 let myDoc = {};           // 서버에 저장된 내 데이터
 let state = {};           // 진행 상태
 let team = 0, joined = false, inited = false;
 let stuUnsub = null;
-function subMe(){         // 내 문서 구독 — uid가 바뀌면 다시 건다
-  if(stuUnsub) stuUnsub();
-  stuUnsub = onSnapshot(doc(db, COL, "stu_"+uid), snap => { myDoc = snap.data() || {}; render(); });
+const norm = s => (s||"").replace(/\s+/g,"");                     // 공백 제거(앞뒤·내부)
+const stuId = (name, tm) => "stu_" + norm(name) + "_" + tm;        // 이름+모둠 기반 안정 식별자(진실원천)
+
+/* 끊김 시 지수 백오프 자동 재구독(2→4→8…최대 30초, 성공 시 리셋) */
+let retrying = 0;
+function repaintConn(){
+  const el = $("conn");
+  if(retrying > 0){ el.className = "conn off"; el.textContent = "재연결 중…"; }
+  else { el.className = "conn on"; el.textContent = CLS ? `실시간 · 1-${CLS}반` : "실시간 연결됨"; }
 }
-function newUid(){ uid = "u" + Math.random().toString(36).slice(2,10); localStorage.setItem(uidKey, uid); }
+function watch(ref, onNext){
+  let unsub = null, delay = 2000, timer = null, inRetry = false;
+  (function start(){
+    unsub = onSnapshot(ref,
+      snap => { if(inRetry){ inRetry = false; retrying--; repaintConn(); } delay = 2000; onNext(snap); },
+      () => { if(!inRetry){ inRetry = true; retrying++; repaintConn(); }
+        try{ unsub && unsub(); }catch(e){} unsub = null;
+        clearTimeout(timer); timer = setTimeout(start, delay); delay = Math.min(delay*2, 30000); });
+  })();
+  return () => { try{ unsub && unsub(); }catch(e){} clearTimeout(timer); };
+}
+function subMe(){         // 내 문서 구독 — uid가 바뀌면 다시 건다
+  if(stuUnsub){ stuUnsub(); stuUnsub = null; }
+  if(!uid) return;
+  stuUnsub = watch(doc(db, COL, uid), snap => { myDoc = snap.data() || {}; render(); });
+}
 
 /* ── 입장 ── */
 const tg = $("teamGrid");
@@ -439,11 +486,28 @@ $("btnJoin").onclick = async () => {
   const name = $("inName").value.trim();
   if(!name){ alert("이름을 입력하세요"); return; }
   if(!team){ alert("모둠을 선택하세요"); return; }
-  if(me && me.name && me.name !== name){ newUid(); myDoc = {}; subMe(); }   // 같은 기기, 다른 학생 — 이전 기록 보존
+  const id = stuId(name, team);
+  // 동명이인/중복 확인 — 같은 이름+모둠이 이미 있고 최근 활동 중이면 본인 여부 확인
+  const sameAsMe = me && norm(me.name) === norm(name) && me.team === team;
+  if(!sameAsMe){
+    try{
+      const ex = await getDoc(doc(db, COL, id));
+      if(ex.exists()){
+        const d = ex.data();
+        const t = (d.joinedAt && d.joinedAt.toMillis) ? d.joinedAt.toMillis() : 0;
+        if(d.name && t && (Date.now() - t < 40*60*1000)){
+          const ok = confirm(`이미 같은 반·모둠에 '${d.name}' 학생이 있어요.\n\n· 본인이 다시 들어온 거라면 [확인]을 눌러 이어서 입장하세요.\n· 다른 사람이라면 [취소]를 누르고 이름을 다르게(예: 이름 뒤에 번호) 입력해 주세요.`);
+          if(!ok) return;
+        }
+      }
+    }catch(e){}
+  }
+  uid = id;
   me = {name, team, leader: leaderSel};
   localStorage.setItem(meKey, JSON.stringify(me));
+  subMe();
   try{
-    await setDoc(doc(db, COL, "stu_"+uid), { name, team, leader: leaderSel, joinedAt: serverTimestamp() }, {merge:true});
+    await setDoc(doc(db, COL, uid), { name, team, leader: leaderSel, joinedAt: serverTimestamp() }, {merge:true});
     joined = true;
     $("meLine").innerHTML = `호남고등학교 · <b>${team}모둠 ${name}</b>`;
     render();
@@ -452,53 +516,53 @@ $("btnJoin").onclick = async () => {
 
 /* ── 반 연동 — 선생님이 고른 반의 저장소로 접속 ── */
 let liveCls = null;
-onSnapshot(doc(db, COLBASE, "live"), snap => {
+watch(doc(db, COLBASE, "live"), snap => {
   const c = +((snap.data() || {}).cls || 0);
   if(liveCls === null){ liveCls = c; init(c); }
   else if(c !== liveCls){ location.reload(); }   // 수업 반이 바뀌면 새로 입장
-}, () => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
+});
 
 function init(cls){
   CLS = cls; COL = cls ? COLBASE + "_c" + cls : COLBASE;
-  const K = cls ? "och_c" + cls + "_" : "och_";   // 반별 기기 식별 — 다음 교시 다른 반과 안 섞이게
-  uidKey = K + "uid"; meKey = K + "me";
-  uid = localStorage.getItem(uidKey);
-  if(!uid) newUid();
+  const K = cls ? "och_c" + cls + "_" : "och_";   // 반별 식별 — 다음 교시 다른 반과 안 섞이게
+  meKey = K + "me";
   me = JSON.parse(localStorage.getItem(meKey) || "null");
-  if(me){ $("inName").value = me.name; team = me.team; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1));
-    leaderSel = !!me.leader; $("btnLeader").classList.toggle("on", leaderSel); }
+  if(me && me.name && me.team){
+    uid = stuId(me.name, me.team);               // 저장소가 날아가도 같은 이름+모둠이면 같은 문서로 복귀
+    $("inName").value = me.name; team = me.team;
+    [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1));
+    leaderSel = !!me.leader; $("btnLeader").classList.toggle("on", leaderSel);
+  }
 
-  onSnapshot(doc(db, COL, "state"), snap => {
+  watch(doc(db, COL, "state"), snap => {
     state = snap.data() || {};
-    $("conn").className = "conn on"; $("conn").textContent = CLS ? `실시간 · 1-${CLS}반` : "실시간 연결됨";
+    $("lobbyN").textContent = state.count || 0;   // 인원수는 선생님이 유니크 집계해 state.count로 내려줌(전체 구독 제거)
+    repaintConn();
     render();
-  }, err => { $("conn").className = "conn off"; $("conn").textContent = "연결 오류"; });
+  });
 
   subMe();
-
-  onSnapshot(collection(db, COL), snap => {
-    let n = 0; snap.forEach(d => { if(d.id.startsWith("stu_") && d.data().name) n++; });
-    $("lobbyN").textContent = n;
-  });
-  inited = true;
+  inited = true; window.__ocBooted = true;
   render();
 }
 
 /* 같은 노트북을 다른 학생이 쓰게 된 경우 — 새 식별자로 다시 입장(이전 학생 기록은 그대로 보존) */
 $("btnRejoin").onclick = () => {
   if(!inited) return;
-  newUid();
+  if(stuUnsub){ stuUnsub(); stuUnsub = null; }
+  uid = null;
   localStorage.removeItem(meKey);
   me = null; myDoc = {}; joined = false; team = 0; leaderSel = false;
   $("inName").value = "";
   [...tg.children].forEach(c => c.classList.remove("on"));
   $("btnLeader").classList.remove("on");
   $("meLine").textContent = "호남고등학교";
-  subMe(); show("vJoin");
+  show("vJoin");
 };
 
 async function save(data){
-  try{ await setDoc(doc(db, COL, "stu_"+uid), data, {merge:true}); }
+  if(!uid) return;
+  try{ await setDoc(doc(db, COL, uid), data, {merge:true}); }
   catch(e){ alert("전송 오류: " + e.message); }
 }
 
@@ -550,7 +614,7 @@ function boardLoad(){
 }
 function subBoard(){
   if(boardUnsub || !me || !me.team) return;
-  boardUnsub = onSnapshot(doc(db, COL, "board_"+me.team), s => {
+  boardUnsub = watch(doc(db, COL, "board_"+me.team), s => {
     boardDoc = s.data() || {};
     if(isLeader() && !boardInit){ boardInit = true; boardLoad(); }
     const ph = state.phase || "";
@@ -643,6 +707,58 @@ function renderEnd(){
   if(myDoc.opinion){ $("inOpinion").value = myDoc.opinion;
     $("opinionDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다시 제출하면 덮어써요."; }
 }
+</script>
+
+<!-- 인앱 브라우저 안내 + 모듈 로드 지연 가드(모듈과 분리된 일반 스크립트 — 모듈 실패에도 동작) -->
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var ua = navigator.userAgent || "";
+  var isApp = /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|FB_IAB|Line\/|Daum|everytime|; wv\)/i.test(ua);
+
+  /* 상단 배너(인앱 안내·로드 지연 안내)가 떠 있으면 그 아래로 연결 상태 뱃지를 밀어 겹침을 방지.
+     배너가 없으면 뱃지는 CSS 기본 위치(top:10px) 그대로 유지. */
+  function positionConn(){
+    var c = $("conn"); if(!c) return;
+    var h = 0;
+    ["iab","loadWarn"].forEach(function(id){
+      var el = $(id);
+      if(el && !el.classList.contains("hidden")) h += el.offsetHeight;
+    });
+    c.style.top = h ? (h + 8) + "px" : "";
+  }
+
+  if(isApp){
+    var bar = $("iab");
+    if(bar){
+      bar.classList.remove("hidden");
+      positionConn();
+      var url = location.href.split("#")[0];
+      var isAndroid = /Android/i.test(ua), isiOS = /iPhone|iPad|iPod/i.test(ua);
+      var openBtn = $("iabOpen");
+      if(isAndroid){
+        openBtn.textContent = "크롬에서 열기";
+        openBtn.onclick = function(){ location.href = "intent://" + url.replace(/^https?:\/\//,"") + "#Intent;scheme=https;package=com.android.chrome;end;"; };
+      } else {
+        openBtn.textContent = isiOS ? "기본 브라우저로 열기" : "브라우저로 열기";
+        openBtn.onclick = function(){ alert("화면 메뉴의 ‘다른 브라우저로 열기 / Safari로 열기’를 사용하거나,\n아래 주소를 기본 브라우저 주소창에 직접 입력해 주세요.\n\n" + url); };
+      }
+      $("iabCopy").onclick = function(){
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(url).then(function(){ $("iabCopy").textContent = "복사됨!"; }, function(){ window.prompt("아래 주소를 복사하세요", url); });
+        } else { window.prompt("아래 주소를 복사하세요", url); }
+      };
+      $("iabX").onclick = function(){ bar.classList.add("hidden"); positionConn(); };
+    }
+  }
+  var lw = $("loadWarn");
+  if(lw){ var r = $("lwReload"); if(r) r.onclick = function(){ location.reload(); }; }
+  setTimeout(function(){   // 5초 내 모듈(Firebase)이 부팅 못 하면 안내
+    if(!window.__ocBooted && lw){ lw.classList.remove("hidden"); positionConn(); }
+  }, 5000);
+  window.addEventListener("resize", positionConn);
+  positionConn();
+})();
 </script>
 </body>
 </html>

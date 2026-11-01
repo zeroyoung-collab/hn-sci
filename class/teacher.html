@@ -55,8 +55,9 @@ h2.mid{ font-size:5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02e
 
 /* 하단 진행바 */
 #hud{ position:fixed; left:0; right:0; bottom:0; height:5.2vh; background:#0d1524; color:#8fa2c0;
-  display:flex; align-items:center; gap:2vw; padding:0 1.6vw; font-size:1.9vh; z-index:50; }
-#hud .sp{ flex:1; }
+  display:flex; align-items:center; gap:2vw; padding:0 1.6vw; font-size:1.9vh; z-index:50; overflow:hidden; }
+#hud > *{ white-space:nowrap; flex-shrink:0; }
+#hud .sp{ flex:1; min-width:0; }
 #hud b{ color:#fff; }
 #hud .live{ color:#5fd08a; font-weight:700; }
 #hud .dead{ color:#e07f7f; font-weight:700; }
@@ -64,6 +65,13 @@ h2.mid{ font-size:5vh; font-weight:900; color:var(--navy2); letter-spacing:-.02e
   border:none; border-radius:.8vh; padding:.5vh 2.6vh; cursor:pointer; }
 #hud button.nav:active{ background:var(--gold); color:var(--navy2); }
 .slide{ bottom:5.2vh; }
+/* 좁은 화면(전자칠판 1280px급 등)에서 버튼 밀림 방지 — 안내 문구부터 순서대로 숨김, 조작 버튼은 항상 유지 */
+@media (max-width:1360px){
+  #hudHint{ display:none; }
+}
+@media (max-width:1100px){
+  #hudCredit{ display:none; }
+}
 
 /* 액션 버튼 — 하단 가로 툴바(콘텐츠와 안 겹침) */
 .acts{ position:fixed; left:1.6vw; right:1.6vw; bottom:6.4vh; display:flex; flex-direction:row;
@@ -243,9 +251,10 @@ body.has-acts .slide{ bottom:12vh; }
   <span id="hudConn" class="dead">연결 중…</span>
   <span><b id="hudCls">—</b></span>
   <span>접속 <b id="hudN">0</b>명</span>
-  <span style="opacity:.55">제작 · 호남고 조영신</span>
+  <span id="hudCredit" style="opacity:.55">제작 · 호남고 조영신</span>
   <span class="sp"></span>
-  <span>←/→·스와이프 슬라이드 · Space 진행</span>
+  <span id="hudHint">←/→·스와이프 슬라이드 · Space 진행</span>
+  <button class="nav" id="navDedup">중복정리</button>
   <button class="nav" id="navLsn">수업</button>
   <button class="nav" id="navPrev">◀</button>
   <span><b id="hudPg">1</b> / <span id="hudTot">?</span></span>
@@ -343,27 +352,65 @@ function startClass(n){
 const uiLocked = () => document.getElementById("gate") || document.getElementById("lsnPick") || document.getElementById("clsPick");
 
 /* ── 실시간 데이터 ── */
+const norm = s => (s||"").replace(/\s+/g,"");                         // 공백 제거(앞뒤·내부)
+const ms = t => (t && t.toMillis) ? t.toMillis() : (typeof t === "number" ? t : 0);
+let lastCount = -1, tRetry = 0;
+function paintHud(){
+  const el = document.getElementById("hudConn");
+  if(tRetry > 0){ el.className = "dead"; el.textContent = "재연결 중…"; }
+  else { el.className = "live"; el.textContent = "● 실시간"; }
+}
+/* 끊김 시 지수 백오프 자동 재구독(2→4→8…최대 30초, 성공 시 리셋) */
+function watch(ref, onNext){
+  let unsub = null, delay = 2000, timer = null, inRetry = false;
+  (function start(){
+    unsub = onSnapshot(ref,
+      snap => { if(inRetry){ inRetry = false; tRetry--; paintHud(); } delay = 2000; onNext(snap); },
+      () => { if(!inRetry){ inRetry = true; tRetry++; paintHud(); }
+        try{ unsub && unsub(); }catch(e){} unsub = null;
+        clearTimeout(timer); timer = setTimeout(start, delay); delay = Math.min(delay*2, 30000); });
+  })();
+  return () => { try{ unsub && unsub(); }catch(e){} clearTimeout(timer); };
+}
 function startRealtime(){
-  onSnapshot(doc(db, COL, "state"), s => {
+  watch(doc(db, COL, "state"), s => {
     state = s.data() || {};
-    document.getElementById("hudConn").className = "live";
-    document.getElementById("hudConn").textContent = "● 실시간";
+    paintHud();
     render();
-  }, () => {
-    document.getElementById("hudConn").className = "dead";
-    document.getElementById("hudConn").textContent = "연결 오류";
   });
-  onSnapshot(collection(db, COL), snap => {
+  watch(collection(db, COL), snap => {
     students = []; boards = {};
     snap.forEach(d => {
       if(d.id.startsWith("stu_")){ const v = d.data(); if(v.name) students.push({id:d.id, ...v}); }
       else if(d.id.startsWith("board_")){ const v = d.data(); if(v.team) boards[v.team] = v; }
     });
-    document.getElementById("hudN").textContent = students.length;
+    const seen = new Set();                                   // 이름+모둠 유니크 집계(유령 중복 제외)
+    students.forEach(s => seen.add(norm(s.name) + "_" + s.team));
+    const count = seen.size;
+    document.getElementById("hudN").textContent = count;
+    if(count !== lastCount){ lastCount = count; setState({count}); }   // 학생 앱이 이 값으로 인원 표시
     render();
   });
 }
 const setState = data => setDoc(doc(db, COL, "state"), data, {merge:true});
+
+/* 중복 접속 정리 — 같은 이름+모둠의 stu_ 문서가 여럿이면 가장 최근 1개만 남기고 삭제 */
+async function dedup(){
+  if(uiLocked()) return;
+  if(!COL){ alert("먼저 수업과 반을 선택하세요."); return; }
+  const groups = {};
+  students.forEach(s => { const k = norm(s.name) + "_" + s.team; (groups[k] = groups[k] || []).push(s); });
+  const dups = Object.values(groups).filter(a => a.length > 1);
+  if(!dups.length){ alert("중복 접속이 없습니다."); return; }
+  const total = dups.reduce((n,a) => n + a.length - 1, 0);
+  if(!confirm(`중복 접속 ${total}건을 정리합니다.\n같은 이름·모둠은 가장 최근 제출 1개만 남기고 나머지를 삭제해요.\n계속할까요?`)) return;
+  let done = 0;
+  for(const a of dups){
+    a.sort((x,y) => ms(y.joinedAt) - ms(x.joinedAt));   // 최신 우선
+    for(let i=1;i<a.length;i++){ try{ await deleteDoc(doc(db, COL, a[i].id)); done++; }catch(e){} }
+  }
+  alert(`${done}건 정리 완료`);
+}
 
 /* ── 차트 라이브러리 (다중 선·범례·notes 지원 확장판) ── */
 function lineChart(o){
@@ -586,6 +633,7 @@ document.getElementById("navPrev").onclick = () => { if(!uiLocked()) go(cur-1); 
 document.getElementById("navNext").onclick = () => { if(!uiLocked()) fwd(); };
 document.getElementById("navFull").onclick = goFullscreen;
 document.getElementById("navLsn").onclick = () => { location.href = location.pathname + "?pw=honam1234"; };
+document.getElementById("navDedup").onclick = dedup;
 let swX = null, swY = null;
 document.addEventListener("touchstart", e => {
   if(e.touches.length !== 1){ swX = null; return; }
