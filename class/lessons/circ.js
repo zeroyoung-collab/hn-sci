@@ -281,27 +281,70 @@ export default function build(E){
   /* ── 정리 강의① 대기 대순환 — 단계 완성 (완자 123쪽) ── */
   function svgAtm(step){
     const S=(n,h)=>step>=n?h:"";
-    const mx0=252, mx1=876;
+    const mx0=332, mx1=1008;
     const lat = d => 272 - d*2.31;
     let g = "";
     const band=(d1,d2,f)=>`<rect x="${mx0}" y="${lat(d2).toFixed(1)}" width="${mx1-mx0}" height="${(lat(d1)-lat(d2)).toFixed(1)}" fill="${f}"/>`;
     g += band(60,90,"#e3edf8")+band(30,60,"#eaf4ec")+band(0,30,"#fdf2da")
        + band(-30,0,"#fdf2da")+band(-60,-30,"#eaf4ec")+band(-90,-60,"#e3edf8");
-    [[90,"90°N 북극"],[60,"60°"],[30,"30°"],[0,"0° 적도"],[-30,"30°"],[-60,"60°"],[-90,"90°S 남극"]].forEach(([d,lb])=>{
+    [[90,"90°N"],[60,"60°N"],[30,"30°N"],[0,"0° 적도"],[-30,"30°S"],[-60,"60°S"],[-90,"90°S"]].forEach(([d,lb])=>{
       g += `<line x1="${mx0}" y1="${lat(d)}" x2="${mx1}" y2="${lat(d)}" stroke="${d===0?"#d64545":"#b9c4d4"}" stroke-width="${d===0?2.5:1.5}"${d===0?' stroke-dasharray="8 5"':""}/>
-        <text x="${mx0-8}" y="${lat(d)+5}" text-anchor="end" font-size="14.5" font-weight="700" fill="#3d4652">${lb}</text>`;
+        <text x="${mx0+8}" y="${(lat(d)+17).toFixed(1)}" font-size="13.5" font-weight="700" fill="#3d4652">${lb}</text>`;
     });
-    g += S(2, [[15,"저위도 순환"],[45,"중위도 순환"],[75,"고위도 순환"]].map(([d,lb])=>{
-      const cy=lat(d);
-      return `<ellipse cx="146" cy="${cy}" rx="56" ry="30" fill="none" stroke="#0B3E86" stroke-width="3.5"/>
-        <polygon points="202,${cy-9} 195,${cy+5} 209,${cy+5}" fill="#0B3E86"/>
-        <text x="146" y="${cy+5}" text-anchor="middle" font-size="13" font-weight="900" fill="#0B3E86">${lb}</text>`;
-    }).join("") + `
-      <text x="146" y="312" text-anchor="middle" font-size="16" font-weight="900" fill="#092f66">3개의 순환</text>
-      <text x="146" y="334" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3d4652">에너지 불균형 + 지구의 자전</text>`);
+    g += S(2, (function(){
+      const xTop=118, xSurf=298, xMid=208, xRa=xTop+(xSurf-xTop)*0.32, GAP=7;
+      const GOLD="#d99a1a", GOLDd="#b9780d", GRN="#2f9e52", GRNd="#1d7a3b", BLU="#2f7fd6", BLUd="#1559a8";
+      let c = "";
+      /* 고도축 안내선 (지표 ↔ 상공) */
+      c += `<line x1="${xTop}" y1="${(lat(90)-4).toFixed(1)}" x2="${xTop}" y2="${(lat(-90)+4).toFixed(1)}" stroke="#c7d2e0" stroke-width="1.4" stroke-dasharray="3 5"/>
+        <line x1="${xSurf}" y1="${(lat(90)-4).toFixed(1)}" x2="${xSurf}" y2="${(lat(-90)+4).toFixed(1)}" stroke="#c7d2e0" stroke-width="1.4" stroke-dasharray="3 5"/>`;
+      /* 연직 순환 셀: (xSurf)=지표, (xTop)=상공. riseAtPole=극쪽 경계에서 상승 */
+      const cell=(dE,dP,riseAtPole,col,colD,full,name,type,wind)=>{
+        const yE=lat(dE), yP=lat(dP), cY=(yE+yP)/2;
+        const yRise=riseAtPole?yP:yE, ySink=riseAtPole?yE:yP;
+        const ins=v=> v + (cY>v?GAP:-GAP);
+        const yR=ins(yRise), yS=ins(ySink), sdir=Math.sign(yR-yS);
+        let s=`<path d="M${xSurf} ${yR.toFixed(1)} L${xTop} ${yR.toFixed(1)} L${xTop} ${yS.toFixed(1)} L${xSurf} ${yS.toFixed(1)} Z" fill="none" stroke="${col}" stroke-width="4" stroke-linejoin="round"/>`;
+        s+=`<line x1="${xSurf}" y1="${yS.toFixed(1)}" x2="${xSurf}" y2="${yR.toFixed(1)}" stroke="${colD}" stroke-width="6.5" stroke-linecap="round"/>`;
+        s+=TRI(xRa,yR,-1,0,8.5,colD)+TRI(xTop,(yR+yS)/2,0,Math.sign(yS-yR),8.5,colD)+TRI(xRa,yS,1,0,8.5,colD);
+        s+=TRI(xSurf,yS+(yR-yS)*0.34,0,sdir,11,colD)+TRI(xSurf,yS+(yR-yS)*0.70,0,sdir,11,colD);
+        if(full){
+          s+=`<text x="${xMid}" y="${(cY-14).toFixed(1)}" text-anchor="middle" font-size="15" font-weight="900" fill="${colD}">${name}</text>
+            <text x="${xMid}" y="${(cY+1).toFixed(1)}" text-anchor="middle" font-size="11.5" font-weight="700" fill="#3d4652">${type}</text>
+            <text x="${xMid}" y="${(cY+16).toFixed(1)}" text-anchor="middle" font-size="12" font-weight="900" fill="${colD}">지표풍 → ${wind}</text>`;
+        } else {
+          s+=`<text x="${xMid}" y="${(cY+5).toFixed(1)}" text-anchor="middle" font-size="11.5" font-weight="800" fill="${colD}" opacity=".7">${name}</text>`;
+        }
+        return full ? s : `<g opacity=".5">${s}</g>`;
+      };
+      c += cell(0,30,false,GOLD,GOLDd,true,"해들리 순환","직접 순환 (0°~30°)","무역풍")
+         + cell(30,60,true,GRN,GRNd,true,"페렐 순환","간접 순환 (30°~60°)","편서풍")
+         + cell(60,90,false,BLU,BLUd,true,"극 순환","직접 순환 (60°~극)","극동풍")
+         + cell(0,-30,false,GOLD,GOLDd,false,"해들리 순환(S)")
+         + cell(-30,-60,true,GRN,GRNd,false,"페렐 순환(S)")
+         + cell(-60,-90,false,BLU,BLUd,false,"극 순환(S)");
+      /* 상승역·하강역 콜백 (완자 C4 '위도 30° = 사막' 회수) */
+      const cal=(d,l1,l2,up,yo=0)=>{ const y=lat(d)+yo, cc=up?"#c0392b":"#1559a8";
+        let t=`<text x="112" y="${(y-2).toFixed(1)}" text-anchor="end" font-size="12" font-weight="900" fill="${cc}">${l1}</text>`;
+        if(l2) t+=`<text x="112" y="${(y+13).toFixed(1)}" text-anchor="end" font-size="10.5" font-weight="700" fill="#5a6572">${l2}</text>`;
+        return t; };
+      c += cal(0,"▲ 적도 상승","상승 → 다우(비↑)",true)
+         + cal(30,"▼ 아열대고압대","하강 → 건조(사막)",false)
+         + cal(60,"▲ 한대전선대","상승 (저압대)",true)
+         + cal(90,"▼ 극 하강","(극고압대)",false,16);
+      /* 고도축 라벨 + 요약 */
+      c += `<text x="${xTop}" y="486" text-anchor="middle" font-size="11.5" font-weight="900" fill="#6a7686">상공(고층)</text>
+        <text x="${xSurf}" y="486" text-anchor="middle" font-size="11.5" font-weight="900" fill="#6a7686">지표면</text>
+        <text x="${xMid}" y="506" text-anchor="middle" font-size="12.5" font-weight="800" fill="#3d4652">순환 원동력 = 에너지 불균형 + 지구 자전</text>`;
+      /* 바람 이름 ↔ 화살표 방향 대조 (학생 최다 오개념 교정) */
+      c += `<rect x="392" y="483" width="612" height="31" rx="8" fill="#fff7e6" stroke="#e0b24d" stroke-width="1.5"/>
+        <text x="698" y="496" text-anchor="middle" font-size="12.5" font-weight="900" fill="#8a5a00">바람 이름 = 불어오는 방향 · 배달 화살표 = 흘러가는 방향 → 서로 반대!</text>
+        <text x="698" y="510" text-anchor="middle" font-size="11" font-weight="700" fill="#6a4a10">예) 북동 무역풍 → 남서쪽으로 분다 · 편서풍(남서에서) → 북동쪽으로</text>`;
+      return c;
+    })());
     const wband = (dmid,dx,dy,name,sub) => {
       const cy = lat(dmid); let a = "";
-      [340,470,600].forEach(x=>{ const L=(dx&&dy)?38:52;
+      [mx0+110, mx0+250, mx0+390].forEach(x=>{ const L=(dx&&dy)?38:52;
         a += AR(x-dx*L, cy+dy*L, x+dx*L, cy-dy*L, 15, "#F5B301", "#c8920a"); });
       a += `<rect x="${mx1-218}" y="${cy-22}" width="210" height="44" rx="9" fill="#fff" opacity=".93" stroke="#b9c4d4"/>
         <text x="${mx1-113}" y="${cy-3}" text-anchor="middle" font-size="17" font-weight="900" fill="#092f66">${name}</text>
@@ -313,8 +356,7 @@ export default function build(E){
     g += S(5, wband(75,-1,-1,"극동풍","위도 60° ~ 극"));
     g += S(6, wband(-15,-1,1,"무역풍","적도 ~ 위도 30° (남동 무역풍)")
             + wband(-45,1,-1,"편서풍","위도 30° ~ 60°")
-            + wband(-75,-1,1,"극동풍","위도 60° ~ 극")
-            + `<text x="${(mx0+mx1)/2}" y="512" text-anchor="middle" font-size="16" font-weight="900" fill="#d64545">남반구는 북반구와 대칭! — 바람 이름은 그대로, 방향은 거울처럼</text>`);
+            + wband(-75,-1,1,"극동풍","위도 60° ~ 극"));
     /* 1단계 라벨은 맨 마지막에 그려 바람 화살표 위에 보이게 (흰 바탕 포함)
        — 최종 단계(6)에서 오른쪽 풍계 정보 박스(x≥mx1-218)와 겹치지 않도록 중심을 왼쪽으로 이동 */
     const tagCx = (mx0+mx1)/2 - 110;
@@ -323,10 +365,10 @@ export default function build(E){
     g += S(1, tag(lat(0)-12, 330, "☀ 적도 — 에너지 재고 누적 (남음)", "#d64545")
             + tag(lat(82), 230, "❄ 북극 — 품절 (부족)", "#1f6fd6")
             + tag(lat(-86), 230, "❄ 남극 — 품절 (부족)", "#1f6fd6"));
-    return `<svg viewBox="0 0 960 520">
-      <rect width="960" height="520" fill="#fff"/>
+    return `<svg viewBox="0 0 1040 520">
+      <rect width="1040" height="520" fill="#fff"/>
       <text x="24" y="34" font-size="23" font-weight="900" fill="#092f66">대기 대순환 — 하늘의 배달 노선 (완자 123쪽)</text>
-      <text x="24" y="56" font-size="14" font-weight="700" fill="#3d4652">화살표 = 지표 부근에서 바람이 흘러가는 방향</text>
+      <text x="24" y="56" font-size="13.5" font-weight="700" fill="#3d4652">왼쪽 = 공기의 연직 순환 단면도(북반구 기준) · 오른쪽 = 지표 바람 지도 (화살표 = 바람이 흘러가는 방향)</text>
       ${g}
     </svg>`;
   }
