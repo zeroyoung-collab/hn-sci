@@ -224,12 +224,12 @@ export default function build(E){
     }
     return `<svg viewBox="0 0 820 470" xmlns="http://www.w3.org/2000/svg">
       <rect width="820" height="470" fill="#fff"/>
-      <text x="410" y="32" text-anchor="middle" font-size="20" font-weight="900" fill="#092f66">🚚 ${esc(name) || esc(b.company) || "회사 이름 미정"} — 배달 노선도</text>
+      <text x="410" y="32" text-anchor="middle" font-size="20" font-weight="900" fill="#092f66">🚚 ${esc(name) || "배달 노선도"} — 예측 노선도</text>
       <text x="410" y="54" text-anchor="middle" font-size="13" font-weight="700" fill="#c8920a">화살표 = 바람과 바닷물이 흘러가는 방향</text>
       <text x="214" y="76" text-anchor="middle" font-size="16" font-weight="900" fill="#092f66">🌬 지상 노선 — 북반구의 바람</text>
       <text x="605" y="76" text-anchor="middle" font-size="16" font-weight="900" fill="#092f66">🌊 해상 노선 — 북태평양</text>
       ${g}
-      <text x="410" y="458" text-anchor="middle" font-size="13" font-weight="700" fill="#8a93a1">지구 배달 주식회사 — 입찰 노선도</text>
+      <text x="410" y="458" text-anchor="middle" font-size="13" font-weight="700" fill="#8a93a1">지구 배달 주식회사 — 예측 노선도</text>
     </svg>`;
   }
 
@@ -438,45 +438,86 @@ export default function build(E){
     </svg>`;
   }
 
-  /* ── 2라운드 심사 도우미 ── */
-  const LBL = ["A","B","C","D","E"];
-  function collectRoutes(){                 // 1차 블라인드용 — 회사명·팀장명은 뺀다
-    const out = {};
-    for(let t=1;t<=5;t++){
-      const b = E.boards[t] || {};
-      out[t] = { w1:b.w1||"", w2:b.w2||"", w3:b.w3||"", gyre:b.gyre||"", sales:b.sales||"" };
-    }
-    return out;
-  }
-  function collectNames(){                  // 2차용 — 회사 이름 공개
-    const out = {};
-    for(let t=1;t<=5;t++) out[t] = (E.boards[t]||{}).company || `${t}회사`;
-    return out;
-  }
-  const shuffledCand = () => {              // 후보 A~E ↔ 회사 매핑 셔플
-    const a = [1,2,3,4,5];
-    for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; }
-    return a;
-  };
-  const inv1Counts = () => {                // 1차 가투자 — 회사별 표 수
-    const c = {1:0,2:0,3:0,4:0,5:0};
-    E.students.forEach(s => { if(s.inv1Team) c[s.inv1Team] = (c[s.inv1Team]||0)+1; });
-    return c;
-  };
-  const inv2Money = () => {                 // 2차 — 회사별 유치 금액(억)
-    const m = {1:0,2:0,3:0,4:0,5:0};
-    E.students.forEach(s => { if(s.inv2) for(let t=1;t<=5;t++) m[t] += +(s.inv2[t]||0); });
-    return m;
-  };
-  const rankOf = obj => {                   // {회사:값} → {회사:순위(1부터, 동률 같은 순위)}
-    const sorted = [1,2,3,4,5].slice().sort((a,b)=>obj[b]-obj[a]);
-    const r = {};
-    sorted.forEach((t,i) => { r[t] = (i>0 && obj[t]===obj[sorted[i-1]]) ? r[sorted[i-1]] : i+1; });
-    return r;
-  };
-  const teamsDone = () => [1,2,3,4,5].filter(t => { const b=E.boards[t]||{}; return b.w1&&b.w2&&b.w3&&b.gyre; }).length;
+  /* ── 예측 집계 도우미 (개인 predInit / predFinal 방향별) ── */
+  const WDIRS = ["SW","NE","E","W"];
+  const WLABEL = { SW:"↙ 남서", NE:"↗ 북동", E:"→ 동", W:"← 서" };
+  const GLABEL = { cw:"⟳ 시계", ccw:"⟲ 반시계" };
+  const BANDNAME = { w1:"1구간 0°~30°", w2:"2구간 30°~60°", w3:"3구간 60°~90°" };
+  /* 과학적 정답 — 바람·바닷물이 '흘러가는 쪽' 기준 (svgAtm/svgSea와 일치) */
+  const TRUTH = { w1:"SW", w2:"NE", w3:"SW", gyre:"cw" };
+  const TRUTHLBL = { w1:"무역풍 → 남서쪽", w2:"편서풍 → 북동쪽", w3:"극동풍 → 남서쪽", gyre:"시계 방향 ⟳" };
 
-  let briefIdx = 0, atmStep = 0, seaStep = 0, opFull = false, showMap = false;
+  const preds = key => E.students.map(s => s[key]).filter(p => p && typeof p === "object");
+  const submitted = key => E.students.filter(s => { const p = s[key]; return p && (p.w1||p.w2||p.w3||p.gyre); }).length;
+  function windCounts(key, band){            // 한 구간의 방향별 득표 {SW,NE,E,W}
+    const c = { SW:0, NE:0, E:0, W:0 };
+    preds(key).forEach(p => { if(c[p[band]] !== undefined) c[p[band]]++; });
+    return c;
+  }
+  function gyreCounts(key){ const c = { cw:0, ccw:0 }; preds(key).forEach(p => { if(c[p.gyre] !== undefined) c[p.gyre]++; }); return c; }
+  function changeStat(){                      // 1차→2차 수정 현황
+    let changed = 0, both = 0;
+    E.students.forEach(s => { const a=s.predInit, b=s.predFinal;
+      if(a && b){ both++; if(["w1","w2","w3","gyre"].some(k => (a[k]||"") !== (b[k]||""))) changed++; } });
+    return { changed, both };
+  }
+
+  /* 분포 막대 한 줄 (방향별 득표) — showTruth면 정답 방향을 금색으로 강조 */
+  function distRow(label, counts, order, labeler, truthKey, showTruth){
+    const mx = Math.max(1, ...order.map(k => counts[k]));
+    return `
+    <div style="display:flex;align-items:center;gap:1vw;margin-bottom:1vh">
+      <div style="flex-shrink:0;width:22vh;font-size:2.1vh;font-weight:900;color:var(--navy2)">${label}</div>
+      <div style="flex:1;display:flex;gap:1.6vw">
+        ${order.map(k => { const hot = showTruth && k===truthKey;
+          return `<div style="flex:1;display:flex;flex-direction:column;align-items:center">
+            <div style="font-size:2vh;font-weight:900;color:${hot?"var(--gold-d)":"var(--navy)"}">${counts[k]||""}</div>
+            <div style="width:100%;height:7vh;display:flex;align-items:flex-end;justify-content:center">
+              <div style="width:46%;height:${(counts[k]/mx*100).toFixed(1)}%;min-height:.4vh;border-radius:.6vh .6vh 0 0;background:${hot?"var(--gold)":"var(--navy)"}"></div>
+            </div>
+            <div style="font-size:1.7vh;font-weight:700;color:${hot?"var(--gold-d)":"var(--soft)"};margin-top:.4vh;white-space:nowrap">${labeler[k]}${hot?" ✔":""}</div>
+          </div>`; }).join("")}
+      </div>
+    </div>`;
+  }
+  function distBlock(key, showTruth){
+    return ["w1","w2","w3"].map(b => distRow(BANDNAME[b], windCounts(key,b), WDIRS, WLABEL, TRUTH[b], showTruth)).join("")
+      + distRow("🌊 북태평양 순환", gyreCounts(key), ["cw","ccw"], GLABEL, TRUTH.gyre, showTruth);
+  }
+
+  /* ── 공유 — 학생 전체 풀에서 지명 (교사 모듈 자체 구현: drawSpeaker를 전체 학생으로 확장) ── */
+  let pickedId = "", drawing2 = false;
+  const pickedStu = () => E.students.find(s => s.id === pickedId);
+  function drawStudent(){
+    if(drawing2) return;
+    const pool = E.students.filter(s => s.predFinal && (s.predFinal.w1 || s.predFinal.gyre));
+    const use = pool.length ? pool : E.students;
+    if(!use.length){ alert("아직 입장·제출한 학생이 없어요."); return; }
+    drawing2 = true;
+    const winner = use[Math.floor(Math.random()*use.length)];
+    const total = 10 + Math.floor(Math.random()*6);
+    let step = 0;
+    const spin = () => {
+      if(step >= total){ pickedId = winner.id; drawing2 = false; E.render(); return; }   // 종료: 플래그 먼저 내리고 재렌더 → '뽑는 중…' 배지 제거
+      pickedId = use[step % use.length].id;
+      E.render();
+      step++; setTimeout(spin, 70 + step*step*1.1);
+    };
+    spin();
+  }
+  function changeText(s){                     // 지명 학생의 1차→2차 변화 문구
+    const a = s.predInit || {}, b = s.predFinal || {};
+    const moves = [];
+    [["w1","1구간"],["w2","2구간"],["w3","3구간"],["gyre","해류"]].forEach(([k,nm]) => {
+      if(a[k] && b[k] && a[k] !== b[k]){
+        const L = k==="gyre" ? GLABEL : WLABEL;
+        moves.push(`${nm} ${L[a[k]]}→${L[b[k]]}`);
+      }
+    });
+    return moves;
+  }
+
+  let briefIdx = 0, atmStep = 0, seaStep = 0, opFull = false, showTruth2 = false, feedSel = "predEN";
 
   /* 0 로비 — 입찰 공고 포스터 */
   E.slide(() => `
@@ -484,16 +525,16 @@ export default function build(E){
     <h1 class="big" style="font-size:6.2vh">지구 배달 주식회사 —<br>대기 대순환과 해수의 표층 순환</h1>
     <div class="rule"></div>
     <div style="font-size:2.3vh;font-weight:900;color:var(--navy2);background:#fffaf0;border:.3vh solid var(--gold);border-radius:1.2vh;padding:1.2vh 2vh;margin-bottom:1.5vh">
-      📦 <span style="color:var(--gold-d)">모집 공고</span> — 발주처 「지구」: 적도의 잉여 에너지를 극까지 배달할 <b>운송 회사 5곳</b>을 모집합니다. 지금 입장해 채용되세요!
+      📦 <span style="color:var(--gold-d)">분석 의뢰</span> — 발주처 「지구」: 적도의 남는 에너지를 극까지 나르는 <b>배달 노선</b>을 찾습니다. 오늘은 <b>각자</b> 노선을 예측하고 단서로 고쳐 봅니다. 지금 입장하세요!
     </div>
     <div class="lobbywrap">
       <div class="lobbyL">
         <div style="font-size:3vh;font-weight:900;color:var(--navy)">💻 노트북으로 접속하세요</div>
         <div class="url">${E.ENTRY.replace("https://","")}</div>
         <div class="joined">
-          <div class="cnt">출근 <b>${E.students.length}</b> / 20명</div>
+          <div class="cnt">접속 <b>${E.students.length}</b>명</div>
           <div class="teamsrow">${[1,2,3,4,5].map(t => `
-            <div class="teambox"><h4>${t}회사</h4>${E.students.filter(s=>s.team===t).map(s=>`<span>${s.leader?"👑":""}${s.name}</span>`).join("")}</div>`).join("")}
+            <div class="teambox"><h4>${t}분임</h4>${E.students.filter(s=>s.team===t).map(s=>`<span>${s.name}</span>`).join("")}</div>`).join("")}
           </div>
         </div>
       </div>
@@ -506,84 +547,59 @@ export default function build(E){
   /* 1 발주 공고 — ①차시 그래프 재등장 */
   E.slide(() => `
     <div class="kicker">발주 공고 — 왜 배달이 필요한가</div>
-    <h2 class="mid" style="margin-bottom:1vh">발주처 「지구」 — 에너지 운송 용역 입찰 공고</h2>
+    <h2 class="mid" style="margin-bottom:1vh">발주처 「지구」 — 에너지 배달 노선 분석 의뢰</h2>
     <div style="flex:1;display:flex;gap:2.5vw;min-height:0;align-items:center">
       <div style="flex:1;border:.5vh solid var(--navy);border-radius:1.6vh;padding:3vh 3.2vh">
-        <div style="font-size:2vh;font-weight:900;color:var(--gold-d);letter-spacing:.14em">입찰 공고 제46억-0001호</div>
+        <div style="font-size:2vh;font-weight:900;color:var(--gold-d);letter-spacing:.14em">분석 의뢰 제46억-0001호</div>
         <div style="font-size:3.1vh;font-weight:900;color:var(--navy2);line-height:1.5;margin:1.5vh 0">"적도 창고에는 에너지 재고가 쌓이고,<br>극 매장은 품절입니다."</div>
         <div class="goals" style="font-size:2.4vh">
-          <p>📦 운송 물품 — 적도(저위도)의 <b>잉여 에너지</b></p>
+          <p>📦 운송 물품 — 적도(저위도)의 <b>남는 에너지</b></p>
           <p>📍 배송지 — <b>극(고위도)</b> 방면</p>
-          <p>🏢 모집 — 배달 노선을 설계·제안할 <b>운송 회사 5곳</b></p>
-          <p>🏆 낙찰 — 1차 블라인드 심사 + 2차 투자 경매로 선정</p>
+          <p>🧭 과제 — 무엇이 이 에너지를 나르는지 <b>각자 노선을 예측</b></p>
+          <p>🔎 방법 — 1차 예측 → 단서로 수정 → 실제와 대조</p>
         </div>
-        <div style="font-size:2vh;font-weight:700;color:var(--soft);margin-top:1.5vh">※ ①차시 마지막 질문 — "왜 적도는 계속 뜨거워지지 않을까?" 그 답을 오늘 여러분이 설계합니다.</div>
+        <div style="font-size:2vh;font-weight:700;color:var(--soft);margin-top:1.5vh">※ ①차시 마지막 질문 — "왜 적도는 계속 뜨거워지지 않을까?" 그 답을 오늘 여러분이 예측합니다.</div>
       </div>
       <div class="svgwrap" style="flex:1.2;min-width:0">${svgLat()}</div>
     </div>`);
 
-  /* 2 입찰 안내 — 학습목표 + 심사 기준 */
+  /* 2 목표 제시 — 학습목표 + 개인 예측-수정형 안내 */
   E.slide(() => `
-    <div class="kicker">입찰 안내 — 오늘의 목표</div>
+    <div class="kicker">오늘의 목표 — 예측하고, 고치고, 맞춰 본다</div>
     <h2 class="mid">이 수업이 끝나면, 여러분은</h2>
     <div class="rule"></div>
     <div class="goals">
-      <p><span class="num">1</span><b>대기 대순환</b>이 생기는 까닭과 구조(무역풍·편서풍·극동풍)를<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;설명할 수 있다.</p>
-      <p style="margin-top:2.5vh"><span class="num">2</span><b>표층 해류와 에너지 수송</b>을 실제 데이터(단서)로<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;해석할 수 있다.</p>
+      <p><span class="num">1</span><b>대기 대순환</b>(무역풍·편서풍·극동풍)이 생기는 까닭과 구조를<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;예측하고, 근거로 수정·설명할 수 있다.</p>
+      <p style="margin-top:2.5vh"><span class="num">2</span><b>표층 해류</b>가 대기 대순환의 바람으로 생기고 에너지를<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;수송함을 데이터로 해석·설명할 수 있다.</p>
     </div>
-    <div style="margin-top:auto;display:flex;flex-direction:column;gap:1.2vh">
-      <div style="background:var(--lt);border-left:.6vh solid var(--gold);border-radius:1vh;padding:1.4vh 2.2vh">
-        <div style="font-size:2.2vh;font-weight:900;color:var(--navy)">🏆 심사 기준 — 세 가지</div>
-        <div style="font-size:2.3vh;font-weight:700;color:var(--soft);line-height:1.8;margin-top:.4vh">
-          ❶ <b style="color:var(--navy)">단서 근거</b> — 어떤 단서에서 나온 노선인가 &nbsp;·&nbsp;
-          ❷ <b style="color:var(--navy)">노선 정확성</b> — 바람·바닷물 방향이 맞는가 &nbsp;·&nbsp;
-          ❸ <b style="color:var(--navy)">설득력</b> — 세일즈 한 문장의 힘
-        </div>
-      </div>
-      <div style="background:#fffaf0;border-left:.6vh solid var(--gold-d);border-radius:1vh;padding:1.4vh 2.2vh">
-        <div style="font-size:2.2vh;font-weight:900;color:var(--navy)">💰 심사는 2라운드 투자 경매로!</div>
-        <div style="font-size:2.3vh;font-weight:700;color:var(--soft);line-height:1.8;margin-top:.4vh">
-          <b style="color:var(--navy)">1차 서류 심사</b> — 회사명을 가린 <b>블라인드 노선도</b>만 보고 가투자 원픽 (결과 봉인) &nbsp;→&nbsp;
-          <b style="color:var(--navy)">입찰 PT</b> &nbsp;→&nbsp;
-          <b style="color:var(--navy)">2차 본 심사</b> — 1인당 <b>배달코인 10억</b>을 분산 투자 · 최다 유치 회사 낙찰
-        </div>
+    <div style="margin-top:auto;background:#fffaf0;border:.3vh solid var(--gold);border-radius:1.2vh;padding:1.8vh 2.4vh">
+      <div style="font-size:2.6vh;font-weight:900;color:var(--navy2)">🧭 오늘은 <span style="color:var(--gold-d)">각자</span> 예측하고, 단서로 고치고, 실제와 대조합니다</div>
+      <div style="font-size:2.3vh;font-weight:700;color:var(--soft);line-height:1.9;margin-top:.8vh">
+        <b style="color:var(--navy)">1차 예측</b>(감으로) &nbsp;→&nbsp; <b style="color:var(--navy)">단서 함께 읽기</b> &nbsp;→&nbsp;
+        <b style="color:var(--navy)">2차 예측</b>(수정+근거) &nbsp;→&nbsp; <b style="color:var(--navy)">실제와 대조</b><br>
+        <span style="color:var(--gold-d);font-weight:900">예측은 틀려도 괜찮아요 — 근거로 고치는 것이 과학입니다.</span>
       </div>
     </div>`);
 
-  /* 3 1단계 — 현장 조사 현황판 */
+  /* 3 1차 예측 분포 — 학생들이 감으로 그린 predInit 방향별 분포 */
   E.slide(() => {
-    const rows = [...E.students].sort((a,b)=>a.team-b.team || a.name.localeCompare(b.name));
-    const full = rows.filter(s => { const c=s.cards||{}; return [1,2,3,4,5,6].every(i=>c["c"+i]!==undefined); }).length;
+    const n = submitted("predInit");
     return `
-    <div class="kicker">1단계 — 현장 조사 (단서 카드 6장)</div>
-    <div style="display:flex;gap:2.5vw;flex:1;min-height:0">
-      <div style="flex:1.6;display:flex;flex-direction:column;min-height:0;min-width:0">
-        <h2 class="mid" style="margin-bottom:1vh">조사관별 단서 수집 현황 <span style="font-size:2.4vh;color:var(--gold-d)">완료 ${full}/${rows.length}명</span></h2>
-        <div style="flex:1;overflow:hidden;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1vh .8vw;align-content:start">
-          ${rows.map(s => { const c=s.cards||{}; return `
-          <div style="border:.25vh solid var(--line);border-radius:1vh;padding:1vh 1.2vh;display:flex;align-items:center;gap:.5vh;min-width:0">
-            <span style="font-size:1.9vh;font-weight:900;color:var(--navy);flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis">${s.team}사 ${s.name}</span>
-            ${[1,2,3,4,5,6].map(i=>`<span style="width:2.3vh;height:2.3vh;border-radius:.5vh;flex-shrink:0;background:${c["c"+i]!==undefined?"var(--green)":"#e3e9f2"}"></span>`).join("")}
-          </div>`; }).join("") || '<div style="font-size:2.4vh;color:var(--soft);font-weight:700">아직 접속한 조사관이 없어요.</div>'}
-        </div>
-      </div>
-      <div style="flex:1;display:flex;flex-direction:column;min-width:0">
-        <div class="goals" style="font-size:2.4vh">
-          <p>🔎 노트북에서 <b>단서 카드 6장</b>을 순서대로 조사</p>
-          <p>✅ 체크 질문에 답하면 다음 단서가 열립니다</p>
-          <p>🏢 모든 단서는 <b>노선 설계의 근거</b> — 꼼꼼히!</p>
-        </div>
-        ${E.timerHTML()}
-      </div>
-    </div>`;
-  }, { enter(){ E.setState({phase:"scout"}); E.setTimer(600); },
-       acts(){ return E.timerActs(600); } });
+    <div class="kicker">1차 예측 — 감으로 그린 노선 (단서 보기 전)</div>
+    <h2 class="mid" style="margin-bottom:.5vh">어디서 생각이 갈렸나? <span style="font-size:2.4vh;color:var(--gold-d)">제출 ${n}/${E.students.length}명</span></h2>
+    <div style="font-size:2.2vh;font-weight:700;color:var(--soft);margin-bottom:1.5vh">💻 각자 노트북에서 지상 3구간의 바람과 북태평양 해류 방향을 <b style="color:var(--navy)">직감으로</b> 고르는 중 — 막대가 실시간으로 쌓입니다.</div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0">
+      ${distBlock("predInit", false)}
+    </div>
+    <div style="flex-shrink:0;font-size:2.1vh;font-weight:700;color:var(--soft)">📡 정답은 지금 공개하지 않습니다 — 단서를 함께 읽은 뒤, <b style="color:var(--navy)">2차 예측</b>에서 스스로 고쳐 봅니다.</div>`;
+  }, { enter(){ E.setState({phase:"predinit"}); },
+       acts(){ return [E.resetAct()]; } });
 
-  /* 4 단서 브리핑 — 교사가 6장 넘기며 전체 공유 */
+  /* 4 단서 같이 읽기 — 교사가 6장 넘기며 핵심 개념을 짚는다 */
   E.slide(() => {
     const K = CARDS[briefIdx];
     return `
-    <div class="kicker">단서 브리핑 — 전 직원 공유 (${briefIdx+1}/6)</div>
+    <div class="kicker">단서 같이 읽기 — 핵심 개념 짚기 (${briefIdx+1}/6)</div>
     <h2 class="mid" style="margin-bottom:1vh">${K.emoji} 단서 ${briefIdx+1} — ${K.title}</h2>
     <div style="flex:1;display:flex;gap:2.5vw;min-height:0;align-items:center">
       <div style="flex:1.5;min-width:0"><div class="minichart" style="border-width:.3vh">${K.svg()}</div></div>
@@ -595,186 +611,73 @@ export default function build(E){
         <div class="bans" style="border-left-color:var(--green);font-size:2.1vh"><b>한 줄 해설</b>${K.exp}</div>
       </div>
     </div>`;
-  }, { enter(){ briefIdx = 0; },
+  }, { enter(){ briefIdx = 0; E.setState({phase:"scout"}); },
        space(){ if(briefIdx < 5){ briefIdx++; E.render(); return true; } return false; },
        acts(){ return [
          ["◀ 이전 단서", "ghost", () => { if(briefIdx>0){ briefIdx--; E.render(); } }],
          ["다음 단서 ▶ (Space)", "navy", () => { if(briefIdx<5){ briefIdx++; E.render(); } }],
        ]; } });
 
-  /* 5 2단계 — 노선 설계 회의 실시간 현황 */
-  E.slide(() => `
-    <div class="kicker">2단계 — 노선 설계 회의 (입찰서 작성)</div>
-    <h2 class="mid" style="margin-bottom:.5vh">우리 회사의 배달 노선을 설계하라! <span style="font-size:2.2vh;color:var(--soft)">— 노선 완성 ${teamsDone()}/5 회사</span></h2>
-    <div class="bgrid">${[1,2,3,4,5].map(t => {
-      const b = E.boards[t] || {};
-      return `
-      <div class="bcard">
-        <h4>${t}회사 ${b.company?`<span class="meta">「${esc(b.company)}」</span>`:""} ${b.leaderName?`<span class="meta">👑 ${b.leaderName}</span>`:""}<span class="sp"></span>${b.w1&&b.w2&&b.w3&&b.gyre?'<span class="donebdg">✓ 노선 완성</span>':""}</h4>
-        <div class="minichart">${routeSVG(b)}</div>
-        <div class="btext" style="font-size:1.8vh">${b.sales ? "📣 " + esc(b.sales) : '<span class="dim2">세일즈 문장 입력 중…</span>'}</div>
-      </div>`; }).join("")}
-      <div class="bcard note" style="justify-content:flex-start;gap:.5vh;display:flex;flex-direction:column">
-        <div>📡 팀장 노트북과 <b>실시간 연동</b> — 지상 바람 3구간 + 해상 방향 + 회사 이름·세일즈 한 문장·결정적 단서.</div>
-        <div style="zoom:.42">${E.timerHTML()}</div>
-      </div>
-    </div>`,
-    { enter(){ E.setState({phase:"design"}); E.setTimer(600); },
-      acts(){ return E.timerActs(600); } });
-
-  /* 6 1차 서류 심사 — 블라인드 가투자 (후보 A~E, 결과 봉인) */
+  /* 5 2차 예측 분포 + 1차→2차 변화 — 단서를 읽고 수정한 predFinal */
   E.slide(() => {
-    const cand = E.state.cand || [];
-    const routes = E.state.routes || {};
-    const voted = E.students.filter(s => s.inv1Team).length;
-    const cnt = inv1Counts();
+    const n = submitted("predFinal");
+    const { changed, both } = changeStat();
     return `
-    <div class="kicker">3단계 ① — 1차 서류 심사 (블라인드)</div>
-    <h2 class="mid" style="margin-bottom:.5vh">회사명을 가렸습니다 — 노선도만 보고 가투자! <span style="font-size:2.2vh;color:var(--soft)">제출 ${voted}/${E.students.length}명</span></h2>
-    <div class="bgrid">${cand.length ? cand.map((t,i) => {
-      const r = routes[t] || {};
-      return `
-      <div class="bcard">
-        <h4>🔒 후보 ${LBL[i]}${showMap ? ` <span class="meta" style="color:var(--red)">= ${t}회사 · 가투자 ${cnt[t]}표</span>` : ""}</h4>
-        <div class="minichart">${routeSVG(r, `후보 ${LBL[i]}`)}</div>
-        <div class="btext" style="font-size:1.8vh">${r.sales ? "📣 " + esc(r.sales) : '<span class="dim2">세일즈 문장 없음</span>'}</div>
-      </div>`; }).join("") : '<div class="bcard note">후보 매핑을 만드는 중…</div>'}
-      <div class="bcard note">🤫 <b>블라인드 심사</b> — 노선도와 세일즈 문장만 보고 <b>1곳에 가투자</b>(원픽).<br>🔐 결과는 <b>봉인</b> — 낙찰 발표 때 공개!</div>
-    </div>`;
-  },
-  { enter(){
-      showMap = false;
-      const patch = { phase:"invest1", routes:collectRoutes() };
-      if(!E.state.cand || E.state.cand.length !== 5) patch.cand = shuffledCand();   // 매핑은 한 번만 셔플 — 재입장해도 유지
-      E.setState(patch);
-    },
-    acts(){ return [
-      ["노선 다시 불러오기", "ghost", () => E.setState({routes:collectRoutes()})],
-      [showMap ? "매핑 숨기기" : "매핑 보기(교사용)", "ghost", () => { showMap = !showMap; E.render(); }],
-    ]; } });
+    <div class="kicker">2차 예측 — 단서로 고친 노선</div>
+    <h2 class="mid" style="margin-bottom:.5vh">생각은 어떻게 움직였나? <span style="font-size:2.4vh;color:var(--gold-d)">제출 ${n}/${E.students.length}명</span></h2>
+    <div style="font-size:2.2vh;font-weight:700;color:var(--soft);margin-bottom:1.3vh">
+      🔁 1·2차를 모두 낸 <b style="color:var(--navy)">${both}</b>명 중 <b style="color:var(--gold-d)">${changed}</b>명이 노선을 <b>수정</b>했습니다 — 단서가 생각을 바꿨어요.${showTruth2 ? ' <span style="color:var(--gold-d);font-weight:900">· 금색 ✔ = 실제 정답</span>' : ""}
+    </div>
+    <div style="flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0">
+      ${distBlock("predFinal", showTruth2)}
+    </div>
+    <div style="flex-shrink:0;font-size:2.1vh;font-weight:700;color:var(--soft)">📡 아직 고치는 중이라면 노트북에서 바로 반영됩니다 — 다음은 <b style="color:var(--navy)">친구 생각 공유</b>.</div>`;
+  }, { enter(){ E.setState({phase:"predfinal"}); showTruth2 = false; },
+       acts(){ return [[showTruth2 ? "정답 숨기기" : "실제 정답 표시", showTruth2 ? "ghost" : "gold", () => { showTruth2 = !showTruth2; E.render(); }]]; } });
 
-  /* 7 입찰 PT — 발표 (여기서 회사명·발표자 공개) */
+  /* 6 공유 — 전체 학생 풀에서 지명, 지명 학생의 2차 노선도와 '고친 이유' 공유 */
   E.slide(() => {
-    if(!P.team){
+    const s = pickedStu();
+    if(!s){
+      const n = submitted("predFinal");
       return `
-      <div class="kicker">입찰 PT — 회사별 제안 발표</div>
-      <h2 class="mid" style="margin-bottom:.5vh">어느 회사부터 들을까요? <span style="font-size:2.2vh;color:var(--soft)">— 회사를 누르거나 🎲 뽑기로 순서를 정하세요</span></h2>
-      <div class="bgrid">${[1,2,3,4,5].map(t => {
-        const b = E.boards[t] || {};
-        return `
-        <div class="bcard click ${P.hl===t ? "hl" : ""}" data-t="${t}">
-          <h4>${t}회사 ${b.company?`<span class="meta">「${esc(b.company)}」</span>`:""} ${b.leaderName?`<span class="meta">👑 ${b.leaderName}</span>`:""}<span class="sp"></span>${P.presented.has(t) ? '<span class="donebdg">✓ 발표함</span>' : ""}</h4>
-          <div class="minichart">${routeSVG(b)}</div>
-          <div class="btext" style="font-size:1.8vh">${b.sales ? "📣 " + esc(b.sales) : '<span class="dim2">세일즈 문장 입력 중…</span>'}</div>
-        </div>`; }).join("")}
-        <div class="bcard note">🎲 <b>발표 회사 뽑기</b> — 아직 발표 안 한 회사 중에서 랜덤으로!<br><br>심사 기준 — ❶ 단서 근거 ❷ 노선 정확성 ❸ 설득력</div>
+      <div class="kicker">공유 — 친구의 생각을 들어 보자</div>
+      <h2 class="mid" style="margin-bottom:.5vh">생각이 갈린 구간, 누구에게 물어볼까? <span style="font-size:2.4vh;color:var(--soft)">2차 제출 ${n}명</span></h2>
+      <div style="font-size:2.4vh;font-weight:700;color:var(--soft);line-height:1.9;margin-bottom:1.5vh">
+        🎲 아래 <b style="color:var(--navy)">🎲 학생 뽑기</b>로 2~3명을 지명하세요. 지명된 학생의 <b>2차 노선도</b>와 "1차엔 ○○였는데 △△ 단서 때문에 □□로 바꿨다"는 이야기를 함께 듣습니다.
+      </div>
+      <div style="flex:1;display:flex;align-items:center;justify-content:center">
+        <div style="border:.4vh dashed var(--line);border-radius:2vh;padding:4vh 6vh;text-align:center;color:var(--soft)">
+          <div style="font-size:6vh">🎤</div>
+          <div style="font-size:2.6vh;font-weight:900;color:var(--navy2);margin-top:1vh">🎲 학생 뽑기를 눌러 주세요</div>
+        </div>
       </div>`;
     }
-    const b = E.boards[P.team] || {};
+    const moves = changeText(s);
+    const ev = +(s.predFinal && s.predFinal.evid) || 0;
     return `
-    <div class="kicker">입찰 PT — ${P.team}회사의 제안</div>
-    <h2 class="mid" style="margin-bottom:1vh">🚚 ${b.company ? `「${esc(b.company)}」` : `${P.team}회사`} ${b.leaderName ? `<span style="font-size:2.6vh;color:var(--gold-d)">👑 팀장 ${b.leaderName}</span>` : ""}${P.speaker ? ` <span style="font-size:2.6vh;background:var(--gold);color:var(--navy2);border-radius:1vh;padding:.5vh 1.6vh">🎤 발표자 ${P.speaker}</span>` : ""}</h2>
+    <div class="kicker">공유 — ${s.team}분임 ${esc(s.name)} 분석가의 노선</div>
+    <h2 class="mid" style="margin-bottom:1vh">🎤 ${s.team}분임 <b style="color:var(--gold-d)">${esc(s.name)}</b>${drawing2 ? ' <span style="font-size:2.4vh;color:var(--soft)">뽑는 중…</span>' : ""}</h2>
     <div style="flex:1;display:flex;gap:2.5vw;min-height:0;align-items:center">
-      <div style="flex:1.4;max-width:120vh"><div class="minichart" style="border-width:.3vh">${routeSVG(b)}</div></div>
+      <div style="flex:1.4;max-width:120vh"><div class="minichart" style="border-width:.3vh">${routeSVG(s.predFinal || {}, `${s.name} 2차`)}</div></div>
       <div style="flex:1;display:flex;flex-direction:column;gap:1.6vh;min-width:0">
-        <div class="bans"><b>📣 세일즈 포인트</b>${b.sales ? esc(b.sales) : "<span class='dim2'>아직 입력 전…</span>"}</div>
-        <div class="bans"><b>🗂 결정적 근거가 된 단서</b>${b.evid ? evidName(+b.evid) : "<span class='dim2'>아직 선택 전…</span>"}</div>
-        <div style="font-size:2vh;color:var(--soft);font-weight:700">📡 실시간 연동 — 발표 중 수정도 바로 반영 · 심사 기준: <b style="color:var(--navy)">단서 근거 · 노선 정확성 · 설득력</b></div>
+        <div class="bans"><b>🔁 1차 → 2차, 무엇을 고쳤나</b>${moves.length ? moves.map(m=>`• ${m}`).join("<br>") : "<span class='dim2'>1·2차가 같아요 — 왜 바꾸지 않았는지도 좋은 이야기!</span>"}</div>
+        <div class="bans" style="border-left-color:var(--green)"><b>✍ 고친 이유 (한 줄 근거)</b>${s.predFinal && s.predFinal.reason ? esc(s.predFinal.reason) : "<span class='dim2'>근거 미입력</span>"}</div>
+        <div class="bans"><b>🗂 결정적 단서</b>${ev ? evidName(ev) : "<span class='dim2'>미선택</span>"}</div>
       </div>
     </div>`;
   },
-  { enter(){ E.setState({phase:"pt"}); },
-    after(){
-      document.querySelectorAll(".bcard.click[data-t]").forEach(el => el.onclick = () => { if(!P.drawing) P.open(+el.dataset.t); });
-    },
-    acts(){
-      if(!P.team){
-        const a = [["🎲 발표 회사 뽑기", "gold", P.drawTeam]];
-        if(P.presented.size) a.push(["뽑기 초기화", "ghost", P.reset]);
-        return a;
-      }
-      return [
-        ["◀ 전체 보기", "ghost", P.back],
-        ["🎤 발표자 뽑기", "gold", P.drawSpeaker],
-        ...[1,2,3,4,5].map(t => [`${t}회사`, P.team===t ? "gold" : "navy", () => P.open(t)])
-      ];
-    } });
-
-  /* 8 2차 본 심사 — 배달코인 10억 투자 경매 (실시간 막대 레이스) */
-  E.slide(() => {
-    const names = E.state.companies || {};
-    const money = inv2Money();
-    const submitted = E.students.filter(s => s.inv2).length;
-    const mx = Math.max(1, ...Object.values(money));
-    return `
-    <div class="kicker">3단계 ② — 2차 본 심사 (배달코인 투자 경매)</div>
-    <h2 class="mid">발표를 들었다 — 이제 진짜 투자! <span style="font-size:2.4vh;color:var(--soft)">제출 ${submitted}/${E.students.length}명</span></h2>
-    <div style="font-size:2.3vh;font-weight:700;color:var(--soft);margin-bottom:1vh">💰 1인당 <b style="color:var(--navy)">배달코인 10억</b> — 자기 회사를 뺀 4개 회사에 억 단위로 분산 투자 (몰빵 허용 · 합계 10억)</div>
-    <div style="flex:1;display:flex;flex-direction:column;gap:1.8vh;justify-content:center">
-      ${[1,2,3,4,5].map(t => `
-      <div style="display:flex;align-items:center;gap:1.5vw">
-        <div style="flex-shrink:0;width:26vh;font-size:2.5vh;font-weight:900;color:var(--navy2);text-align:right;overflow:hidden;white-space:nowrap">🚚 ${esc(names[t] || `${t}회사`)}</div>
-        <div style="flex:1;background:var(--lt);border-radius:1vh;height:5vh;overflow:hidden">
-          <div style="height:100%;width:${(money[t]/mx*100).toFixed(1)}%;min-width:${money[t]>0?"2vh":"0"};background:linear-gradient(90deg,var(--navy),#2f6ec2);border-radius:1vh;transition:width .6s"></div>
-        </div>
-        <div style="flex-shrink:0;width:13vh;font-size:3vh;font-weight:900;color:var(--gold-d)">${money[t]}억</div>
-      </div>`).join("")}
-    </div>
-    <div style="flex-shrink:0;font-size:2.1vh;font-weight:700;color:var(--soft)">📡 실시간 유치 금액 레이스 — 전원 제출되면 다음 슬라이드에서 <b style="color:var(--navy)">낙찰 발표</b>!</div>`;
-  },
-  { enter(){ E.setState({phase:"invest2", companies:collectNames()}); },
-    acts(){ return [["회사 이름 다시 불러오기", "ghost", () => E.setState({companies:collectNames()})]]; } });
-
-  /* 9 낙찰 발표 — 1차(블라인드) vs 2차(발표 후) 비교 + 투자 수익왕 */
-  E.slide(() => {
-    const names = E.state.companies || {};
-    const cand = E.state.cand || [];
-    const cnt1 = inv1Counts(), money = inv2Money();
-    const r1 = rankOf(cnt1), r2 = rankOf(money);
-    const mx1 = Math.max(1, ...Object.values(cnt1)), mx2 = Math.max(1, ...Object.values(money));
-    const done = !!E.state.awardDone;
-    const winner = [1,2,3,4,5].reduce((w,t) => money[t] > money[w] ? t : w, 1);
-    /* 투자 수익왕 — 낙찰 회사에 가장 많이 투자(동률이면 먼저 제출) */
-    let king = null;
-    if(done){
-      E.students.forEach(s => {
-        const amt = +(s.inv2 && s.inv2[winner] || 0);
-        if(amt <= 0) return;
-        if(!king || amt > king.amt || (amt === king.amt && (s.inv2Ts||1/0) < king.ts)) king = {name:s.name, team:s.team, amt, ts:s.inv2Ts||1/0};
-      });
-    }
-    return `
-    <div class="kicker">낙찰 발표 — 1차 서류 심사 vs 2차 본 심사</div>
-    <h2 class="mid" style="margin-bottom:1vh">봉인 해제! 블라인드와 발표 후, 결과가 같을까? <span style="font-size:2.2vh;color:var(--gold-d)">■ 1차 가투자(표) · <span style="color:var(--navy)">■ 2차 유치 금액(억)</span></span></h2>
-    <div style="flex:1;display:flex;flex-direction:column;gap:1.3vh;justify-content:center">
-      ${[1,2,3,4,5].map(t => {
-        const lbl = LBL[cand.indexOf(t)] || "?";
-        const diff = r1[t] - r2[t];
-        const dTag = diff > 0 ? `<span style="color:var(--green)">▲ ${r1[t]}위→${r2[t]}위</span>` : diff < 0 ? `<span style="color:var(--red)">▼ ${r1[t]}위→${r2[t]}위</span>` : `<span style="color:var(--soft)">— ${r2[t]}위 유지</span>`;
-        return `
-      <div style="display:flex;align-items:center;gap:1.2vw;border:.3vh solid ${done && t===winner ? "var(--gold)" : "var(--line)"};border-radius:1.2vh;padding:1vh 1.4vh;background:${done && t===winner ? "#fffaf0" : "#fff"}">
-        <div style="flex-shrink:0;width:30vh;overflow:hidden;white-space:nowrap">
-          <span style="font-size:2vh;font-weight:900;color:#fff;background:var(--navy);border-radius:.7vh;padding:.3vh 1vh">후보 ${lbl}</span>
-          <span style="font-size:2.4vh;font-weight:900;color:var(--navy2)"> = ${esc(names[t] || `${t}회사`)}</span>
-        </div>
-        <div style="flex:1;display:flex;flex-direction:column;gap:.5vh">
-          <div style="display:flex;align-items:center;gap:1vh"><div style="height:2.3vh;width:${(cnt1[t]/mx1*88).toFixed(1)}%;min-width:.5vh;background:var(--gold);border-radius:.5vh"></div><span style="font-size:1.9vh;font-weight:900;color:var(--gold-d)">${cnt1[t]}표</span></div>
-          <div style="display:flex;align-items:center;gap:1vh"><div style="height:2.3vh;width:${(money[t]/mx2*88).toFixed(1)}%;min-width:.5vh;background:var(--navy);border-radius:.5vh"></div><span style="font-size:1.9vh;font-weight:900;color:var(--navy)">${money[t]}억</span></div>
-        </div>
-        <div style="flex-shrink:0;width:17vh;font-size:2vh;font-weight:900;text-align:right">${dTag}${done && t===winner ? '<br><span style="color:var(--gold-d);font-size:2.3vh">🏆 낙찰</span>' : ""}</div>
-      </div>`; }).join("")}
-    </div>
-    <div style="flex-shrink:0;display:flex;align-items:center;gap:2vw;margin-top:.5vh">
-      <div style="flex:1;font-size:2.5vh;font-weight:900;color:var(--navy2);background:var(--lt);border-left:.6vh solid var(--gold);border-radius:1vh;padding:1.3vh 2vh">💬 노선은 그대로인데, 무엇이 투자를 움직였을까요?</div>
-      ${done && king ? `<div style="flex-shrink:0;font-size:2.3vh;font-weight:900;color:var(--navy2);background:#fffaf0;border:.3vh solid var(--gold);border-radius:1vh;padding:1.3vh 2vh">🥇 투자 수익왕 — ${king.team}회사 ${esc(king.name)} (${king.amt}억)</div>` : ""}
-    </div>`;
-  },
-  { acts(){ return [["🏆 낙찰 발표", "green", () => E.setState({awardDone:true}), !!E.state.awardDone]]; } });
+  { enter(){ E.setState({phase:"share"}); },
+    acts(){ return [
+      ["🎲 학생 뽑기", "gold", drawStudent],
+      ...(pickedId ? [["지명 지우기", "ghost", () => { pickedId = ""; E.render(); }]] : []),
+    ]; } });
 
   /* 10 정리 강의① — 대기의 노선 (완자 123쪽) */
   E.slide(() => `
-    <div class="kicker">정리 강의 ① — 대기의 노선 (완자 123쪽 · 시험에 나옵니다)</div>
-    <h2 class="mid">지구는 이미 46억 년째 이 노선을 운영 중 <span style="font-size:2.4vh;color:var(--soft)">(Space ${atmStep}/6)</span></h2>
+    <div class="kicker">정리 ① — 예측 vs 실제 (대기 대순환 · 완자 123쪽)</div>
+    <h2 class="mid">많이들 예측한 방향, 실제와 맞춰 봅시다 <span style="font-size:2.4vh;color:var(--soft)">(Space ${atmStep}/6)</span></h2>
+    <div style="font-size:2vh;font-weight:700;color:var(--soft);margin-bottom:.6vh">💬 "1구간을 많이들 ○○로 예측했는데, 실제는 <b style="color:var(--navy)">남서쪽(무역풍)</b> — 왜냐하면 자전 때문에 오른쪽으로 휘니까…" 식으로 대조하며 공개하세요.</div>
     <div class="svgwrap">${svgAtm(atmStep)}</div>`,
     { enter(){ atmStep = 0; E.setState({phase:"wrap"}); },
       space(){ if(atmStep < 6){ atmStep++; E.render(); return true; } return false; },
@@ -782,8 +685,8 @@ export default function build(E){
 
   /* 11 정리 강의② — 바다의 노선 */
   E.slide(() => `
-    <div class="kicker">정리 강의 ② — 바다의 노선 (완자 123쪽 · 시험에 나옵니다)</div>
-    <h2 class="mid">바람이 끌고 가는 바닷물 — 표층 순환 <span style="font-size:2.4vh;color:var(--soft)">(Space ${seaStep}/4)</span></h2>
+    <div class="kicker">정리 ② — 예측 vs 실제 (표층 해류 · 완자 123쪽)</div>
+    <h2 class="mid">바람이 끌고 가는 바닷물 — 북태평양은 <b style="color:var(--navy)">시계 방향</b> <span style="font-size:2.4vh;color:var(--soft)">(Space ${seaStep}/4)</span></h2>
     <div class="svgwrap">${svgSea(seaStep)}</div>`,
     { enter(){ seaStep = 0; },
       space(){ if(seaStep < 4){ seaStep++; E.render(); return true; } return false; },
@@ -800,29 +703,39 @@ export default function build(E){
           <div><b>⑴ 지상의 바람 3종 — 위도 숫자까지!</b>무역풍 적도~30° · 편서풍 30°~60° · 극동풍 60°~극 (남반구도 대칭)</div>
           <div><b>⑵ 표층 해류의 원인 = 대기 대순환의 바람</b>저위도 표층 해수는 서쪽으로(무역풍) · 중위도는 동쪽으로(편서풍)<br>북태평양: 북적도 → 쿠로시오 → 북태평양 → 캘리포니아 해류</div>
           <div><b>⑶ 왜 순환하나 — 에너지 배달</b>저위도의 남는 에너지를 고위도로 수송 · <b style="display:inline;font-size:inherit;color:var(--red)">위도 38° 부근</b>에서 에너지 이동이 가장 활발</div>
-          <div style="border-left-color:var(--navy)"><b>⑷ 오늘의 심사가 남긴 것</b>같은 노선, 같은 조건 — 그러나 <b style="display:inline;font-size:inherit">누가·어떻게 발표하느냐</b>가 선택을 바꿨다. 발표의 힘을 기르자. 그리고 현명한 투자자는 발표에 흔들리지 않고 <b style="display:inline;font-size:inherit">내용(근거)</b>도 본다.</div>
+          <div style="border-left-color:var(--navy)"><b>⑷ 오늘의 수업이 남긴 것</b>1차 예측은 저마다 달랐지만, <b style="display:inline;font-size:inherit">단서(근거)</b>를 읽고 생각을 고치자 실제에 가까워졌다. <b style="display:inline;font-size:inherit">예측은 틀려도 괜찮다 — 근거로 고치는 것이 과학</b>이다.</div>
         </div>
         <div style="font-size:2.1vh;font-weight:700;color:var(--soft);line-height:1.8;background:var(--lt);border-radius:1vh;padding:1.4vh 1.8vh">
           🎯 ①차시 열수지 그래프와 오늘의 노선도는 <b style="color:var(--navy)">한 세트</b> — 그래프의 '남는 에너지'를 오늘 배운 바람과 해류가 배달합니다.</div>
       </div>
     </div>`);
 
-  /* 13 생각 한 문장 — 무역풍 파업 */
+  /* 13 다음차시 연결 — 엘니뇨·사막화 개인 예측 2문항 피드 */
+  const FEEDS = {
+    opinion: { key:"opinion", tab:"💭 오늘의 한 문장", head:"오늘 가장 크게 바뀐 생각은?", prompt:"예측이 단서로 어떻게 달라졌는지 돌아봅니다." },
+    predEN:  { key:"predEN",  tab:"🌊 질문① 엘니뇨",  head:"무역풍이 약해지면?", prompt:"따뜻한 물·비구름은 어디로? 태평양 동·서 날씨는 어떻게 달라질까?" },
+    predSD:  { key:"predSD",  tab:"🏜 질문② 사막화",  head:"위도 30° 건조대가 넓어지면?", prompt:"공기가 가라앉아 늘 건조한 띠(세계의 사막)가 넓어지면 땅과 사람에게 무슨 일이?" },
+  };
   E.slide(() => {
-    const ops = E.students.filter(s => s.opinion).sort((a,b)=>(a.opinionTs||0)-(b.opinionTs||0));
+    const F = FEEDS[feedSel] || FEEDS.predEN;
+    const ops = E.students.filter(s => s[F.key] && String(s[F.key]).trim())
+      .sort((a,b)=>(a.endTs||0)-(b.endTs||0));
     const list = opFull ? ops : ops.slice(-10);
     return `
-    <div class="kicker">정리 — 나의 생각${opFull ? ` · 전체 목록 (${E.clsShort()})` : ""}</div>
-    <h2 class="mid">생각 한 문장 — 만약 무역풍이 파업한다면? <span style="font-size:2.4vh;color:var(--soft)">제출 ${ops.length}/${E.students.length}명</span></h2>
-    ${opFull ? "" : `<div style="font-size:2.5vh;font-weight:700;color:var(--soft)">💻 각자 노트북에 — <b style="color:var(--navy)">"낙찰 노선의 무역풍 구간이 파업(약화)하면, 바다와 날씨에 무슨 일이 생길까?"</b> 오늘 배운 노선도를 떠올리며 1~2문장으로.</div>`}
-    <div class="opfeed" style="${opFull ? "overflow-y:auto" : ""}">${list.map(s => `<div class="opline"><b>${s.team}회사 ${s.name}</b>${esc(s.opinion)}</div>`).join("")}</div>`;
+    <div class="kicker">다음 시간 연결 — 『배달 사고: 엘니뇨와 사막화』 미리 예측</div>
+    <h2 class="mid" style="margin-bottom:.6vh">${F.head} <span style="font-size:2.4vh;color:var(--soft)">제출 ${ops.length}/${E.students.length}명${opFull?` · 전체 (${E.clsShort()})`:""}</span></h2>
+    <div style="font-size:2.3vh;font-weight:700;color:var(--soft);margin-bottom:1vh">💻 ${F.prompt} — 각자 노트북에서 <b style="color:var(--navy)">근거와 함께</b> 예측합니다.</div>
+    <div class="opfeed" style="${opFull ? "overflow-y:auto" : ""}">${list.map(s => `<div class="opline"><b>${s.team}분임 ${s.name}</b>${esc(s[F.key])}</div>`).join("") || '<div style="font-size:2.4vh;color:var(--soft);font-weight:700">아직 제출이 없어요.</div>'}</div>`;
   },
-  { enter(){ E.setState({phase:"end"}); opFull = false; },
-    acts(){ return [[opFull ? "최근 10개만 보기" : "전체 목록 보기", opFull ? "ghost" : "gold", () => { opFull = !opFull; E.render(); }]]; } });
+  { enter(){ E.setState({phase:"end"}); opFull = false; feedSel = "predEN"; },
+    acts(){ return [
+      ...Object.values(FEEDS).map(F => [F.tab, feedSel===F.key ? "gold" : "navy", () => { feedSel = F.key; E.render(); }]),
+      [opFull ? "최근 10개만" : "전체 목록", opFull ? "ghost" : "ghost", () => { opFull = !opFull; E.render(); }],
+    ]; } });
 
   /* 14 예고 — 배달 사고 */
   E.slide(() => {
-    const ops = E.students.filter(s => s.opinion);
+    const ops = E.students.filter(s => s.opinion || s.predEN || s.predSD);
     return `
     <div class="kicker">다음 시간 예고</div>
     <h2 class="mid">만약, 배달이 멈춘다면</h2>
@@ -832,13 +745,13 @@ export default function build(E){
         <div style="font-size:2.2vh;font-weight:900;color:var(--gold-d);letter-spacing:.14em;margin-bottom:1.5vh">지구 환경 변화 3/3</div>
         <div style="font-size:3.6vh;font-weight:900;color:var(--navy2);line-height:1.45">『배달 사고 —<br>엘니뇨와 사막화』</div>
         <div class="goals" style="font-size:2.5vh;margin-top:2vh">
-          <p><span class="num" style="width:3.6vh;height:3.6vh;line-height:3.6vh;font-size:2vh">1</span>오늘의 마지막 질문 — <b>무역풍이 진짜로 파업하면</b> 무슨 일이 벌어지는지, 다음 시간에 확인합니다</p>
-          <p><span class="num" style="width:3.6vh;height:3.6vh;line-height:3.6vh;font-size:2vh">2</span>배달 사고가 만드는 <b>이상 기후</b> — 엘니뇨, 그리고 사막화</p>
+          <p><span class="num" style="width:3.6vh;height:3.6vh;line-height:3.6vh;font-size:2vh">1</span>오늘 예측한 <b>무역풍이 약해지면</b> 바다와 날씨가 어떻게 달라지는지 — 엘니뇨로 확인합니다</p>
+          <p><span class="num" style="width:3.6vh;height:3.6vh;line-height:3.6vh;font-size:2vh">2</span>위도 30° <b>건조대가 넓어지면</b> — 사막화가 만드는 이상 기후</p>
         </div>
         <div style="font-size:2.2vh;font-weight:700;color:var(--soft);margin-top:2vh">📚 복습 — <b style="color:var(--navy)">무역풍·편서풍·극동풍의 위도 범위</b>와 <b style="color:var(--navy)">북태평양 4해류 경로</b>는 시험 범위 핵심!</div>
       </div>
     </div>
-    <div style="font-size:2.4vh;font-weight:700;color:var(--soft)">생각 한 문장 제출 ${ops.length}/${E.students.length}명 — 아직이라면 지금 제출! 오늘도 수고했습니다 🚚</div>`;
+    <div style="font-size:2.4vh;font-weight:700;color:var(--soft)">예측 제출 ${ops.length}/${E.students.length}명 — 아직이라면 지금 제출! 오늘도 수고했습니다 🚚</div>`;
   },
   { enter(){ E.setState({phase:"end"}); } });
 }

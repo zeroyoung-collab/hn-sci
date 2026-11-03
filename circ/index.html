@@ -45,10 +45,6 @@ input[type=text]:focus{ border-color:var(--navy); }
 .wait h2{ font-size:18px; font-weight:900; color:var(--navy2); margin-top:10px; }
 .wait p{ font-size:13px; color:var(--soft); margin-top:6px; line-height:1.6; }
 
-/* 팀장/보드 공용 */
-.leaderToggle{ width:100%; font:inherit; font-size:14px; font-weight:900; padding:12px 0; margin-top:2px;
-  border:2px solid var(--line); border-radius:10px; background:#fff; color:var(--soft); }
-.leaderToggle.on{ border-color:var(--gold-d); background:#fffaf0; color:var(--gold-d); }
 textarea{ width:100%; font:inherit; font-size:15px; font-weight:500; line-height:1.6; padding:12px 14px;
   border:2px solid var(--line); border-radius:10px; outline:none; min-height:84px; resize:none; }
 textarea:focus{ border-color:var(--navy); }
@@ -56,10 +52,6 @@ textarea:focus{ border-color:var(--navy); }
 .mission{ background:var(--lt); border-left:5px solid var(--gold); border-radius:8px;
   padding:12px 14px; font-size:13px; line-height:1.7; margin-bottom:12px; }
 .mission b{ color:var(--navy); }
-.viewbox{ background:var(--lt); border-radius:10px; padding:12px 14px; margin-top:12px; }
-.viewbox h4{ font-size:12px; font-weight:900; color:var(--navy); margin-bottom:4px; }
-.viewbox p{ font-size:14px; font-weight:700; line-height:1.55; min-height:20px; }
-.viewbox p.empty{ color:#a8b2c0; font-weight:500; }
 
 /* 차트·노선도 */
 .chartwrap{ border:2px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; margin:4px 0 12px; }
@@ -69,25 +61,19 @@ textarea:focus{ border-color:var(--navy); }
 .dots{ display:flex; gap:6px; justify-content:center; margin-bottom:14px; }
 .dots span{ width:28px; height:28px; border-radius:50%; background:#e3e9f2; color:#8a93a1; font-size:12px;
   font-weight:900; display:flex; align-items:center; justify-content:center; }
-.dots span.done{ background:var(--green); color:#fff; }
-.dots span.cur{ outline:3px solid var(--gold); }
+.dots span.cur{ background:var(--navy); color:#fff; outline:3px solid var(--gold); }
 .qline{ font-size:15px; font-weight:900; color:var(--navy2); line-height:1.5; margin:4px 0 10px; }
 .optgrid{ display:grid; gap:8px; }
-.optgrid button{ font:inherit; text-align:left; font-size:14px; font-weight:700; line-height:1.5;
-  padding:12px 14px; border-radius:10px; border:2px solid var(--line); background:#fff; color:var(--ink); }
-.optgrid button.on{ border-color:var(--gold); background:#fffaf0; }
-.optgrid button:disabled:not(.on){ opacity:.45; }
+.optgrid div.opt{ font-size:14px; font-weight:700; line-height:1.5;
+  padding:11px 14px; border-radius:10px; border:2px solid var(--line); background:#fff; color:var(--soft); }
 .expbox{ background:#f0faf3; border-left:5px solid var(--green); border-radius:8px; padding:11px 13px;
   font-size:13px; line-height:1.65; margin-top:10px; font-weight:500; }
+.expbox b{ color:var(--green); }
 .navrow{ display:flex; gap:8px; margin-top:14px; }
 .navrow button{ flex:1; font:inherit; font-size:14px; font-weight:900; padding:12px 0; border-radius:10px;
   border:2px solid var(--line); background:#fff; color:var(--soft); }
 .navrow button.goldbtn{ background:var(--gold); border-color:var(--gold); color:var(--navy2); }
 .navrow button:disabled{ opacity:.4; }
-.badge{ text-align:center; padding:26px 10px; }
-.badge .bg{ font-size:54px; }
-.badge h3{ font-size:19px; font-weight:900; color:var(--navy2); margin-top:8px; }
-.badge p{ font-size:13px; color:var(--soft); margin-top:6px; line-height:1.6; }
 
 /* 노선 설계 */
 .dirgrid{ display:grid; grid-template-columns:repeat(2,1fr); gap:6px; }
@@ -98,39 +84,6 @@ textarea:focus{ border-color:var(--navy); }
 .evidrow button{ font:inherit; font-size:12px; font-weight:900; padding:9px 0; border-radius:10px;
   border:2px solid var(--line); background:#fff; color:var(--soft); }
 .evidrow button.on{ background:var(--gold); border-color:var(--gold); color:var(--navy2); }
-
-/* 1차 블라인드 가투자 */
-.candcard{ border:2px solid var(--line); border-radius:12px; padding:12px; margin-bottom:12px; background:#fff; }
-.candcard.on{ border-color:var(--gold); background:#fffaf0; }
-.candcard h3{ font-size:14px; font-weight:900; color:var(--navy2); margin-bottom:6px; }
-.candcard .sales{ font-size:13px; font-weight:700; color:var(--soft); line-height:1.5; margin:6px 0 10px; }
-.candcard .pick{ width:100%; font:inherit; font-size:14px; font-weight:900; padding:11px 0; border-radius:10px;
-  border:2px solid var(--line); background:#fff; color:var(--soft); }
-.candcard.on .pick{ background:var(--gold); border-color:var(--gold); color:var(--navy2); }
-.candcard .pick:disabled{ opacity:.55; }
-
-/* 2차 투자 경매 */
-.coin{ text-align:center; font-size:13px; font-weight:700; color:var(--soft); background:var(--lt);
-  border-radius:10px; padding:10px; margin-bottom:12px; }
-.coin b{ font-size:22px; color:var(--navy); }
-.invrow{ display:flex; align-items:center; gap:8px; border:2px solid var(--line); border-radius:12px;
-  padding:10px 12px; margin-bottom:8px; }
-.invrow .nm{ flex:1; font-size:13.5px; font-weight:900; color:var(--navy2); min-width:0; overflow:hidden; }
-.invrow button{ flex-shrink:0; width:38px; height:38px; font:inherit; font-size:19px; font-weight:900;
-  border-radius:10px; border:2px solid var(--line); background:#fff; color:var(--navy); }
-.invrow button:disabled{ opacity:.35; }
-.invrow .amt{ flex-shrink:0; width:52px; text-align:center; font-size:18px; font-weight:900; color:var(--gold-d); }
-.sumline{ display:flex; align-items:center; justify-content:space-between; margin-top:12px;
-  border:2px solid var(--line); border-radius:10px; padding:10px 14px; font-size:13px; font-weight:700; color:var(--soft); }
-.sumline b{ font-size:22px; font-weight:900; }
-.sumline.ok{ border-color:var(--green); background:#f0faf3; } .sumline.ok b{ color:var(--green); }
-.sumline.no b{ color:var(--red); }
-
-/* 정리 요점 카드 */
-.wrapcard{ border:2px solid var(--navy); border-radius:14px; padding:16px; }
-.wrapcard h3{ font-size:16px; font-weight:900; color:var(--navy2); margin-bottom:10px; }
-.wrapcard li{ font-size:13.5px; line-height:1.7; margin:6px 0 6px 18px; }
-.wrapcard b{ color:var(--navy); }
 
 footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; padding:8px 0 12px; }
 .conn{ position:fixed; top:10px; right:12px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:12px; z-index:5; transition:top .15s ease; }
@@ -172,112 +125,98 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
 </header>
 <main>
 
-  <!-- 입장 (입사 지원) -->
+  <!-- 입장 -->
   <section id="vJoin" class="card">
-    <h2>입사 지원 — 수업 입장</h2>
-    <p class="desc">발주처 「지구」가 에너지 배달 업체를 모집 중! 이름을 쓰고 회사(모둠)를 고른 뒤 입장하면 <b>조사관으로 채용</b>됩니다.</p>
+    <h2>입장 — 오늘의 에너지 분석가</h2>
+    <p class="desc">발주처 「지구」가 적도의 남는 에너지를 극까지 나르는 <b>배달 노선</b>을 찾습니다. 오늘은 <b>각자</b> 노선을 예측하고, 단서로 고치고, 실제와 맞춰 봅니다. 이름을 쓰고 분임을 고른 뒤 입장하세요.</p>
     <label>이름</label>
     <input type="text" id="inName" maxlength="10" placeholder="예) 김호남">
-    <label>회사 (모둠)</label>
+    <label>분임 (모둠)</label>
     <div class="teamgrid" id="teamGrid"></div>
-    <label>회사 대표 기기(팀장 노트북)인가요?</label>
-    <button class="leaderToggle" id="btnLeader" type="button">👑 이 노트북을 회사 상황판(팀장 보드)으로 쓸게요</button>
-    <button class="big" id="btnJoin">입사 지원하기</button>
+    <button class="big" id="btnJoin">입장하기</button>
   </section>
 
   <!-- 대기 -->
   <section id="vLobby" class="wait hidden">
     <div class="dot">🚚</div>
-    <h2 id="lobbyMsg">채용 완료!</h2>
-    <p id="lobbySub">입찰이 시작되면 화면이 자동으로 바뀝니다.<br>현재 <b id="lobbyN">0</b>명 출근 중</p>
+    <h2 id="lobbyMsg">입장 완료!</h2>
+    <p id="lobbySub">수업이 시작되면 화면이 자동으로 바뀝니다.<br>현재 <b id="lobbyN">0</b>명 접속 중</p>
     <button id="btnRejoin" style="margin-top:20px;font:inherit;font-size:12px;font-weight:700;color:var(--soft);background:#fff;border:2px solid var(--line);border-radius:10px;padding:8px 14px">↩ 내가 아니에요 — 다른 이름으로 다시 입장</button>
   </section>
 
-  <!-- 1단계: 현장 조사 수첩 -->
+  <!-- 1차 예측 -->
+  <section id="vPred1" class="card hidden">
+    <h2>1차 예측 — 감으로 노선을 그려 보자</h2>
+    <div class="mission">
+      <b>아직 단서를 보기 전!</b> 지금은 <b>직감</b>으로 괜찮습니다. 북반구 위도 3구간의 바람과 북태평양 바닷물이 <b>어느 쪽으로 흘러갈지</b> 화살표 방향을 골라 보세요. (방향은 <b>흘러가는 쪽</b> 기준)<br>곧 단서를 함께 읽은 뒤 <b>생각을 고칠 기회</b>가 있습니다.
+    </div>
+    <div class="chartwrap" id="p1Fig"></div>
+    <label>🌬 1구간 — 위도 0°~30° 의 바람은 어느 쪽으로?</label>
+    <div class="dirgrid" id="p1_w1"></div>
+    <label>🌬 2구간 — 위도 30°~60°</label>
+    <div class="dirgrid" id="p1_w2"></div>
+    <label>🌬 3구간 — 위도 60°~90°</label>
+    <div class="dirgrid" id="p1_w3"></div>
+    <label>🌊 북태평양 바닷물의 순환 방향</label>
+    <div class="dirgrid" id="p1_gyre"></div>
+    <p class="savedot" id="p1Saved">고르면 자동 저장됩니다 — 앞 화면에 분포가 모여요</p>
+  </section>
+
+  <!-- 단서 같이 읽기 -->
   <section id="vScout" class="card hidden">
-    <h2>현장 조사 수첩 — 단서 카드 6장</h2>
-    <p class="desc">노선 설계의 근거가 될 단서를 수집하세요. 체크 질문에 답하면 다음 단서가 열립니다.</p>
+    <h2>단서 같이 읽기 — 6장</h2>
+    <p class="desc">앞 화면을 보며 선생님과 함께 단서를 읽습니다. 각 단서의 <b>핵심</b>을 확인하고, 2차 예측에서 노선을 고칠 근거로 삼으세요. 자유롭게 앞뒤로 넘겨 봐도 됩니다.</p>
     <div id="scoutBox"></div>
   </section>
 
-  <!-- 2단계: 노선 설계 회의 -->
-  <section id="vDesign" class="card hidden">
-    <h2>노선 설계 회의 — 입찰서 작성</h2>
+  <!-- 2차 예측 -->
+  <section id="vPred2" class="card hidden">
+    <h2>2차 예측 — 단서로 노선을 고치자</h2>
     <div class="mission">
-      <b>MISSION</b> — 수집한 단서를 근거로 <b>에너지 배달 노선</b>을 설계하세요.<br>
-      ❶ 지상 노선 — 북반구 위도 3구간의 바람 방향 (방향은 <b>바람이 흘러가는 쪽</b> 기준!)<br>
-      ❷ 해상 노선 — 북태평양 바닷물의 순환 방향<br>
-      ❸ 회사 이름 · 세일즈 포인트 한 문장 · 결정적 단서 카드
+      단서를 읽었으니 <b>생각을 수정</b>할 시간! 1차에서 고른 노선이 그대로 들어와 있어요. 바꾸고 싶은 구간을 다시 고르고, <b>결정적 단서 1장</b>과 <b>한 줄 근거</b>를 남기세요.
     </div>
-    <div class="chartwrap" id="dsFig"></div>
-    <div id="dsClaim" class="hidden">
-      <button class="big" id="btnClaimDs" style="margin-top:0">👑 이 노트북을 회사 상황판(팀장 보드)으로 쓰기</button>
-    </div>
-    <div id="dsEdit">
-      <label>🌬 지상 1구간 — 위도 0°~30°의 바람은 어느 쪽으로 흘러갈까?</label>
-      <div class="dirgrid" id="wRow1"></div>
-      <label>🌬 지상 2구간 — 위도 30°~60°</label>
-      <div class="dirgrid" id="wRow2"></div>
-      <label>🌬 지상 3구간 — 위도 60°~90°</label>
-      <div class="dirgrid" id="wRow3"></div>
-      <label>🌊 해상 노선 — 북태평양 바닷물의 순환 방향</label>
-      <div class="dirgrid" id="gyreRow"></div>
-      <label>🏢 회사 이름</label>
-      <input type="text" id="bd_company" maxlength="12" placeholder="예) 번개배송 주식회사">
-      <label>📣 세일즈 포인트 (한 문장)</label>
-      <textarea id="bd_sales" maxlength="80" style="min-height:60px" placeholder="예) 무역풍 구간 직통! 적도의 재고를 가장 빠르게 …"></textarea>
-      <label>🗂 결정적 근거가 된 단서 카드</label>
-      <div class="evidrow" id="evidRow"></div>
-      <p class="savedot" id="dsSaved">고르면 자동 저장됩니다 — 선생님 화면과 실시간 연동</p>
-    </div>
-    <div id="dsView" class="hidden">
-      <p class="desc" style="margin:10px 0 0">👀 우리 회사 상황판을 실시간으로 보는 중 — 함께 토의하세요!</p>
-      <div class="viewbox"><h4>🏢 회사 이름</h4><p id="dvCompany" class="empty">아직 입력 전…</p></div>
-      <div class="viewbox"><h4>📣 세일즈 포인트</h4><p id="dvSales" class="empty">아직 입력 전…</p></div>
-      <div class="viewbox"><h4>🗂 결정적 단서</h4><p id="dvEvid" class="empty">아직 선택 전…</p></div>
-    </div>
+    <div class="chartwrap" id="p2Fig"></div>
+    <label>🌬 1구간 — 위도 0°~30°</label>
+    <div class="dirgrid" id="p2_w1"></div>
+    <label>🌬 2구간 — 위도 30°~60°</label>
+    <div class="dirgrid" id="p2_w2"></div>
+    <label>🌬 3구간 — 위도 60°~90°</label>
+    <div class="dirgrid" id="p2_w3"></div>
+    <label>🌊 북태평양 바닷물의 순환 방향</label>
+    <div class="dirgrid" id="p2_gyre"></div>
+    <label>🗂 생각을 고치게 한 결정적 단서</label>
+    <div class="evidrow" id="p2_evid"></div>
+    <label>✍ 한 줄 근거 — 왜 그렇게 고쳤나요?</label>
+    <textarea id="p2_reason" maxlength="120" style="min-height:64px" placeholder="예) 콜럼버스 단서에서 저위도는 동→서 바람이라 바닷물도 서쪽으로 …"></textarea>
+    <p class="savedot" id="p2Saved">고르면 자동 저장됩니다 — 앞 화면과 실시간 연동</p>
   </section>
 
-  <!-- 1차 서류 심사: 블라인드 가투자 -->
-  <section id="vInv1" class="card hidden">
-    <h2>1차 서류 심사 — 블라인드 가투자</h2>
-    <p class="desc">회사명을 가린 <b>후보 A~E</b>의 노선도와 세일즈 문장만 보고, 가장 믿음이 가는 <b>1곳에 가투자</b>(원픽)하세요. 결과는 봉인 — 낙찰 발표 때 공개됩니다!</p>
-    <div id="inv1Box"></div>
+  <!-- 교사 진행 단계 — 앞 화면 보기 -->
+  <section id="vLook" class="card hidden">
+    <h2 id="lookH">앞 화면을 함께 봅시다</h2>
+    <p class="desc" id="lookMsg">선생님이 우리 반의 예측을 모아 보여 주고 있어요. 내가 그린 2차 노선도와 비교하며 들어 보세요.</p>
+    <div class="chartwrap" id="lookFig"></div>
+    <div class="expbox" id="lookEvid"></div>
   </section>
 
-  <!-- 입찰 PT 관람 -->
-  <section id="vPT" class="card hidden">
-    <h2>입찰 PT 진행 중</h2>
-    <p class="desc">📺 <b>앞 화면을 보세요!</b> 각 회사의 발표를 듣고 심사 기준(단서 근거 · 노선 정확성 · 설득력)으로 평가해 두세요. 발표가 끝나면 <b>진짜 투자</b>가 시작됩니다.</p>
-    <div class="chartwrap" id="ptFig"></div>
-    <div class="viewbox"><h4>📣 우리 회사의 세일즈 포인트</h4><p id="ptSales" class="empty">아직 입력 전…</p></div>
-  </section>
-
-  <!-- 2차 본 심사: 배달코인 투자 경매 -->
-  <section id="vInv2" class="card hidden">
-    <h2>2차 본 심사 — 배달코인 투자</h2>
-    <p class="desc">발표를 들었으니 이제 진짜 투자! <b>우리 회사를 제외한 4개 회사</b>에 억 단위로 나눠 투자하세요. 한 곳에 몰빵해도 됩니다.</p>
-    <div class="coin">내 배달코인 &nbsp;<b>10억</b></div>
-    <div id="inv2Box"></div>
-    <div class="sumline" id="invSumLine">투자 합계 (10억을 맞추세요)<b id="invSum">0억</b></div>
-    <button class="big gold" id="btnInv2">투자 제출하기</button>
-    <p class="desc" id="inv2Done" style="margin-top:10px"></p>
-  </section>
-
-  <!-- 정리: 요점 카드 3장 -->
-  <section id="vWrap" class="card hidden">
-    <h2>정리 — 지구는 이미 46억 년째 운영 중</h2>
-    <p class="desc">선생님 설명을 따라, 요점 카드 3장을 넘기며 확인하세요. (완자 123쪽 — 시험에 나옵니다)</p>
-    <div id="wrapBox"></div>
-  </section>
-
-  <!-- 생각 한 문장 -->
+  <!-- 종료: 생각 한 문장 + 다음차시 2문항 -->
   <section id="vEnd" class="card hidden">
-    <h2>생각 한 문장 — 만약 무역풍이 파업한다면?</h2>
-    <p class="desc">오늘의 마지막 질문 — <b>낙찰 노선의 무역풍 구간이 파업(약화)한다면, 바다와 날씨에는 무슨 일이 생길까요?</b><br>오늘 완성한 노선도를 떠올리며 1~2문장으로 적어 보세요. 이 질문이 다음 수업(배달 사고 — 엘니뇨와 사막화)의 출발점이 됩니다!</p>
-    <textarea id="inOpinion" maxlength="160" style="min-height:110px" placeholder="예) 서쪽으로 가던 따뜻한 바닷물이 멈추면 …"></textarea>
-    <button class="big" id="btnOpinion">제출하기</button>
-    <p class="desc" id="opinionDone" style="margin-top:10px"></p>
+    <h2>정리 — 오늘의 생각, 그리고 다음 질문</h2>
+    <p class="desc">예측은 틀려도 괜찮아요. <b>근거로 고치는 것</b>이 과학입니다. 아래 세 칸을 채워 제출하면 오늘 수업이 마무리됩니다.</p>
+
+    <label>💭 오늘의 한 문장 — 가장 크게 바뀐 내 생각은?</label>
+    <textarea id="inOpinion" maxlength="160" placeholder="예) 바람이 바닷물까지 끌고 간다는 걸 처음 알았다 …"></textarea>
+
+    <label>🌊 다음 질문 ① — 무역풍이 약해지면?</label>
+    <p class="desc" style="margin:2px 0 6px">무역풍이 약해지면 <b>따뜻한 물과 비구름</b>은 어디로 몰릴까요? 태평양 <b>동쪽·서쪽</b>의 날씨는 어떻게 달라질지 예측해 보세요.</p>
+    <textarea id="inEN" maxlength="160" placeholder="예) 서쪽으로 가던 따뜻한 물이 동쪽에 머물러 …"></textarea>
+
+    <label>🏜 다음 질문 ② — 건조대가 넓어지면?</label>
+    <p class="desc" style="margin:2px 0 6px">위도 30°는 공기가 가라앉아 늘 건조합니다(세계의 사막). 이 <b>건조대가 더 넓어지면</b> 주변의 땅과 사람에게 무슨 일이 생길지, 근거와 함께 예측해 보세요.</p>
+    <textarea id="inSD" maxlength="160" placeholder="예) 사막 가장자리의 농경지가 메말라 …"></textarea>
+
+    <button class="big gold" id="btnEnd">제출하기</button>
+    <p class="desc" id="endDone" style="margin-top:10px"></p>
   </section>
 
 </main>
@@ -285,7 +224,7 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, onSnapshot, collection, serverTimestamp }
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -451,17 +390,17 @@ const CARDS = [
   { emoji:"✈️", title:"수상한 비행시간",
     q:"거의 같은 길을 왕복하는데, 인천→LA는 약 10시간 30분 · LA→인천은 약 13시간. 이유로 가장 그럴듯한 것은?",
     opts:["지구가 둥글어서 돌아올 때 거리가 더 멀다","하늘 높은 곳에 서쪽→동쪽으로 부는 강한 바람이 있다","돌아올 때는 연료를 가득 실어 비행기가 무겁다"], ans:1,
-    exp:"중위도 상공에는 서→동으로 부는 강한 바람이 늘 불어요. 갈 때(동쪽행)는 뒤에서 밀어주는 순풍, 올 때는 맞바람!",
+    exp:"중위도 상공에는 서→동으로 부는 강한 바람이 늘 불어요. 갈 때(동쪽행)는 뒤에서 밀어주는 순풍, 올 때는 맞바람! — 중위도의 편서풍.",
     svg:svgC2 },
   { emoji:"⛵", title:"콜럼버스의 지혜",
     q:"대항해시대 범선 선원들이 갈 때는 저위도, 올 때는 고위도 항로를 고집한 까닭은?",
     opts:["위도대마다 '늘 부는 바람'의 방향이 서로 다르기 때문","저위도 바다가 더 잔잔해서 가기 편했기 때문","고위도 항로에서 보급품을 구하기 쉬웠기 때문"], ans:0,
-    exp:"저위도에서는 동→서로, 중위도에서는 서→동으로 부는 바람이 1년 내내 꾸준히 붑니다. 돛단배는 '바람의 지도'를 알아야 바다를 건넜어요.",
+    exp:"저위도에서는 동→서(무역풍), 중위도에서는 서→동(편서풍)으로 바람이 1년 내내 꾸준히 붑니다. 돛단배는 '바람의 지도'를 알아야 바다를 건넜어요.",
     svg:svgC3 },
   { emoji:"🏜️", title:"사막의 주소",
     q:"사하라·아라비아·오스트레일리아… 세계의 큰 사막이 몰려 있는 곳은?",
     opts:["적도(위도 0°) 부근","위도 30° 부근","위도 60° 부근"], ans:1,
-    exp:"큰 사막들의 주소는 위도 30° 부근 — 이 위도에서 비가 잘 내리지 않는 특별한 일이 일어나고 있다는 단서입니다.",
+    exp:"큰 사막들의 주소는 위도 30° 부근 — 이곳은 공기가 가라앉아(하강) 비가 잘 내리지 않습니다. 위도별 에너지 불균형이 만든 자리예요.",
     svg:svgC4 },
   { emoji:"🌡️", title:"휘어진 등수온선",
     q:"등수온선이 대양의 서쪽에서는 고위도 쪽으로, 동쪽에서는 저위도 쪽으로 휘어 있다. 이것이 말해 주는 것은?",
@@ -471,7 +410,7 @@ const CARDS = [
   { emoji:"🇬🇧", title:"런던의 비밀",
     q:"런던(1월 약 +5℃)이 비슷한 위도의 캐나다 동부 해안(약 −15℃)보다 훨씬 따뜻한 이유는?",
     opts:["런던은 대도시라 건물의 열기 때문에","따뜻한 바닷물이 유럽 앞바다로 흘러들기 때문에","런던이 사실은 훨씬 남쪽에 있기 때문에"], ans:1,
-    exp:"저위도에서 데워진 바닷물이 대서양을 건너 유럽 앞바다까지 흘러갑니다. 바닷물은 거대한 '보온 배달부'!",
+    exp:"저위도에서 데워진 바닷물이 대서양을 건너 유럽 앞바다까지 흘러갑니다. 바닷물은 거대한 '보온 배달부' — 에너지를 수송한다는 뜻이에요.",
     svg:svgC6 },
 ];
 
@@ -522,47 +461,28 @@ function routeSVG(b, name){
   }
   return `<svg viewBox="0 0 820 470" xmlns="http://www.w3.org/2000/svg">
     <rect width="820" height="470" fill="#fff"/>
-    <text x="410" y="32" text-anchor="middle" font-size="20" font-weight="900" fill="#092f66">🚚 ${esc(name) || esc(b.company) || "회사 이름 미정"} — 배달 노선도</text>
+    <text x="410" y="32" text-anchor="middle" font-size="20" font-weight="900" fill="#092f66">🚚 ${esc(name) || "나의 배달 노선도"}</text>
     <text x="410" y="54" text-anchor="middle" font-size="13" font-weight="700" fill="#c8920a">화살표 = 바람과 바닷물이 흘러가는 방향</text>
     <text x="214" y="76" text-anchor="middle" font-size="16" font-weight="900" fill="#092f66">🌬 지상 노선 — 북반구의 바람</text>
     <text x="605" y="76" text-anchor="middle" font-size="16" font-weight="900" fill="#092f66">🌊 해상 노선 — 북태평양</text>
     ${g}
-    <text x="410" y="458" text-anchor="middle" font-size="13" font-weight="700" fill="#8a93a1">지구 배달 주식회사 — 입찰 노선도</text>
+    <text x="410" y="458" text-anchor="middle" font-size="13" font-weight="700" fill="#8a93a1">지구 배달 주식회사 — 예측 노선도</text>
   </svg>`;
 }
 
-/* ── 정리 요점 카드 3장 (완자 123쪽) ── */
-const WRAPS = [
-  { t:"① 대기 대순환 — 하늘의 노선", items:[
-    "원인: 위도에 따른 <b>에너지 불균형</b> + <b>지구의 자전</b>",
-    "지구 전체 규모의 순환 — <b>3개의 순환</b>이 나타난다",
-    "<b>무역풍</b> — 적도~위도 30° (저위도)",
-    "<b>편서풍</b> — 위도 30°~60° (중위도)",
-    "<b>극동풍</b> — 위도 60°~극 (고위도)" ]},
-  { t:"② 해수의 표층 순환 — 바다의 노선", items:[
-    "원인: <b>대기 대순환의 바람</b>이 수면 위를 지속적으로 불어서",
-    "북반구와 남반구에서 <b>거의 대칭</b>으로 순환",
-    "북태평양(시계 방향): <b>북적도 해류 → 쿠로시오 해류 → 북태평양 해류 → 캘리포니아 해류</b>",
-    "난류(붉은색) = 따뜻한 물 · 한류(푸른색) = 찬 물" ]},
-  { t:"③ 결론 — 왜 '배달'인가", items:[
-    "대기와 해수의 순환은 <b>저위도의 남는 에너지를 고위도로 수송</b>",
-    "<b>위도 38° 부근</b>에서 에너지 이동이 가장 활발",
-    "그래서 적도는 계속 뜨거워지지 않고, 극은 계속 차가워지지 않는다" ]},
-];
-
 const $ = id => document.getElementById(id);
-const views = ["vJoin","vLobby","vScout","vDesign","vInv1","vPT","vInv2","vWrap","vEnd"];
+const views = ["vJoin","vLobby","vPred1","vScout","vPred2","vLook","vEnd"];
 function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v));
-  document.body.classList.toggle("wide", v==="vScout" || v==="vDesign" || v==="vPT" || v==="vInv1"); }
+  document.body.classList.toggle("wide", v==="vScout" || v==="vPred1" || v==="vPred2" || v==="vLook"); }
 
 let uid = null, meKey = "occ_me";
-let me = null;            // {name, team, leader}
+let me = null;            // {name, team}
 let myDoc = {};           // 서버에 저장된 내 데이터
 let state = {};           // 진행 상태 (선생님 콘솔이 갱신)
 let team = 0, joined = false, inited = false;
 let stuUnsub = null;
 const norm = s => (s||"").replace(/\s+/g,"");                     // 공백 제거(앞뒤·내부)
-const stuId = (name, tm) => "stu_" + norm(name) + "_" + tm;        // 이름+회사(모둠) 기반 안정 식별자(진실원천)
+const stuId = (name, tm) => "stu_" + norm(name) + "_" + tm;        // 이름+분임 기반 안정 식별자(진실원천)
 
 /* 끊김 시 지수 백오프 자동 재구독(2→4→8…최대 30초, 성공 시 리셋) */
 let retrying = 0;
@@ -592,20 +512,18 @@ function subMe(){         // 내 문서 구독 — uid가 바뀌면 다시 건�
 const tg = $("teamGrid");
 for(let i=1;i<=5;i++){
   const b = document.createElement("button");
-  b.textContent = i + "회사";
+  b.textContent = i + "분임";
   b.onclick = () => { team = i; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===i-1)); };
   tg.appendChild(b);
 }
-let leaderSel = false;
-$("btnLeader").onclick = () => { leaderSel = !leaderSel; $("btnLeader").classList.toggle("on", leaderSel); };
 
 $("btnJoin").onclick = async () => {
   if(!inited){ alert("서버에 연결 중입니다. 잠시 후 다시 눌러 주세요."); return; }
   const name = $("inName").value.trim();
   if(!name){ alert("이름을 입력하세요"); return; }
-  if(!team){ alert("회사(모둠)를 선택하세요"); return; }
+  if(!team){ alert("분임(모둠)을 선택하세요"); return; }
   const id = stuId(name, team);
-  // 동명이인/중복 확인 — 같은 이름+회사가 이미 있고 최근 활동 중이면 본인 여부 확인
+  // 동명이인/중복 확인 — 같은 이름+분임이 이미 있고 최근 활동 중이면 본인 여부 확인
   const sameAsMe = me && norm(me.name) === norm(name) && me.team === team;
   if(!sameAsMe){
     try{
@@ -614,20 +532,20 @@ $("btnJoin").onclick = async () => {
         const d = ex.data();
         const t = (d.joinedAt && d.joinedAt.toMillis) ? d.joinedAt.toMillis() : 0;
         if(d.name && t && (Date.now() - t < 40*60*1000)){
-          const ok = confirm(`이미 같은 반·회사에 '${d.name}' 학생이 있어요.\n\n· 본인이 다시 들어온 거라면 [확인]을 눌러 이어서 입장하세요.\n· 다른 사람이라면 [취소]를 누르고 이름을 다르게(예: 이름 뒤에 번호) 입력해 주세요.`);
+          const ok = confirm(`이미 같은 반·분임에 '${d.name}' 학생이 있어요.\n\n· 본인이 다시 들어온 거라면 [확인]을 눌러 이어서 입장하세요.\n· 다른 사람이라면 [취소]를 누르고 이름을 다르게(예: 이름 뒤에 번호) 입력해 주세요.`);
           if(!ok) return;
         }
       }
     }catch(e){}
   }
   uid = id;
-  me = {name, team, leader: leaderSel};
+  me = {name, team};
   localStorage.setItem(meKey, JSON.stringify(me));
   subMe();
   try{
-    await setDoc(doc(db, COL, uid), { name, team, leader: leaderSel, joinedAt: serverTimestamp() }, {merge:true});
+    await setDoc(doc(db, COL, uid), { name, team, joinedAt: serverTimestamp() }, {merge:true});
     joined = true;
-    $("meLine").innerHTML = `호남고등학교 · <b>${team}회사 ${leaderSel ? "팀장" : "조사관"} ${name}</b>`;
+    $("meLine").innerHTML = `호남고등학교 · <b>${team}분임 분석가 ${name}</b>`;
     render();
   }catch(e){ alert("접속 오류: 선생님께 알려주세요\n" + e.message); }
 };
@@ -646,10 +564,9 @@ function init(cls){
   meKey = K + "me";
   me = JSON.parse(localStorage.getItem(meKey) || "null");
   if(me && me.name && me.team){
-    uid = stuId(me.name, me.team);               // 저장소가 날아가도 같은 이름+회사면 같은 문서로 복귀
+    uid = stuId(me.name, me.team);               // 저장소가 날아가도 같은 이름+분임이면 같은 문서로 복귀
     $("inName").value = me.name; team = me.team;
     [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1));
-    leaderSel = !!me.leader; $("btnLeader").classList.toggle("on", leaderSel);
   }
 
   watch(doc(db, COL, "state"), snap => {
@@ -670,10 +587,10 @@ $("btnRejoin").onclick = () => {
   if(stuUnsub){ stuUnsub(); stuUnsub = null; }
   uid = null;
   localStorage.removeItem(meKey);
-  me = null; myDoc = {}; joined = false; team = 0; leaderSel = false;
+  me = null; myDoc = {}; joined = false; team = 0;
+  p1Init = p2Init = false;
   $("inName").value = "";
   [...tg.children].forEach(c => c.classList.remove("on"));
-  $("btnLeader").classList.remove("on");
   $("meLine").textContent = "호남고등학교";
   show("vJoin");
 };
@@ -688,267 +605,143 @@ async function save(data){
 function render(){
   if(!joined && !(me && myDoc.name)){ show("vJoin"); return; }
   if(me && myDoc.name && !joined){ joined = true;
-    $("meLine").innerHTML = `호남고등학교 · <b>${me.team}회사 ${me.leader ? "팀장" : "조사관"} ${me.name}</b>`; }
+    $("meLine").innerHTML = `호남고등학교 · <b>${me.team}분임 분석가 ${me.name}</b>`; }
 
   const ph = state.phase || "lobby";
-  if(ph === "lobby"){ renderLobby(); }
+  if(ph === "predinit"){ renderPred1(); }
   else if(ph === "scout"){ renderScout(); }
-  else if(ph === "design"){ renderDesign(); }
-  else if(ph === "invest1"){ renderInv1(); }
-  else if(ph === "pt"){ renderPT(); }
-  else if(ph === "invest2"){ renderInv2(); }
-  else if(ph === "wrap"){ renderWrap(); }
+  else if(ph === "predfinal"){ renderPred2(); }
+  else if(ph === "share" || ph === "wrap"){ renderLook(ph); }
   else if(ph === "end"){ renderEnd(); }
+  else { renderLobby(); }
 }
 
-/* 대기(채용 완료) */
+/* 대기(입장 완료) */
 function renderLobby(){
   show("vLobby");
-  if(me) $("lobbyMsg").textContent = `${me.name}님, ${me.team}회사 ${me.leader ? "팀장" : "조사관"}으로 채용되었습니다!`;
+  if(me) $("lobbyMsg").textContent = `${me.name}님, ${me.team}분임 분석가로 입장했습니다!`;
 }
 
-/* ── 1단계: 현장 조사 수첩 ── */
-let viewCard = 0;   // 1~6 = 단서 카드, 7 = 완료 배지, 0 = 자동(첫 미완료 카드)
-const cardsOf = () => myDoc.cards || {};
-function firstUndone(){ const c = cardsOf(); for(let i=1;i<=6;i++) if(c["c"+i]===undefined) return i; return 7; }
+/* ── 노선 방향 선택지 ── */
+const WINDS = [["SW","↙ 남서쪽으로"],["NE","↗ 북동쪽으로"],["E","→ 동쪽으로"],["W","← 서쪽으로"]];
+const GYRES = [["cw","⟳ 시계 방향"],["ccw","⟲ 반시계 방향"]];
+
+/* ── 1차 예측 (predInit) ── */
+let p1 = { w1:"", w2:"", w3:"", gyre:"" }, p1Built = false, p1Init = false;
+function buildP1(){
+  if(p1Built) return;
+  [["p1_w1","w1"],["p1_w2","w2"],["p1_w3","w3"]].forEach(([rid,k]) => {
+    const row = $(rid);
+    WINDS.forEach(([v,lb]) => { const b=document.createElement("button"); b.type="button"; b.textContent=lb; b.dataset.v=v;
+      b.onclick = () => { p1[k]=v; syncP1(); save({predInit:{...p1}}); }; row.appendChild(b); });
+  });
+  GYRES.forEach(([v,lb]) => { const b=document.createElement("button"); b.type="button"; b.textContent=lb; b.dataset.v=v;
+    b.onclick = () => { p1.gyre=v; syncP1(); save({predInit:{...p1}}); }; $("p1_gyre").appendChild(b); });
+  p1Built = true;
+}
+function syncP1(){
+  [["p1_w1","w1"],["p1_w2","w2"],["p1_w3","w3"],["p1_gyre","gyre"]].forEach(([rid,k]) =>
+    [...$(rid).children].forEach(btn => btn.classList.toggle("on", btn.dataset.v === p1[k])));
+  $("p1Fig").innerHTML = routeSVG(p1, (me?me.name:"") + " 1차");
+  const n = ["w1","w2","w3","gyre"].filter(k=>p1[k]).length;
+  $("p1Saved").textContent = n===4 ? "✓ 1차 예측 저장됨 — 앞 화면 분포에 반영됐어요" : `고르면 자동 저장됩니다 (${n}/4)`;
+}
+function renderPred1(){
+  show("vPred1"); buildP1();
+  if(!p1Init){ const d = myDoc.predInit || {}; p1 = { w1:d.w1||"", w2:d.w2||"", w3:d.w3||"", gyre:d.gyre||"" }; p1Init = true; }
+  syncP1();
+}
+
+/* ── 단서 같이 읽기 (보기 중심 — 강제 풀이 없음) ── */
+let viewCard = 1;
 function renderScout(){
   show("vScout");
-  const c = cardsOf();
-  if(viewCard === 0) viewCard = firstUndone();
-  if(viewCard === 7 && firstUndone() !== 7) viewCard = firstUndone();
   const box = $("scoutBox");
-  const dots = `<div class="dots">${[1,2,3,4,5,6].map(i =>
-    `<span class="${c["c"+i]!==undefined?"done":""} ${viewCard===i?"cur":""}">${c["c"+i]!==undefined?"✓":i}</span>`).join("")}</div>`;
-  if(viewCard === 7){
-    box.innerHTML = dots + `
-      <div class="badge"><div class="bg">🎖️</div>
-        <h3>현장 조사 완료!</h3>
-        <p>단서 6개를 모두 수집했습니다.<br>곧 시작될 <b>노선 설계 회의</b>에서 이 단서들이 근거가 됩니다.</p>
-        <button class="big" id="scReview" style="max-width:220px;margin:18px auto 0">🔎 단서 다시 보기</button>
-      </div>`;
-    $("scReview").onclick = () => { viewCard = 1; renderScout(); };
-    return;
-  }
-  const i = viewCard, K = CARDS[i-1], sel = c["c"+i];
-  const answered = sel !== undefined;
+  const i = viewCard, K = CARDS[i-1];
+  const dots = `<div class="dots">${[1,2,3,4,5,6].map(n =>
+    `<span class="${viewCard===n?"cur":""}">${n}</span>`).join("")}</div>`;
   box.innerHTML = dots + `
     <h2 style="font-size:16px;font-weight:900;color:var(--navy2)">단서 ${i}/6 — ${K.emoji} ${K.title}</h2>
     <div class="chartwrap" style="margin-top:8px">${K.svg()}</div>
-    <p class="qline">✅ 체크 질문 — ${K.q}</p>
+    <p class="qline">🔍 ${K.q}</p>
     <div class="optgrid">${K.opts.map((o,j) =>
-      `<button data-j="${j}" class="${answered && sel===j ? "on" : ""}" ${answered ? "disabled" : ""}>${"①②③"[j]} ${o}</button>`).join("")}
+      `<div class="opt">${"①②③"[j]} ${o}</div>`).join("")}
     </div>
-    ${answered ? `<div class="expbox">📝 <b>기록 완료</b> — ${K.exp}</div>` : ""}
+    <div class="expbox">📝 <b>핵심</b> — ${K.exp}</div>
     <div class="navrow">
-      <button id="scPrev" ${i===1 ? "disabled" : ""}>◀ 이전</button>
-      <button id="scNext" class="goldbtn" ${answered ? "" : "disabled"}>${i===6 ? "조사 마치기 ▶" : "다음 단서 ▶"}</button>
+      <button id="scPrev" ${i===1 ? "disabled" : ""}>◀ 이전 단서</button>
+      <button id="scNext" class="goldbtn" ${i===6 ? "disabled" : ""}>다음 단서 ▶</button>
     </div>`;
-  box.querySelectorAll(".optgrid button").forEach(b => b.onclick = () => { save({cards:{["c"+i]: +b.dataset.j}}); });
   $("scPrev").onclick = () => { viewCard = Math.max(1, viewCard-1); renderScout(); };
-  $("scNext").onclick = () => { viewCard = (viewCard===6) ? 7 : viewCard+1; renderScout(); };
+  $("scNext").onclick = () => { viewCard = Math.min(6, viewCard+1); renderScout(); };
 }
 
-/* ── 2단계: 노선 설계 (팀장 보드 board_<회사>) ── */
-let boardDoc = {}, boardUnsub = null, boardInit = false, boardSaveT = null;
-const isLeader = () => !!(me && me.leader);
-let sel = { w1:"", w2:"", w3:"", gyre:"", evid:0 };   // 팀장 로컬 선택 상태 (텍스트는 input에서 직접)
-
-const DIRL = [["SW","↙ 남서쪽으로"],["NE","↗ 북동쪽으로"],["E","→ 동쪽으로"],["W","← 서쪽으로"]];
-[["wRow1","w1"],["wRow2","w2"],["wRow3","w3"]].forEach(([rid,k]) => {
-  const row = $(rid);
-  DIRL.forEach(([v,lb]) => {
-    const b = document.createElement("button"); b.type = "button"; b.textContent = lb; b.dataset.v = v;
-    b.onclick = () => { sel[k] = v; syncDesignUI(); boardSave(); };
-    row.appendChild(b);
+/* ── 2차 예측 (predFinal) ── */
+let p2 = { w1:"", w2:"", w3:"", gyre:"", evid:0, reason:"" }, p2Built = false, p2Init = false, p2SaveT = null;
+function buildP2(){
+  if(p2Built) return;
+  [["p2_w1","w1"],["p2_w2","w2"],["p2_w3","w3"]].forEach(([rid,k]) => {
+    const row = $(rid);
+    WINDS.forEach(([v,lb]) => { const b=document.createElement("button"); b.type="button"; b.textContent=lb; b.dataset.v=v;
+      b.onclick = () => { p2[k]=v; syncP2(); saveP2(); }; row.appendChild(b); });
   });
-});
-[["cw","⟳ 시계 방향"],["ccw","⟲ 반시계 방향"]].forEach(([v,lb]) => {
-  const b = document.createElement("button"); b.type = "button"; b.textContent = lb; b.dataset.v = v;
-  b.onclick = () => { sel.gyre = v; syncDesignUI(); boardSave(); };
-  $("gyreRow").appendChild(b);
-});
-CARDS.forEach((K,i) => {
-  const b = document.createElement("button"); b.type = "button"; b.textContent = `${i+1} ${K.emoji}`; b.dataset.v = i+1;
-  b.onclick = () => { sel.evid = i+1; syncDesignUI(); boardSave(); };
-  $("evidRow").appendChild(b);
-});
-["bd_company","bd_sales"].forEach(id => { $(id).oninput = () => {
-  syncDesignUI();
-  clearTimeout(boardSaveT); boardSaveT = setTimeout(boardSave, 600); }; });
-
-function curBoard(){   // 팀장 화면 기준 현재 입력값
-  return { w1:sel.w1, w2:sel.w2, w3:sel.w3, gyre:sel.gyre,
-    company:$("bd_company").value.trim(), sales:$("bd_sales").value.trim(), evid:+sel.evid||0 };
+  GYRES.forEach(([v,lb]) => { const b=document.createElement("button"); b.type="button"; b.textContent=lb; b.dataset.v=v;
+    b.onclick = () => { p2.gyre=v; syncP2(); saveP2(); }; $("p2_gyre").appendChild(b); });
+  CARDS.forEach((K,i) => { const b=document.createElement("button"); b.type="button"; b.textContent=`${i+1} ${K.emoji}`; b.dataset.v=i+1;
+    b.onclick = () => { p2.evid = i+1; syncP2(); saveP2(); }; $("p2_evid").appendChild(b); });
+  $("p2_reason").oninput = () => { p2.reason = $("p2_reason").value; clearTimeout(p2SaveT); p2SaveT = setTimeout(saveP2, 600); };
+  p2Built = true;
 }
-function syncDesignUI(){
-  [["wRow1","w1"],["wRow2","w2"],["wRow3","w3"]].forEach(([rid,k]) => {
-    [...$(rid).children].forEach(btn => btn.classList.toggle("on", btn.dataset.v === sel[k]));
-  });
-  [...$("gyreRow").children].forEach(btn => btn.classList.toggle("on", btn.dataset.v === sel.gyre));
-  [...$("evidRow").children].forEach(btn => btn.classList.toggle("on", +btn.dataset.v === +sel.evid));
-  $("dsFig").innerHTML = routeSVG(curBoard());
+function saveP2(){ save({predFinal:{...p2, reason:$("p2_reason").value.trim()}}); $("p2Saved").textContent = "✓ 2차 예측 저장됨 — 앞 화면과 연동 중"; }
+function syncP2(){
+  [["p2_w1","w1"],["p2_w2","w2"],["p2_w3","w3"],["p2_gyre","gyre"]].forEach(([rid,k]) =>
+    [...$(rid).children].forEach(btn => btn.classList.toggle("on", btn.dataset.v === p2[k])));
+  [...$("p2_evid").children].forEach(btn => btn.classList.toggle("on", +btn.dataset.v === +p2.evid));
+  $("p2Fig").innerHTML = routeSVG(p2, (me?me.name:"") + " 2차");
 }
-function boardSave(){
-  if(!isLeader() || !me) return;
-  const data = { team:me.team, leaderName:me.name, ts:Date.now(), ...curBoard() };
-  setDoc(doc(db, COL, "board_"+me.team), data, {merge:true})
-    .then(() => { $("dsSaved").textContent = "✓ 실시간 저장됨 — 선생님 화면과 연동 중"; })
-    .catch(e => { $("dsSaved").textContent = "저장 오류: " + e.message; });
-}
-function boardLoad(){
-  ["w1","w2","w3","gyre"].forEach(k => { if(boardDoc[k]) sel[k] = boardDoc[k]; });
-  if(boardDoc.evid) sel.evid = +boardDoc.evid;
-  if(boardDoc.company !== undefined && boardDoc.company !== "") $("bd_company").value = boardDoc.company;
-  if(boardDoc.sales !== undefined && boardDoc.sales !== "") $("bd_sales").value = boardDoc.sales;
-  syncDesignUI();
-}
-function subBoard(){
-  if(boardUnsub || !me || !me.team) return;
-  boardUnsub = watch(doc(db, COL, "board_"+me.team), s => {
-    boardDoc = s.data() || {};
-    if(isLeader() && !boardInit){ boardInit = true; boardLoad(); }
-    const ph = state.phase || "";
-    if(ph === "design") renderDesign(); else if(ph === "pt") renderPT();
-  });
-}
-function claim(){
-  me.leader = true; localStorage.setItem(meKey, JSON.stringify(me));
-  save({leader:true});
-  boardInit = true; boardLoad();
-  render();
-}
-$("btnClaimDs").onclick = claim;
-
-const setView = (id, val) => {
-  const el = $(id), has = val !== undefined && String(val).trim() !== "";
-  el.textContent = has ? val : el.id==="dvEvid" ? "아직 선택 전…" : "아직 입력 전…";
-  el.classList.toggle("empty", !has);
-};
-function renderDesign(){
-  show("vDesign"); subBoard();
-  const lead = isLeader();
-  $("dsClaim").classList.toggle("hidden", lead);
-  $("dsEdit").classList.toggle("hidden", !lead);
-  $("dsView").classList.toggle("hidden", lead);
-  if(lead){ syncDesignUI(); }
-  else{
-    $("dsFig").innerHTML = routeSVG(boardDoc);
-    setView("dvCompany", boardDoc.company);
-    setView("dvSales", boardDoc.sales);
-    setView("dvEvid", boardDoc.evid ? `단서 ${boardDoc.evid} — ${CARDS[boardDoc.evid-1].emoji} ${CARDS[boardDoc.evid-1].title}` : "");
+function renderPred2(){
+  show("vPred2"); buildP2();
+  if(!p2Init){
+    const f = myDoc.predFinal, s = f || myDoc.predInit || {};   // 2차가 있으면 이어서, 없으면 1차에서 출발
+    p2 = { w1:s.w1||"", w2:s.w2||"", w3:s.w3||"", gyre:s.gyre||"", evid:(f&&f.evid)||0, reason:(f&&f.reason)||"" };
+    $("p2_reason").value = p2.reason; p2Init = true;
   }
+  syncP2();
 }
 
-/* ── 1차 서류 심사: 블라인드 가투자 (원픽) ── */
-function renderInv1(){
-  show("vInv1");
-  const box = $("inv1Box");
-  const cand = state.cand || [], routes = state.routes || {};
-  if(cand.length !== 5){ box.innerHTML = '<p class="desc">후보 명단을 준비하는 중입니다…</p>'; return; }
-  const myPick = myDoc.inv1;   // "A"~"E"
-  box.innerHTML = cand.map((t,i) => {
-    const L = "ABCDE"[i], r = routes[t] || {};
-    return `
-    <div class="candcard ${myPick===L ? "on" : ""}">
-      <h3>🔒 후보 ${L}</h3>
-      <div class="chartwrap" style="margin:0 0 4px">${routeSVG(r, `후보 ${L}`)}</div>
-      <div class="sales">${r.sales ? "📣 " + esc(r.sales) : "세일즈 문장 없음"}</div>
-      <button class="pick" data-l="${L}" data-t="${t}" ${myPick ? "disabled" : ""}>${myPick===L ? "✓ 가투자 완료 (봉인됨)" : `후보 ${L}에 가투자`}</button>
-    </div>`;
-  }).join("") + (myPick ? '<p class="desc" style="text-align:center">🔐 가투자가 봉인되었습니다 — 결과는 낙찰 발표 때 공개!</p>' : "");
-  box.querySelectorAll(".pick").forEach(b => b.onclick = () => {
-    if(myDoc.inv1) return;
-    save({ inv1: b.dataset.l, inv1Team: +b.dataset.t, inv1Ts: Date.now() });
-  });
-}
-
-/* ── 입찰 PT 관람 ── */
-function renderPT(){
-  show("vPT"); subBoard();
-  $("ptFig").innerHTML = routeSVG(boardDoc);
-  const el = $("ptSales"), has = boardDoc.sales && String(boardDoc.sales).trim() !== "";
-  el.textContent = has ? boardDoc.sales : "아직 입력 전…";
-  el.classList.toggle("empty", !has);
-}
-
-/* ── 2차 본 심사: 배달코인 10억 분산 투자 ── */
-let inv2 = null;   // {회사번호: 억} — 자기 회사 제외
-function inv2Targets(){ return [1,2,3,4,5].filter(t => t !== (me && me.team)); }
-function inv2Sum(){ return inv2Targets().reduce((a,t) => a + (+inv2[t]||0), 0); }
-function renderInv2(){
-  show("vInv2");
-  const names = state.companies || {};
-  const done = !!myDoc.inv2;
-  if(!inv2){ inv2 = {}; inv2Targets().forEach(t => inv2[t] = 0); }
-  const box = $("inv2Box");
-  if(done){
-    box.innerHTML = inv2Targets().map(t => `
-      <div class="invrow"><div class="nm">🚚 ${esc(names[t] || t + "회사")}</div>
-        <div class="amt">${+(myDoc.inv2[t]||0)}억</div></div>`).join("");
-    $("invSumLine").className = "sumline ok";
-    $("invSum").textContent = "10억";
-    $("btnInv2").disabled = true;
-    $("btnInv2").textContent = "투자 제출 완료";
-    $("inv2Done").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 선생님 화면의 실시간 유치 레이스를 지켜보세요 📈";
-    return;
+/* ── 교사 진행 단계 — 앞 화면 보기 ── */
+function renderLook(ph){
+  show("vLook");
+  const final = myDoc.predFinal || myDoc.predInit || {};
+  $("lookFig").innerHTML = routeSVG(final, (me?me.name:"") + " 최종");
+  if(ph === "share"){
+    $("lookH").textContent = "공유 — 친구의 생각을 들어 봅시다";
+    $("lookMsg").innerHTML = "선생님이 몇 명을 지목해 노선과 <b>고친 이유</b>를 묻습니다. 내 노선도와 비교하며 들어 보세요.";
+  }else{
+    $("lookH").textContent = "정리 — 예측 vs 실제";
+    $("lookMsg").innerHTML = "앞 화면에서 <b>실제 대기 대순환과 표층 해류</b>를 확인하고, 내 예측과 맞춰 봅니다.";
   }
-  box.innerHTML = inv2Targets().map(t => `
-    <div class="invrow">
-      <div class="nm">🚚 ${esc(names[t] || t + "회사")}</div>
-      <button data-t="${t}" data-d="-1" ${(+inv2[t]||0) <= 0 ? "disabled" : ""}>−</button>
-      <div class="amt">${+inv2[t]||0}억</div>
-      <button data-t="${t}" data-d="1" ${inv2Sum() >= 10 ? "disabled" : ""}>＋</button>
-    </div>`).join("");
-  const sum = inv2Sum();
-  $("invSumLine").className = "sumline " + (sum === 10 ? "ok" : "no");
-  $("invSum").textContent = sum + "억";
-  $("btnInv2").disabled = sum !== 10;
-  $("btnInv2").textContent = sum === 10 ? "투자 제출하기" : `투자 제출하기 (${10-sum}억 남음)`;
-  $("inv2Done").textContent = "";
-  box.querySelectorAll("button").forEach(b => b.onclick = () => {
-    const t = +b.dataset.t, d = +b.dataset.d;
-    inv2[t] = Math.max(0, Math.min(10, (+inv2[t]||0) + d));
-    renderInv2();
-  });
-}
-$("btnInv2").onclick = () => {
-  if(myDoc.inv2) return;
-  if(inv2Sum() !== 10){ alert("합계 10억을 정확히 맞춰 주세요!"); return; }
-  const data = {};
-  [1,2,3,4,5].forEach(t => data[t] = (me && t === me.team) ? 0 : (+inv2[t]||0));
-  save({ inv2: data, inv2Ts: Date.now() });
-};
-
-/* ── 정리: 요점 카드 3장 ── */
-let wrapIdx = 0;
-function renderWrap(){
-  show("vWrap");
-  const K = WRAPS[wrapIdx];
-  $("wrapBox").innerHTML = `
-    <div class="wrapcard">
-      <h3>${K.t}</h3>
-      <ul>${K.items.map(it => `<li>${it}</li>`).join("")}</ul>
-    </div>
-    <div class="navrow">
-      <button id="wrPrev" ${wrapIdx===0 ? "disabled" : ""}>◀ 이전</button>
-      <button disabled style="flex:.6;opacity:1;color:var(--navy);font-weight:900">${wrapIdx+1} / 3</button>
-      <button id="wrNext" class="goldbtn" ${wrapIdx===2 ? "disabled" : ""}>다음 ▶</button>
-    </div>`;
-  $("wrPrev").onclick = () => { wrapIdx = Math.max(0, wrapIdx-1); renderWrap(); };
-  $("wrNext").onclick = () => { wrapIdx = Math.min(2, wrapIdx+1); renderWrap(); };
+  const ev = +final.evid || 0;
+  if(final.reason && final.reason.trim()){
+    $("lookEvid").classList.remove("hidden");
+    $("lookEvid").innerHTML = `✍ <b>내가 고친 이유</b> — ${esc(final.reason)}${ev?` <span style="color:var(--gold-d)">(결정 단서 ${ev} ${CARDS[ev-1].emoji})</span>`:""}`;
+  }else{ $("lookEvid").classList.add("hidden"); }
 }
 
-/* ── 생각 한 문장 ── */
-$("btnOpinion").onclick = () => {
-  const t = $("inOpinion").value.trim();
-  if(!t){ alert("한 문장만 적어 주세요!"); return; }
-  save({ opinion: t, opinionTs: Date.now() });
-  $("opinionDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다음 시간, '배달 사고' 현장에서 확인합니다 🌊";
+/* ── 종료: 생각 한 문장 + 다음차시 2문항 ── */
+$("btnEnd").onclick = () => {
+  const op = $("inOpinion").value.trim(), en = $("inEN").value.trim(), sd = $("inSD").value.trim();
+  if(!op && !en && !sd){ alert("한 칸 이상 적어 주세요!"); return; }
+  save({ opinion: op, predEN: en, predSD: sd, endTs: Date.now() });
+  $("endDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다음 시간 『배달 사고 — 엘니뇨와 사막화』에서 확인합니다 🌊";
 };
 function renderEnd(){
   show("vEnd");
-  if(myDoc.opinion){ $("inOpinion").value = myDoc.opinion;
-    $("opinionDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다시 제출하면 덮어써요."; }
+  if(!$("inOpinion").value && myDoc.opinion) $("inOpinion").value = myDoc.opinion;
+  if(!$("inEN").value && myDoc.predEN) $("inEN").value = myDoc.predEN;
+  if(!$("inSD").value && myDoc.predSD) $("inSD").value = myDoc.predSD;
+  if(myDoc.opinion || myDoc.predEN || myDoc.predSD)
+    $("endDone").innerHTML = "<b style='color:var(--green)'>제출됨</b> — 다시 제출하면 덮어써요.";
 }
 </script>
 
