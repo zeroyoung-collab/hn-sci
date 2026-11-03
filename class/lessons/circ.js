@@ -134,7 +134,7 @@ export default function build(E){
       <text x="243" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="#3d4652">1월 평균기온</text>
       <rect x="539" y="210" width="76" height="20" rx="6" fill="#d64545"/>
       <text x="577" y="198" text-anchor="middle" font-size="22" font-weight="900" fill="#d64545">+5℃</text>
-      <text x="577" y="128" text-anchor="middle" font-size="17" font-weight="900" fill="#092f66">🇬🇧 런던</text>
+      <text x="577" y="128" text-anchor="middle" font-size="17" font-weight="900" fill="#092f66">🏙️ 런던</text>
       <text x="577" y="150" text-anchor="middle" font-size="13" font-weight="700" fill="#3d4652">1월 평균기온</text>
       <text x="410" y="262" text-anchor="middle" font-size="14" font-weight="700" fill="#3d4652">두 도시 사이에는 대서양</text>
       <text x="410" y="332" text-anchor="middle" font-size="15" font-weight="900" fill="#c8920a">같은 위도인데 20℃ 차이 — 런던의 보온 비결은?</text>
@@ -149,12 +149,12 @@ export default function build(E){
     { emoji:"✈️", title:"수상한 비행시간",
       q:"거의 같은 길을 왕복하는데, 인천→LA는 약 10시간 30분 · LA→인천은 약 13시간. 이유로 가장 그럴듯한 것은?",
       opts:["지구가 둥글어서 돌아올 때 거리가 더 멀다","하늘 높은 곳에 서쪽→동쪽으로 부는 강한 바람이 있다","돌아올 때는 연료를 가득 실어 비행기가 무겁다"], ans:1,
-      exp:"중위도 상공에는 서→동으로 부는 강한 바람이 늘 불어요. 갈 때(동쪽행)는 뒤에서 밀어주는 순풍, 올 때는 맞바람!",
+      exp:"중위도 상공에는 서→동으로 부는 강한 바람이 늘 붑니다. 갈 때(동쪽행)는 뒤에서 밀어주는 순풍, 올 때는 맞바람!",
       svg:svgC2 },
     { emoji:"⛵", title:"콜럼버스의 지혜",
       q:"대항해시대 범선 선원들이 갈 때는 저위도, 올 때는 고위도 항로를 고집한 까닭은?",
       opts:["위도대마다 '늘 부는 바람'의 방향이 서로 다르기 때문","저위도 바다가 더 잔잔해서 가기 편했기 때문","고위도 항로에서 보급품을 구하기 쉬웠기 때문"], ans:0,
-      exp:"저위도에서는 동→서로, 중위도에서는 서→동으로 부는 바람이 1년 내내 꾸준히 붑니다. 돛단배는 '바람의 지도'를 알아야 바다를 건넜어요.",
+      exp:"저위도에서는 동→서로, 중위도에서는 서→동으로 부는 바람이 1년 내내 꾸준히 붑니다. 돛단배는 '바람의 지도'를 알아야 바다를 건넜습니다.",
       svg:svgC3 },
     { emoji:"🏜️", title:"사막의 주소",
       q:"사하라·아라비아·오스트레일리아… 세계의 큰 사막이 몰려 있는 곳은?",
@@ -166,7 +166,7 @@ export default function build(E){
       opts:["서쪽 바다가 동쪽 바다보다 더 깊다","따뜻한 물과 찬 물이 남북으로 이동하고 있다","인공위성의 측정 오류일 뿐이다"], ans:1,
       exp:"대양 서쪽에서는 따뜻한 물이 고위도로 올라가고, 동쪽에서는 찬 물이 저위도로 내려오는 중 — 바닷물이 열을 싣고 움직인다는 증거!",
       svg:svgC5 },
-    { emoji:"🇬🇧", title:"런던의 비밀",
+    { emoji:"🏙️", title:"런던의 비밀",
       q:"런던(1월 약 +5℃)이 비슷한 위도의 캐나다 동부 해안(약 −15℃)보다 훨씬 따뜻한 이유는?",
       opts:["런던은 대도시라 건물의 열기 때문에","따뜻한 바닷물이 유럽 앞바다로 흘러들기 때문에","런던이 사실은 훨씬 남쪽에 있기 때문에"], ans:1,
       exp:"저위도에서 데워진 바닷물이 대서양을 건너 유럽 앞바다까지 흘러갑니다. 바닷물은 거대한 '보온 배달부'!",
@@ -518,6 +518,7 @@ export default function build(E){
   }
 
   let briefIdx = 0, atmStep = 0, seaStep = 0, opFull = false, showTruth2 = false, feedSel = "predEN";
+  let clueOpen = {};   // 단서별 해석 공개 상태 {0:false…5} — 교사가 토글로 하나씩 공개
 
   /* 0 로비 — 입찰 공고 포스터 */
   E.slide(() => `
@@ -595,26 +596,33 @@ export default function build(E){
   }, { enter(){ E.setState({phase:"predinit"}); },
        acts(){ return [E.resetAct()]; } });
 
-  /* 4 단서 같이 읽기 — 교사가 6장 넘기며 핵심 개념을 짚는다 */
+  /* 4 단서 같이 읽기 — 발문 → 학생과 함께 추론 → 토글로 해석 공개 (단서별 개별 토글) */
   E.slide(() => {
     const K = CARDS[briefIdx];
+    const isOpen = !!clueOpen[briefIdx];
     return `
-    <div class="kicker">단서 같이 읽기 — 핵심 개념 짚기 (${briefIdx+1}/6)</div>
+    <div class="kicker">단서 같이 읽기 — 발문하고 함께 추론 (${briefIdx+1}/6) · ${isOpen ? "🔓 해석 공개됨" : "🔒 해석 숨김"}</div>
     <h2 class="mid" style="margin-bottom:1vh">${K.emoji} 단서 ${briefIdx+1} — ${K.title}</h2>
     <div style="flex:1;display:flex;gap:2.5vw;min-height:0;align-items:center">
       <div style="flex:1.5;min-width:0"><div class="minichart" style="border-width:.3vh">${K.svg()}</div></div>
       <div style="flex:1;display:flex;flex-direction:column;gap:1.2vh;min-width:0">
         <div class="bans" style="font-size:2.3vh"><b>체크 질문</b>${K.q}</div>
         <div style="display:flex;flex-direction:column;gap:.8vh">
-          ${K.opts.map((o,j)=>`<div style="font-size:2.1vh;font-weight:700;padding:1vh 1.6vh;border-radius:1vh;border:.25vh solid ${j===K.ans?"var(--green)":"var(--line)"};background:${j===K.ans?"#f0faf3":"#fff"};color:${j===K.ans?"var(--green)":"var(--soft)"}">${"①②③"[j]} ${o}${j===K.ans?" ✔":""}</div>`).join("")}
+          ${K.opts.map((o,j)=>{ const hot = isOpen && j===K.ans;
+            return `<div style="font-size:2.1vh;font-weight:700;padding:1vh 1.6vh;border-radius:1vh;border:.25vh solid ${hot?"var(--green)":"var(--line)"};background:${hot?"#f0faf3":"#fff"};color:${hot?"var(--green)":"var(--soft)"}">${"①②③"[j]} ${o}${hot?" ✔":""}</div>`; }).join("")}
         </div>
-        <div class="bans" style="border-left-color:var(--green);font-size:2.1vh"><b>한 줄 해설</b>${K.exp}</div>
+        ${isOpen
+          ? `<div class="bans" style="border-left-color:var(--green);font-size:2.1vh"><b>한 줄 해설</b>${K.exp}</div>`
+          : `<div class="bans" style="border-left-color:var(--gold);font-size:2.1vh;background:#fffaf0"><b>💬 함께 추론해 봅시다</b>"이 단서는 무엇을 말할까요?" 학생들과 먼저 예측해 본 뒤, 아래 <b style="color:var(--gold-d)">💡 정답·해석 보기를</b> 눌러 공개하세요.</div>`}
       </div>
     </div>`;
-  }, { enter(){ briefIdx = 0; E.setState({phase:"scout"}); },
+  }, { enter(){ briefIdx = 0; clueOpen = {}; E.setState({phase:"scout"}); },
        space(){ if(briefIdx < 5){ briefIdx++; E.render(); return true; } return false; },
-       acts(){ return [
+       acts(){ const isOpen = !!clueOpen[briefIdx]; const allOpen = CARDS.every((_,i)=>clueOpen[i]);
+         return [
          ["◀ 이전 단서", "ghost", () => { if(briefIdx>0){ briefIdx--; E.render(); } }],
+         [isOpen ? "🔓 해석 닫기" : "💡 정답·해석 보기", isOpen ? "ghost" : "gold", () => { clueOpen[briefIdx] = !clueOpen[briefIdx]; E.render(); }],
+         [allOpen ? "모두 닫기" : "모두 열기", "ghost", () => { CARDS.forEach((_,i)=>clueOpen[i]=!allOpen); E.render(); }],
          ["다음 단서 ▶ (Space)", "navy", () => { if(briefIdx<5){ briefIdx++; E.render(); } }],
        ]; } });
 
