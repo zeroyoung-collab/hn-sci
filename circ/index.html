@@ -30,10 +30,6 @@ label{ display:block; font-size:12px; font-weight:700; color:var(--navy); margin
 input[type=text]{ width:100%; font:inherit; font-size:16px; font-weight:700; padding:12px 14px;
   border:2px solid var(--line); border-radius:10px; outline:none; }
 input[type=text]:focus{ border-color:var(--navy); }
-.teamgrid{ display:grid; grid-template-columns:repeat(5,1fr); gap:6px; }
-.teamgrid button{ font:inherit; font-size:13px; font-weight:900; padding:13px 0; border-radius:10px;
-  border:2px solid var(--line); background:#fff; color:var(--soft); }
-.teamgrid button.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
 
 .big{ display:block; width:100%; font:inherit; font-size:17px; font-weight:900; color:#fff;
   background:var(--navy); border:none; border-radius:12px; padding:16px 0; margin-top:18px; cursor:pointer; }
@@ -128,11 +124,9 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
   <!-- 입장 -->
   <section id="vJoin" class="card">
     <h2>입장 — 오늘의 에너지 분석가</h2>
-    <p class="desc">발주처 「지구」가 적도의 남는 에너지를 극까지 나르는 <b>배달 노선</b>을 찾습니다. 오늘은 <b>각자</b> 노선을 예측하고, 단서로 고치고, 실제와 맞춰 봅니다. 이름을 쓰고 분임을 고른 뒤 입장하세요.</p>
+    <p class="desc">발주처 「지구」가 적도의 남는 에너지를 극까지 나르는 <b>배달 노선</b>을 찾습니다. 오늘은 <b>각자</b> 노선을 예측하고, 단서로 고치고, 실제와 맞춰 봅니다. 이름을 쓰고 입장하세요.</p>
     <label>이름</label>
     <input type="text" id="inName" maxlength="10" placeholder="예) 김호남">
-    <label>분임 (모둠)</label>
-    <div class="teamgrid" id="teamGrid"></div>
     <button class="big" id="btnJoin">입장하기</button>
   </section>
 
@@ -476,13 +470,13 @@ function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v));
   document.body.classList.toggle("wide", v==="vScout" || v==="vPred1" || v==="vPred2" || v==="vLook"); }
 
 let uid = null, meKey = "occ_me";
-let me = null;            // {name, team}
+let me = null;            // {name}
 let myDoc = {};           // 서버에 저장된 내 데이터
 let state = {};           // 진행 상태 (선생님 콘솔이 갱신)
-let team = 0, joined = false, inited = false;
+let joined = false, inited = false;
 let stuUnsub = null;
 const norm = s => (s||"").replace(/\s+/g,"");                     // 공백 제거(앞뒤·내부)
-const stuId = (name, tm) => "stu_" + norm(name) + "_" + tm;        // 이름+분임 기반 안정 식별자(진실원천)
+const stuId = name => "stu_" + norm(name);                         // 이름 기반 안정 식별자(진실원천)
 
 /* 끊김 시 지수 백오프 자동 재구독(2→4→8…최대 30초, 성공 시 리셋) */
 let retrying = 0;
@@ -509,22 +503,13 @@ function subMe(){         // 내 문서 구독 — uid가 바뀌면 다시 건�
 }
 
 /* ── 입장 ── */
-const tg = $("teamGrid");
-for(let i=1;i<=5;i++){
-  const b = document.createElement("button");
-  b.textContent = i + "분임";
-  b.onclick = () => { team = i; [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===i-1)); };
-  tg.appendChild(b);
-}
-
 $("btnJoin").onclick = async () => {
   if(!inited){ alert("서버에 연결 중입니다. 잠시 후 다시 눌러 주세요."); return; }
   const name = $("inName").value.trim();
   if(!name){ alert("이름을 입력하세요"); return; }
-  if(!team){ alert("분임(모둠)을 선택하세요"); return; }
-  const id = stuId(name, team);
-  // 동명이인/중복 확인 — 같은 이름+분임이 이미 있고 최근 활동 중이면 본인 여부 확인
-  const sameAsMe = me && norm(me.name) === norm(name) && me.team === team;
+  const id = stuId(name);
+  // 동명이인/중복 확인 — 같은 이름이 이미 있고 최근 활동 중이면 본인 여부 확인
+  const sameAsMe = me && norm(me.name) === norm(name);
   if(!sameAsMe){
     try{
       const ex = await getDoc(doc(db, COL, id));
@@ -532,20 +517,20 @@ $("btnJoin").onclick = async () => {
         const d = ex.data();
         const t = (d.joinedAt && d.joinedAt.toMillis) ? d.joinedAt.toMillis() : 0;
         if(d.name && t && (Date.now() - t < 40*60*1000)){
-          const ok = confirm(`이미 같은 반·분임에 '${d.name}' 학생이 있어요.\n\n· 본인이 다시 들어온 거라면 [확인]을 눌러 이어서 입장하세요.\n· 다른 사람이라면 [취소]를 누르고 이름을 다르게(예: 이름 뒤에 번호) 입력해 주세요.`);
+          const ok = confirm(`이미 '${d.name}' 학생이 있어요.\n\n· 본인이 다시 들어온 거라면 [확인]을 눌러 이어서 입장하세요.\n· 다른 사람이라면 [취소]를 누르고 이름을 다르게(예: 이름 뒤에 번호) 입력해 주세요.`);
           if(!ok) return;
         }
       }
     }catch(e){}
   }
   uid = id;
-  me = {name, team};
+  me = {name};
   localStorage.setItem(meKey, JSON.stringify(me));
   subMe();
   try{
-    await setDoc(doc(db, COL, uid), { name, team, joinedAt: serverTimestamp() }, {merge:true});
+    await setDoc(doc(db, COL, uid), { name, joinedAt: serverTimestamp() }, {merge:true});
     joined = true;
-    $("meLine").innerHTML = `호남고등학교 · <b>${team}분임 분석가 ${name}</b>`;
+    $("meLine").innerHTML = `호남고등학교 · <b>분석가 ${name}</b>`;
     render();
   }catch(e){ alert("접속 오류: 선생님께 알려주세요\n" + e.message); }
 };
@@ -563,10 +548,9 @@ function init(cls){
   const K = cls ? "occ_c" + cls + "_" : "occ_";   // 반별 식별 — 다음 교시 다른 반과 안 섞이게
   meKey = K + "me";
   me = JSON.parse(localStorage.getItem(meKey) || "null");
-  if(me && me.name && me.team){
-    uid = stuId(me.name, me.team);               // 저장소가 날아가도 같은 이름+분임이면 같은 문서로 복귀
-    $("inName").value = me.name; team = me.team;
-    [...tg.children].forEach((c,j)=>c.classList.toggle("on", j===me.team-1));
+  if(me && me.name){
+    uid = stuId(me.name);                        // 저장소가 날아가도 같은 이름이면 같은 문서로 복귀
+    $("inName").value = me.name;
   }
 
   watch(doc(db, COL, "state"), snap => {
@@ -587,10 +571,9 @@ $("btnRejoin").onclick = () => {
   if(stuUnsub){ stuUnsub(); stuUnsub = null; }
   uid = null;
   localStorage.removeItem(meKey);
-  me = null; myDoc = {}; joined = false; team = 0;
+  me = null; myDoc = {}; joined = false;
   p1Init = p2Init = false;
   $("inName").value = "";
-  [...tg.children].forEach(c => c.classList.remove("on"));
   $("meLine").textContent = "호남고등학교";
   show("vJoin");
 };
@@ -605,7 +588,7 @@ async function save(data){
 function render(){
   if(!joined && !(me && myDoc.name)){ show("vJoin"); return; }
   if(me && myDoc.name && !joined){ joined = true;
-    $("meLine").innerHTML = `호남고등학교 · <b>${me.team}분임 분석가 ${me.name}</b>`; }
+    $("meLine").innerHTML = `호남고등학교 · <b>분석가 ${me.name}</b>`; }
 
   const ph = state.phase || "lobby";
   if(ph === "predinit"){ renderPred1(); }
@@ -619,7 +602,7 @@ function render(){
 /* 대기(입장 완료) */
 function renderLobby(){
   show("vLobby");
-  if(me) $("lobbyMsg").textContent = `${me.name}님, ${me.team}분임 분석가로 입장했습니다!`;
+  if(me) $("lobbyMsg").textContent = `${me.name}님, 분석가로 입장했습니다!`;
 }
 
 /* ── 노선 방향 선택지 ── */

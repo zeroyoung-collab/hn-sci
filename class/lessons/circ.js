@@ -534,8 +534,8 @@ export default function build(E){
         <div class="url">${E.ENTRY.replace("https://","")}</div>
         <div class="joined">
           <div class="cnt">접속 <b>${E.students.length}</b>명</div>
-          <div class="teamsrow">${[1,2,3,4,5].map(t => `
-            <div class="teambox"><h4>${t}분임</h4>${E.students.filter(s=>s.team===t).map(s=>`<span>${s.name}</span>`).join("")}</div>`).join("")}
+          <div class="teamsrow" style="grid-template-columns:1fr">
+            <div class="teambox"><h4>입장한 분석가</h4>${E.students.map(s=>`<span>${esc(s.name)}</span>`).join("") || '<span style="background:none;color:#a8b2c0;font-weight:500">아직 입장 전…</span>'}</div>
           </div>
         </div>
       </div>
@@ -664,8 +664,8 @@ export default function build(E){
     const moves = changeText(s);
     const ev = +(s.predFinal && s.predFinal.evid) || 0;
     return `
-    <div class="kicker">공유 — ${s.team}분임 ${esc(s.name)} 분석가의 노선</div>
-    <h2 class="mid" style="margin-bottom:1vh">🎤 ${s.team}분임 <b style="color:var(--gold-d)">${esc(s.name)}</b>${drawing2 ? ' <span style="font-size:2.4vh;color:var(--soft)">뽑는 중…</span>' : ""}</h2>
+    <div class="kicker">공유 — ${esc(s.name)} 분석가의 노선</div>
+    <h2 class="mid" style="margin-bottom:1vh">🎤 <b style="color:var(--gold-d)">${esc(s.name)}</b>${drawing2 ? ' <span style="font-size:2.4vh;color:var(--soft)">뽑는 중…</span>' : ""}</h2>
     <div style="flex:1;display:flex;gap:2.5vw;min-height:0;align-items:center">
       <div style="flex:1.4;max-width:120vh"><div class="minichart" style="border-width:.3vh">${routeSVG(s.predFinal || {}, `${s.name} 2차`)}</div></div>
       <div style="flex:1;display:flex;flex-direction:column;gap:1.6vh;min-width:0">
@@ -733,7 +733,7 @@ export default function build(E){
     <div class="kicker">다음 시간 연결 — 『배달 사고: 엘니뇨와 사막화』 미리 예측</div>
     <h2 class="mid" style="margin-bottom:.6vh">${F.head} <span style="font-size:2.4vh;color:var(--soft)">제출 ${ops.length}/${E.students.length}명${opFull?` · 전체 (${E.clsShort()})`:""}</span></h2>
     <div style="font-size:2.3vh;font-weight:700;color:var(--soft);margin-bottom:1vh">💻 ${F.prompt} — 각자 노트북에서 <b style="color:var(--navy)">근거와 함께</b> 예측합니다.</div>
-    <div class="opfeed" style="${opFull ? "overflow-y:auto" : ""}">${list.map(s => `<div class="opline"><b>${s.team}분임 ${s.name}</b>${esc(s[F.key])}</div>`).join("") || '<div style="font-size:2.4vh;color:var(--soft);font-weight:700">아직 제출이 없어요.</div>'}</div>`;
+    <div class="opfeed" style="${opFull ? "overflow-y:auto" : ""}">${list.map(s => `<div class="opline"><b>${esc(s.name)}</b>${esc(s[F.key])}</div>`).join("") || '<div style="font-size:2.4vh;color:var(--soft);font-weight:700">아직 제출이 없어요.</div>'}</div>`;
   },
   { enter(){ E.setState({phase:"end"}); opFull = false; feedSel = "predEN"; },
     acts(){ return [
