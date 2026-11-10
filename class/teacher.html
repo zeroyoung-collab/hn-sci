@@ -281,6 +281,8 @@ const db = getFirestore(initializeApp(firebaseConfig));
 const ENTRY = "https://zeroyoung-collab.github.io/hn-sci/class/";   // 학생 고정 입장 주소(런처)
 const LAUNCHER_COL = "pw_class_launcher";
 const qs = new URLSearchParams(location.search);
+/* 아이패드/iOS는 전체화면 API가 vh 배치를 깨뜨림 — 자동 전체화면에서 제외(전자칠판·PC·빔은 정상) */
+const IS_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
 
 let META = null, COLBASE = "", COL = "", CLS = null;
 let state = {}, students = [], boards = {};
@@ -620,6 +622,7 @@ function fwd(){
   if(!(s.space && s.space())) go(cur+1);
 }
 function goFullscreen(){
+  if(IS_IOS) return;                                           // 아이패드/iOS 제외 — 전체화면 API가 배치를 깨뜨림
   if(document.fullscreenElement) return;                       // 이미 전체화면이면 생략
   const el = document.documentElement;
   try{
