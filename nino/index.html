@@ -204,7 +204,7 @@ footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; paddi
     <div id="exCharts"></div>
     <div id="exQs"></div>
     <label id="findLb">📢 발표 한 문장 — 우리 모둠이 밝혀낸 것</label>
-    <textarea id="inFind" maxlength="100" style="min-height:56px" placeholder=""></textarea>
+    <textarea id="inFind" maxlength="500" style="min-height:72px" placeholder=""></textarea>
     <p class="savedot" id="exSaved">모둠 공용 수사 보드 — 누가 적어도 모둠 전체 화면에 함께 보여요</p>
   </section>
 
@@ -822,7 +822,7 @@ function renderExplore(){
     $("exCharts").innerHTML = D.charts.map(f => `<div class="chartwrap">${f()}</div>`).join("");
     $("exQs").innerHTML = D.qs.map((q,i) => `
       <div class="qblock"><div class="q">${q}</div>
-      <textarea id="exA${i+1}" maxlength="150" placeholder="모둠에서 이야기하고 적어 보세요"></textarea></div>`).join("");
+      <textarea id="exA${i+1}" maxlength="300" placeholder="모둠에서 이야기하고 적어 보세요"></textarea></div>`).join("");
     $("inFind").placeholder = D.findPh;
     const wire = (id,k) => { $(id).oninput = () => { clearTimeout(exT);
       exT = setTimeout(() => { saveBoard({[k]: $(id).value.trim()}); $("exSaved").textContent = "✓ 모둠 보드 저장됨"; }, 600); }; };

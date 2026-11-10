@@ -397,7 +397,7 @@ export default function build(E){
       <div style="flex:1.3;display:flex;gap:1vw;min-height:0">
         ${D.charts.map(f => `<div class="minichart" style="border-width:.3vh;flex:1;align-self:center">${f()}</div>`).join("")}
       </div>
-      <div style="flex:1;display:flex;flex-direction:column;gap:1vh;min-height:0;overflow:hidden">
+      <div style="flex:1;display:flex;flex-direction:column;gap:1vh;min-height:0;overflow-y:auto">
         ${[["a1",0],["a2",1],["a3",2]].map(([k,i]) => `
           <div class="bans" style="font-size:2vh;padding:1vh 1.4vh"><b>${D.qs[i]}</b>${esc(b[k]||"") || '<span class="dim2">(기록 없음)</span>'}</div>`).join("")}
         <div class="bans" style="border-left-color:var(--navy);font-size:2.3vh"><b>📢 발표 한 문장</b>${esc(b.find||"") || '<span class="dim2">(기록 없음)</span>'}</div>
@@ -429,7 +429,7 @@ export default function build(E){
     return `
     <div class="kicker">최우수 수사반 투표</div>
     <h2 class="mid">가장 설득력 있는 수사는? <span style="font-size:2.4vh;color:var(--soft)">투표 ${voted}/${E.students.length}명 · 자기 모둠 제외</span></h2>
-    <div class="sents">
+    <div class="sents" style="overflow-y:auto;justify-content:flex-start">
       ${[1,2,3,4,5].map(t => {
         const s = S[t] || {};
         return `<div class="sent ${E.state.voteDone && votes[t]===mxV && mxV>0 ? "best":""} ${s.text?"":"empty"}">
