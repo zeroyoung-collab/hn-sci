@@ -256,6 +256,7 @@ body.has-acts .slide{ bottom:12vh; }
   <span id="hudHint">←/→·스와이프 슬라이드 · Space 진행</span>
   <button class="nav" id="navDedup">중복정리</button>
   <button class="nav" id="navLsn">수업</button>
+  <button class="nav" id="navCls">반바꾸기</button>
   <button class="nav" id="navPrev">◀</button>
   <span><b id="hudPg">1</b> / <span id="hudTot">?</span></span>
   <button class="nav" id="navNext">▶</button>
@@ -348,6 +349,7 @@ function startClass(n){
   document.getElementById("hudCls").textContent = `${META.emoji} ${n ? `1-${n}반` : "리허설"}`;
   startRealtime();
   go(Math.min(slides.length-1, Math.max(0, +(qs.get("slide") || 0))));
+  goFullscreen();                                              // 반 선택과 동시에 큰 화면(전체화면) 진입
 }
 const uiLocked = () => document.getElementById("gate") || document.getElementById("lsnPick") || document.getElementById("clsPick");
 
@@ -618,9 +620,21 @@ function fwd(){
   if(!(s.space && s.space())) go(cur+1);
 }
 function goFullscreen(){
+  if(document.fullscreenElement) return;                       // 이미 전체화면이면 생략
   const el = document.documentElement;
-  if(el.requestFullscreen) el.requestFullscreen();
-  else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  try{
+    if(el.requestFullscreen){ const p = el.requestFullscreen(); if(p && p.catch) p.catch(()=>{}); }
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+  }catch(e){}                                                  // 사용자 제스처 없는 자동복원 경로에선 조용히 무시
+}
+/* 반 바꾸기 — 저장된 반을 지우고 반 선택 화면으로 복귀(50분 자동복원 우회) */
+function changeClass(){
+  if(document.getElementById("gate") || document.getElementById("lsnPick")) return;
+  if(!META){                                                   // 수업 선택 전이면 반 선택만 다시 표시
+    const cp = document.getElementById("clsPick"); if(cp) cp.classList.add("show"); return;
+  }
+  try{ localStorage.removeItem(META.clsKey); }catch(e){}
+  location.href = location.pathname + "?pw=honam1234&lesson=" + META.id;
 }
 document.addEventListener("keydown", e => {
   if(uiLocked()) return;
@@ -633,6 +647,7 @@ document.getElementById("navPrev").onclick = () => { if(!uiLocked()) go(cur-1); 
 document.getElementById("navNext").onclick = () => { if(!uiLocked()) fwd(); };
 document.getElementById("navFull").onclick = goFullscreen;
 document.getElementById("navLsn").onclick = () => { location.href = location.pathname + "?pw=honam1234"; };
+document.getElementById("navCls").onclick = changeClass;
 document.getElementById("navDedup").onclick = dedup;
 let swX = null, swY = null;
 document.addEventListener("touchstart", e => {
