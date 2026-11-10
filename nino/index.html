@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>배달 사고 — 엘니뇨와 사막화</title>
+<style>
+:root{
+  --navy:#0B3E86; --navy2:#092f66; --gold:#F5B301; --gold-d:#c8920a;
+  --green:#1A9A3E; --red:#d64545; --ink:#141a24; --soft:#3d4652; --line:#b9c4d4; --lt:#eef3fa;
+}
+*{ margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html,body{ height:100%; }
+body{ font-family:-apple-system,BlinkMacSystemFont,"Malgun Gothic","맑은 고딕","Apple SD Gothic Neo",sans-serif;
+  color:var(--ink); background:#f4f7fb; word-break:keep-all; display:flex; flex-direction:column; overflow-x:hidden; }
+header{ background:linear-gradient(135deg,var(--navy),var(--navy2)); color:#fff; padding:14px 18px 12px; flex-shrink:0; }
+header .tag{ font-size:11px; font-weight:700; color:var(--gold); letter-spacing:.12em; }
+header h1{ font-size:18px; font-weight:900; letter-spacing:-.02em; }
+header .me{ font-size:12px; font-weight:500; opacity:.9; margin-top:2px; }
+header .me b{ color:var(--gold); }
+main{ flex:1; overflow-y:auto; padding:20px 18px 30px; max-width:480px; width:100%; margin:0 auto; }
+body.wide main{ max-width:860px; }
+.hidden{ display:none !important; }
+
+.card{ background:#fff; border:2px solid var(--line); border-radius:14px; padding:20px 18px; }
+.card h2{ font-size:17px; font-weight:900; color:var(--navy2); margin-bottom:6px; }
+.card p.desc{ font-size:13px; color:var(--soft); line-height:1.6; margin-bottom:14px; }
+
+label{ display:block; font-size:12px; font-weight:700; color:var(--navy); margin:12px 0 5px; }
+input[type=text]{ width:100%; font:inherit; font-size:16px; font-weight:700; padding:12px 14px;
+  border:2px solid var(--line); border-radius:10px; outline:none; }
+input[type=text]:focus{ border-color:var(--navy); }
+
+.big{ display:block; width:100%; font:inherit; font-size:17px; font-weight:900; color:#fff;
+  background:var(--navy); border:none; border-radius:12px; padding:16px 0; margin-top:18px; cursor:pointer; }
+.big:disabled{ background:#9fb0c6; }
+.big.gold{ background:var(--gold); color:var(--navy2); }
+
+.wait{ text-align:center; padding:44px 10px; }
+.wait .dot{ font-size:40px; }
+.wait h2{ font-size:18px; font-weight:900; color:var(--navy2); margin-top:10px; }
+.wait p{ font-size:13px; color:var(--soft); margin-top:6px; line-height:1.6; }
+
+textarea{ width:100%; font:inherit; font-size:15px; font-weight:500; line-height:1.6; padding:12px 14px;
+  border:2px solid var(--line); border-radius:10px; outline:none; min-height:72px; resize:none; }
+textarea:focus{ border-color:var(--navy); }
+.savedot{ font-size:11.5px; color:var(--green); font-weight:700; margin-top:8px; }
+.mission{ background:var(--lt); border-left:5px solid var(--gold); border-radius:8px;
+  padding:12px 14px; font-size:13px; line-height:1.7; margin-bottom:12px; }
+.mission b{ color:var(--navy); }
+.notice{ background:#fde8e8; border-left:5px solid var(--red); border-radius:8px;
+  padding:12px 14px; font-size:13px; line-height:1.7; margin-bottom:12px; font-weight:700; color:#a02b2b; }
+
+.chartwrap{ border:2px solid var(--line); border-radius:12px; overflow:hidden; background:#fff; margin:4px 0 12px; }
+.chartwrap svg{ width:100%; height:auto; display:block; }
+
+/* 이름·모둠 선택 */
+.roster{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; }
+.roster button{ font:inherit; font-size:14px; font-weight:900; padding:12px 2px; border-radius:10px;
+  border:2px solid var(--line); background:#fff; color:var(--soft); cursor:pointer; }
+.roster button small{ display:block; font-size:10px; font-weight:700; color:#8a93a1; }
+.roster button.on{ background:var(--navy); border-color:var(--navy); color:#fff; }
+.roster button.on small{ color:var(--gold); }
+.teamrow{ display:grid; grid-template-columns:repeat(5,1fr); gap:8px; }
+.teamrow button{ font:inherit; font-size:15px; font-weight:900; padding:13px 0; border-radius:10px;
+  border:2px solid var(--line); background:#fff; color:var(--soft); cursor:pointer; }
+.teamrow button small{ display:block; font-size:9.5px; font-weight:700; color:#8a93a1; }
+.teamrow button.on{ background:var(--gold); border-color:var(--gold); color:var(--navy2); }
+.teamrow button.on small{ color:var(--navy); }
+
+/* 용어 정리 */
+.termbox{ border:2px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:12px; }
+.termbox h3{ font-size:15px; font-weight:900; color:var(--navy2); margin-bottom:6px; }
+.termbox .def{ font-size:14px; line-height:1.7; font-weight:700; color:var(--ink); }
+.termbox .mine{ font-size:12.5px; line-height:1.6; color:var(--soft); margin-top:8px;
+  background:var(--lt); border-radius:8px; padding:8px 10px; }
+.termbox .mine b{ color:var(--navy); }
+.lockdef{ color:#a8b2c0; font-weight:700; }
+
+/* 질문 블록 */
+.qblock{ margin-top:14px; }
+.qblock .q{ font-size:13.5px; font-weight:900; color:var(--navy2); line-height:1.55; margin-bottom:6px; }
+
+/* 발표 보기 — 답 박스 */
+.ansbox{ background:var(--lt); border-left:5px solid var(--gold); border-radius:8px;
+  padding:10px 13px; font-size:13.5px; line-height:1.6; margin-top:6px; font-weight:500; }
+.ansbox b{ color:var(--navy); display:block; font-size:12px; margin-bottom:3px; }
+.ansbox.empty{ color:#a8b2c0; }
+
+/* 투표 */
+.votecard{ display:flex; align-items:center; gap:10px; border:2px solid var(--line); border-radius:12px;
+  padding:13px 14px; margin-bottom:10px; cursor:pointer; background:#fff; width:100%; font:inherit; text-align:left; }
+.votecard .tno{ flex-shrink:0; font-size:14px; font-weight:900; color:#fff; background:var(--navy); border-radius:8px; padding:6px 10px; }
+.votecard .tx{ flex:1; font-size:13.5px; font-weight:700; line-height:1.5; }
+.votecard .tx small{ display:block; font-size:10.5px; color:var(--gold-d); font-weight:900; margin-bottom:2px; }
+.votecard.sel{ border-color:var(--gold); background:#fffaf0; }
+.votecard.mine{ opacity:.5; cursor:default; }
+.votecard.empty .tx{ color:#a8b2c0; font-weight:500; }
+
+/* 정리 */
+.chain{ margin:10px 0; }
+.chain .step{ background:var(--lt); border-left:5px solid var(--navy); border-radius:8px;
+  padding:10px 13px; font-size:13.5px; font-weight:700; line-height:1.55; }
+.chain .step b{ color:var(--navy); }
+.chain .arr{ text-align:center; font-size:16px; font-weight:900; color:var(--gold-d); padding:2px 0; }
+
+footer{ flex-shrink:0; text-align:center; font-size:10.5px; color:#8a93a1; padding:8px 0 12px; }
+.conn{ position:fixed; top:10px; right:12px; font-size:10px; font-weight:700; padding:3px 9px; border-radius:12px; z-index:5; transition:top .15s ease; }
+.conn.on{ background:#e7f5ec; color:#136e2e; } .conn.off{ background:#fde8e8; color:#a02b2b; }
+
+/* 인앱 브라우저 안내 배너 + 로드 지연 안내 */
+.topbar{ flex-shrink:0; display:flex; align-items:center; justify-content:space-between; gap:10px;
+  flex-wrap:wrap; padding:10px 12px; font-size:12.5px; font-weight:700; line-height:1.5; }
+.iab{ background:#fff7e6; border-bottom:2px solid var(--gold); color:var(--navy2); }
+.iab b{ color:var(--gold-d); }
+.loadwarn{ background:#fde8e8; border-bottom:2px solid var(--red); color:#a02b2b; }
+.topbar .acts{ display:flex; align-items:center; gap:6px; flex-shrink:0; }
+.topbar .tbtn{ font:inherit; font-size:12px; font-weight:900; padding:7px 12px; border-radius:8px;
+  border:none; background:var(--navy); color:#fff; cursor:pointer; white-space:nowrap;
+  min-height:44px; display:inline-flex; align-items:center; justify-content:center; }
+.topbar .tbtn.ghost{ background:#fff; color:var(--navy); border:2px solid var(--line); }
+.topbar .tx{ font:inherit; font-size:15px; font-weight:900; background:none; border:none; color:var(--soft); cursor:pointer; padding:2px 8px;
+  min-height:44px; min-width:44px; display:inline-flex; align-items:center; justify-content:center; }
+</style>
+</head>
+<body>
+<div id="iab" class="topbar iab hidden">
+  <div>⚠️ 원활한 접속을 위해 <b>크롬·사파리 등 기본 브라우저</b>로 열어 주세요.</div>
+  <div class="acts">
+    <button id="iabOpen" class="tbtn">크롬에서 열기</button>
+    <button id="iabCopy" class="tbtn ghost">주소 복사</button>
+    <button id="iabX" class="tx" aria-label="닫기">✕</button>
+  </div>
+</div>
+<div id="loadWarn" class="topbar loadwarn hidden">
+  <div>접속이 지연되고 있어요. <b>새로고침</b>하거나 <b>크롬·사파리</b> 등 기본 브라우저로 열어 주세요.</div>
+  <div class="acts"><button id="lwReload" class="tbtn">새로고침</button></div>
+</div>
+<div id="conn" class="conn off">연결 중…</div>
+<header>
+  <div class="tag">통합과학2 · 지구 환경 변화 3/3</div>
+  <h1>배달 사고 — 엘니뇨와 사막화</h1>
+  <div class="me" id="meLine">호남고등학교</div>
+</header>
+<main>
+
+  <!-- 입장: 반 명단에서 본인 이름 선택 -->
+  <section id="vJoin" class="card">
+    <h2>입장 — 사고 조사관 등록</h2>
+    <div class="notice hidden" id="kickNote">선생님이 입장 정보를 정리했어요. 본인 이름으로 다시 입장해 주세요.</div>
+    <p class="desc">「지구 배달 주식회사」에 <b>배달 사고</b>가 접수됐습니다. 오늘 여러분은 사고를 파헤치는 <b>조사관</b>! 명단에서 <b>본인 이름</b>을 고르고, 앉아 있는 <b>모둠 번호</b>를 선택하세요.</p>
+    <label id="rosterLb">명단에서 내 이름 고르기</label>
+    <div class="roster" id="rosterGrid"></div>
+    <div id="freeName" class="hidden">
+      <label>이름 (리허설 모드)</label>
+      <input type="text" id="inName" maxlength="10" placeholder="예) 김호남">
+    </div>
+    <label>내가 앉은 모둠</label>
+    <div class="teamrow" id="teamGrid"></div>
+    <button class="big" id="btnJoin" disabled>입장하기</button>
+  </section>
+
+  <!-- 대기 -->
+  <section id="vLobby" class="wait hidden">
+    <div class="dot">🚨</div>
+    <h2 id="lobbyMsg">입장 완료!</h2>
+    <p id="lobbySub">수업이 시작되면 화면이 자동으로 바뀝니다.<br>현재 <b id="lobbyN">0</b>명 접속 중</p>
+    <button id="btnRejoin" style="margin-top:20px;font:inherit;font-size:12px;font-weight:700;color:var(--soft);background:#fff;border:2px solid var(--line);border-radius:10px;padding:8px 14px">↩ 내가 아니에요 — 다시 입장</button>
+  </section>
+
+  <!-- 1단계: 검색 수사 -->
+  <section id="vSearch" class="card hidden">
+    <h2>수사 1단계 — 용의자 검색</h2>
+    <div class="mission">
+      사고 신고서에 적힌 두 용의자, <b>엘니뇨</b>와 <b>사막화</b>. 휴대폰·노트북으로 <b>자유롭게 검색</b>해서 각각 <b>내 말로 1~2문장</b> 정리해 보세요. 베껴 쓰기보다 <b>내가 이해한 대로</b> 쓰는 게 포인트! 여러분의 문장이 앞 화면에 모여 우리 반의 정의가 됩니다.
+    </div>
+    <label>🌊 엘니뇨란? — 검색하고 내 말로 정리</label>
+    <textarea id="inDefEN" maxlength="120" placeholder="예) 페루 쪽 바닷물이 평소보다 따뜻해지는 현상인데…"></textarea>
+    <label>🏜️ 사막화란? — 검색하고 내 말로 정리</label>
+    <textarea id="inDefSD" maxlength="120" placeholder="예) 멀쩡하던 땅이 점점 사막처럼 변하는 것…"></textarea>
+    <p class="savedot" id="defSaved">쓰는 대로 자동 저장됩니다 — 앞 화면에 모여요</p>
+  </section>
+
+  <!-- 용어 정리 -->
+  <section id="vTerms" class="card hidden">
+    <h2>수사 노트 — 용어 확정</h2>
+    <p class="desc">우리 반의 문장들을 모아 선생님과 함께 두 용어의 정의를 확정합니다.</p>
+    <div class="termbox">
+      <h3>🌊 엘니뇨 (El Niño)</h3>
+      <div class="def" id="defENBox"><span class="lockdef">앞 화면에서 함께 확정 중…</span></div>
+      <div class="mine" id="mineEN"></div>
+    </div>
+    <div class="termbox">
+      <h3>🏜️ 사막화 (Desertification)</h3>
+      <div class="def" id="defSDBox"><span class="lockdef">앞 화면에서 함께 확정 중…</span></div>
+      <div class="mine" id="mineSD"></div>
+    </div>
+  </section>
+
+  <!-- 2단계: 모둠 증거 분석 -->
+  <section id="vExplore" class="card hidden">
+    <h2 id="exH">수사 2단계 — 증거 분석</h2>
+    <div class="mission" id="exMission"></div>
+    <div id="exCharts"></div>
+    <div id="exQs"></div>
+    <label id="findLb">📢 발표 한 문장 — 우리 모둠이 밝혀낸 것</label>
+    <textarea id="inFind" maxlength="100" style="min-height:56px" placeholder=""></textarea>
+    <p class="savedot" id="exSaved">모둠 공용 수사 보드 — 누가 적어도 모둠 전체 화면에 함께 보여요</p>
+  </section>
+
+  <!-- 발표 보기 -->
+  <section id="vPresent" class="card hidden">
+    <h2 id="prH">발표 — 증거 공개</h2>
+    <p class="desc" id="prMsg"></p>
+    <div id="prCharts"></div>
+    <div id="prBoard"></div>
+  </section>
+
+  <!-- 투표 -->
+  <section id="vVote" class="card hidden">
+    <h2>최우수 수사반 투표</h2>
+    <p class="desc">가장 설득력 있게 사건을 밝힌 모둠에 한 표! (<b>우리 모둠 제외</b>, 다시 누르면 변경돼요)</p>
+    <div id="voteList"></div>
+    <p class="savedot" id="voteSaved"></p>
+  </section>
+
+  <!-- 정리 -->
+  <section id="vWrap" class="card hidden">
+    <h2>수사 결과 보고서</h2>
+    <p class="desc">다섯 모둠의 증거를 이으면 사건의 전말이 보입니다. 앞 화면 정리를 들으며 확인하세요.</p>
+    <div class="termbox" style="border-color:var(--navy)">
+      <h3>🌊 사건 1 — 엘니뇨</h3>
+      <div class="chain">
+        <div class="step"><b>무역풍 약화</b> — 바닷물을 서쪽으로 밀던 바람이 힘을 잃는다</div>
+        <div class="arr">▼</div>
+        <div class="step"><b>따뜻한 바닷물이 동쪽(페루 쪽)에 머문다</b> — 동태평양 수온 상승</div>
+        <div class="arr">▼</div>
+        <div class="step"><b>용승 약화 → 어획량 급감</b> · <b>비구름 이동 → 가뭄과 홍수</b></div>
+      </div>
+    </div>
+    <div class="termbox" style="border-color:var(--gold-d)">
+      <h3>🏜️ 사건 2 — 사막화</h3>
+      <div class="chain">
+        <div class="step"><b>원인</b> — 오랜 가뭄(자연) + 과잉 방목·과잉 경작·삼림 벌채(인간)</div>
+        <div class="arr">▼</div>
+        <div class="step"><b>땅이 생산력을 잃고 사막처럼 변한다</b> — 사헬 지대 등</div>
+        <div class="arr">▼</div>
+        <div class="step"><b>황사</b>로 우리나라까지 영향 → <b>숲 조성·국제 협력</b>이 대책</div>
+      </div>
+    </div>
+    <label>💭 오늘의 한 문장 — 수사를 마친 조사관의 소감</label>
+    <textarea id="inOpinion" maxlength="160" placeholder="예) 바람 하나가 약해졌을 뿐인데 지구 반대편에 홍수가 난다는 게 신기했다…"></textarea>
+    <button class="big gold" id="btnEnd">보고서 제출</button>
+    <p class="desc" id="endDone" style="margin-top:10px"></p>
+  </section>
+
+</main>
+<footer>제작 · 호남고 조영신</footer>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, onSnapshot, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBotwjsJxit4SbOzXVVOov37Po97AieoxM",
+  authDomain: "sangdam-b97c1.firebaseapp.com",
+  projectId: "sangdam-b97c1",
+  storageBucket: "sangdam-b97c1.firebasestorage.app",
+  messagingSenderId: "389048360844",
+  appId: "1:389048360844:web:675f4f6ce8d54a873140a9"
+};
+const COLBASE = "pw_openclass_nino";
+let COL = COLBASE, CLS = 0;
+const db = getFirestore(initializeApp(firebaseConfig));
+
+/* ── 2026학년도 1학년 명단 (출석체크 앱과 동일 SEED) ── */
+const ROSTER = {
+"1":[{"no":1,"name":"공서현"},{"no":2,"name":"김가은"},{"no":3,"name":"김경율"},{"no":4,"name":"김산"},{"no":5,"name":"김성현"},{"no":6,"name":"김소미"},{"no":7,"name":"김윤"},{"no":8,"name":"김지호"},{"no":9,"name":"김진원"},{"no":10,"name":"김태현"},{"no":11,"name":"박수진"},{"no":12,"name":"박시현"},{"no":13,"name":"박주현"},{"no":14,"name":"양경민"},{"no":15,"name":"양지원"},{"no":16,"name":"이서정"},{"no":17,"name":"장유빈"},{"no":18,"name":"정서율"},{"no":19,"name":"조정현"},{"no":20,"name":"최민준"},{"no":21,"name":"최효빈"}],
+"2":[{"no":1,"name":"강지율A"},{"no":2,"name":"강태림"},{"no":3,"name":"고경훈"},{"no":4,"name":"권담희"},{"no":5,"name":"기민성"},{"no":6,"name":"김정우"},{"no":7,"name":"김현수"},{"no":8,"name":"김형찬"},{"no":9,"name":"김희서"},{"no":10,"name":"박채현"},{"no":11,"name":"백강훈"},{"no":12,"name":"손창희"},{"no":13,"name":"유성훈"},{"no":14,"name":"윤고은"},{"no":15,"name":"은수진"},{"no":16,"name":"이도원"},{"no":17,"name":"이명준"},{"no":18,"name":"이지민"},{"no":19,"name":"이하윤"},{"no":20,"name":"임서하"},{"no":21,"name":"장한별"}],
+"3":[{"no":1,"name":"강태우"},{"no":2,"name":"권미혜"},{"no":3,"name":"김규서"},{"no":4,"name":"김도운"},{"no":5,"name":"김준성"},{"no":6,"name":"김지우"},{"no":7,"name":"김찬우"},{"no":8,"name":"박유빈"},{"no":9,"name":"박은석"},{"no":10,"name":"배관필"},{"no":11,"name":"설혜인"},{"no":12,"name":"양하윤"},{"no":13,"name":"오승현"},{"no":14,"name":"이세빈"},{"no":15,"name":"임영훈"},{"no":16,"name":"임주환"},{"no":17,"name":"장태성"},{"no":18,"name":"정서윤"},{"no":19,"name":"정윤서"},{"no":20,"name":"최수호"}],
+"4":[{"no":1,"name":"김도현"},{"no":2,"name":"김동준"},{"no":3,"name":"김민준"},{"no":4,"name":"김수호"},{"no":5,"name":"김이든"},{"no":6,"name":"박서연"},{"no":7,"name":"박현민"},{"no":8,"name":"방서희"},{"no":9,"name":"손상운"},{"no":10,"name":"송승영"},{"no":11,"name":"신서윤"},{"no":12,"name":"유승연"},{"no":13,"name":"유영웅"},{"no":14,"name":"유지우"},{"no":15,"name":"이가은"},{"no":16,"name":"이윤아"},{"no":17,"name":"이혜민"},{"no":18,"name":"장지혁"},{"no":19,"name":"정영훈"},{"no":20,"name":"천수민"}],
+"5":[{"no":1,"name":"강지율B"},{"no":2,"name":"권규하"},{"no":3,"name":"김명제"},{"no":4,"name":"김성재"},{"no":5,"name":"김예준"},{"no":6,"name":"김희주"},{"no":7,"name":"노경우"},{"no":8,"name":"노온유"},{"no":9,"name":"박서진"},{"no":10,"name":"박소빈"},{"no":11,"name":"박찬웅"},{"no":12,"name":"소하윤"},{"no":13,"name":"송민경"},{"no":14,"name":"유은혁"},{"no":15,"name":"윤여은"},{"no":16,"name":"이건호"},{"no":17,"name":"이하준"},{"no":18,"name":"전채우"},{"no":19,"name":"정인경"},{"no":20,"name":"조하율"},{"no":21,"name":"최세은"}],
+"6":[{"no":1,"name":"김민유"},{"no":2,"name":"김민재"},{"no":3,"name":"김서현"},{"no":4,"name":"김아현"},{"no":5,"name":"김태이"},{"no":6,"name":"김해인"},{"no":7,"name":"남재형"},{"no":8,"name":"박성율"},{"no":9,"name":"박성휘"},{"no":10,"name":"박재희"},{"no":11,"name":"백서우"},{"no":12,"name":"송원선"},{"no":13,"name":"신인성"},{"no":14,"name":"왕의현"},{"no":15,"name":"이강산"},{"no":16,"name":"이승민"},{"no":17,"name":"정아윤"},{"no":18,"name":"정효정"},{"no":19,"name":"최도윤"},{"no":20,"name":"현예은"}]
+};
+
+/* ── 공용 그림 도우미 (교사 모듈과 동일 로직) ── */
+const esc = s => String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+function AR(x1,y1,x2,y2,w,fill,stroke){
+  const dx=x2-x1, dy=y2-y1, L=Math.hypot(dx,dy), ux=dx/L, uy=dy/L, px=-uy, py=ux;
+  const hl=Math.min(w*1.7, L*.4), hw=w*2.1, bx=x2-ux*hl, by=y2-uy*hl, h=w/2;
+  const P=(x,y)=>`${x.toFixed(1)},${y.toFixed(1)}`;
+  return `<polygon points="${P(x1+px*h,y1+py*h)} ${P(bx+px*h,by+py*h)} ${P(bx+px*hw/2,by+py*hw/2)} ${P(x2,y2)} ${P(bx-px*hw/2,by-py*hw/2)} ${P(bx-px*h,by-py*h)} ${P(x1-px*h,y1-py*h)}" fill="${fill}" stroke="${stroke}" stroke-width="1.6" stroke-linejoin="round" opacity=".95"/>`;
+}
+const VT = (x,y,s,fill="#6b5a3e") => `<text x="${x}" y="${y}" text-anchor="middle" font-size="13" font-weight="900" fill="${fill}">${[...s].map((ch,i)=>`<tspan x="${x}" dy="${i?15:0}">${ch}</tspan>`).join("")}</text>`;
+
+function lineChart(o){
+  const w=820, h=500, ml=o.ml||86, mr=30, mt=92, mb=62;
+  const iw=w-ml-mr, ih=h-mt-mb;
+  const X=x=>ml+(x-o.xmin)/(o.xmax-o.xmin)*iw;
+  const Y=y=>mt+ih-(y-o.ymin)/(o.ymax-o.ymin)*ih;
+  let g = "";
+  (o.yticks||[]).forEach(t=>{ g += `<line x1="${ml}" y1="${Y(t)}" x2="${w-mr}" y2="${Y(t)}" stroke="#e3e9f2" stroke-width="1.5"/>
+    <text x="${ml-10}" y="${Y(t)+5}" text-anchor="end" font-size="16" fill="#3d4652">${t}</text>`; });
+  (o.xticks||[]).forEach(t=>{ g += `<text x="${X(t)}" y="${h-mb+26}" text-anchor="middle" font-size="16" fill="#3d4652">${o.xfmt?o.xfmt(t):t}</text>`; });
+  if(o.zero !== undefined) g += `<line x1="${ml}" y1="${Y(o.zero)}" x2="${w-mr}" y2="${Y(o.zero)}" stroke="#3d4652" stroke-width="2" stroke-dasharray="5 4"/>`;
+  g += `<line x1="${ml}" y1="${mt-6}" x2="${ml}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>
+        <line x1="${ml}" y1="${h-mb}" x2="${w-mr}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>`;
+  const line = pts => pts.map(p=>`${X(p[0]).toFixed(1)},${Y(p[1]).toFixed(1)}`).join(" ");
+  const series = o.series || [{pts:o.pts, color:o.color, dots:o.dots}];
+  series.forEach(s=>{
+    g += `<polyline points="${line(s.pts)}" fill="none" stroke="${s.color||"#d64545"}" stroke-width="3.5" stroke-linejoin="round"/>`;
+    if(s.dots) s.pts.forEach(p=>{ g += `<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="5" fill="${s.color||"#d64545"}"/>`; });
+  });
+  const leg = series.filter(s=>s.label);
+  leg.forEach((s,i)=>{ const lx=w-mr-184, ly=mt-58+i*26;
+    g += `<line x1="${lx}" y1="${ly}" x2="${lx+34}" y2="${ly}" stroke="${s.color}" stroke-width="5"/>
+      <text x="${lx+42}" y="${ly+6}" font-size="16" font-weight="700" fill="#3d4652">${s.label}</text>`; });
+  (o.marks||[]).forEach(m=>{ g += `<circle cx="${X(m[0])}" cy="${Y(m[1])}" r="6.5" fill="#0B3E86"/>
+    <text x="${X(m[0])+(m[3]==="end"?-14:14)}" y="${Y(m[1])+(m[4]||5)}" text-anchor="${m[3]||"start"}" font-size="17" font-weight="900" fill="#0B3E86">${m[2]}</text>`; });
+  (o.notes||[]).forEach(n=>{ g += `<text x="${X(n[0])}" y="${Y(n[1])}" text-anchor="${n[3]||"middle"}" font-size="16" font-weight="900" fill="${n[4]||"#c8920a"}">${n[2]}</text>`; });
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${w}" height="${h}" fill="#fff"/>
+    <text x="30" y="40" font-size="24" font-weight="900" fill="#092f66">${o.title}</text>
+    <text x="30" y="66" font-size="15" font-weight="700" fill="#3d4652">${o.sub}</text>
+    <text x="26" y="${mt+ih/2}" text-anchor="middle" font-size="15" font-weight="900" fill="#0B3E86" transform="rotate(-90 26 ${mt+ih/2})">${o.ylabel||""}</text>
+    ${g}
+    <text x="${w-24}" y="${h-16}" text-anchor="end" font-size="12.5" fill="#8a93a1">${o.src} · 관측값 기반(수업용 재구성)</text>
+  </svg>`;
+}
+function barChart(o){
+  const w=820, h=500, ml=o.ml||86, mr=30, mt=92, mb=70;
+  const iw=w-ml-mr, ih=h-mt-mb;
+  const Y=v=>mt+ih-(v-o.ymin)/(o.ymax-o.ymin)*ih;
+  const base = o.zero !== undefined ? o.zero : o.ymin;
+  const n=o.cats.length, bw=iw/n*0.56;
+  let g = "";
+  (o.yticks||[]).forEach(t=>{ g += `<line x1="${ml}" y1="${Y(t)}" x2="${w-mr}" y2="${Y(t)}" stroke="#e3e9f2" stroke-width="1.5"/>
+    <text x="${ml-10}" y="${Y(t)+5}" text-anchor="end" font-size="16" fill="#3d4652">${t}</text>`; });
+  g += `<line x1="${ml}" y1="${mt-6}" x2="${ml}" y2="${h-mb}" stroke="#3d4652" stroke-width="2.5"/>
+        <line x1="${ml}" y1="${Y(base)}" x2="${w-mr}" y2="${Y(base)}" stroke="#3d4652" stroke-width="2.5"/>`;
+  o.cats.forEach((c,i)=>{
+    const cx = ml+iw/n*(i+0.5);
+    const yA = Y(Math.max(c.val, base)), yB = Y(Math.min(c.val, base));
+    g += `<rect x="${(cx-bw/2).toFixed(1)}" y="${yA.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(2,yB-yA).toFixed(1)}" rx="6" fill="${c.color}"/>
+      <text x="${cx}" y="${c.val>=base ? yA-10 : yB+24}" text-anchor="middle" font-size="19" font-weight="900" fill="#092f66">${c.vlabel!==undefined?c.vlabel:c.val}</text>
+      <text x="${cx}" y="${h-mb+30}" text-anchor="middle" font-size="16" font-weight="700" fill="#3d4652">${c.label}</text>`;
+  });
+  (o.notes||[]).forEach(nn=>{ const cx = ml+iw/n*(nn[0]+0.5);
+    g += `<text x="${cx}" y="${Y(nn[1])}" text-anchor="middle" font-size="17" font-weight="900" fill="${nn[3]||"#c8920a"}">${nn[2]}</text>`; });
+  return `<svg viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg">
+    <rect width="${w}" height="${h}" fill="#fff"/>
+    <text x="30" y="40" font-size="24" font-weight="900" fill="#092f66">${o.title}</text>
+    <text x="30" y="66" font-size="15" font-weight="700" fill="#3d4652">${o.sub}</text>
+    <text x="26" y="${mt+ih/2}" text-anchor="middle" font-size="15" font-weight="900" fill="#0B3E86" transform="rotate(-90 26 ${mt+ih/2})">${o.ylabel||""}</text>
+    ${g}
+    <text x="${w-24}" y="${h-16}" text-anchor="end" font-size="12.5" fill="#8a93a1">${o.src} · 관측값 기반(수업용 재구성)</text>
+  </svg>`;
+}
+
+/* ── 모둠 자료 그림 (교사 모듈과 동일) ── */
+/* 적도 태평양 비교 패널 — mode "n"(평상시) / "e"(엘니뇨), kind: wind | cloud */
+function pacPanel(y0, mode, kind){
+  const norm = mode === "n";
+  const yo = y0+96, yb = y0+250;   // 바다 위·아래
+  let g = `<rect x="30" y="${y0+8}" width="150" height="32" rx="16" fill="${norm?"#0B3E86":"#d64545"}"/>
+    <text x="105" y="${y0+30}" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">${norm?"평상시":"엘니뇨 때"}</text>
+    <rect x="36" y="${y0+46}" width="748" height="50" fill="#eef5fc"/>
+    <rect x="36" y="${yo}" width="748" height="${yb-yo}" fill="#cfe4f6"/>
+    <rect x="36" y="${y0+46}" width="52" height="${yb-y0-46}" fill="#cdbf9f"/>
+    <rect x="732" y="${y0+46}" width="52" height="${yb-y0-46}" fill="#cdbf9f"/>
+    ${VT(62, y0+118, "인도네시아")}
+    ${VT(758, y0+118, "남아메리카")}
+    <text x="410" y="${yb+20}" text-anchor="middle" font-size="12.5" font-weight="700" fill="#3d4652">적도 부근 태평양 — 왼쪽이 서쪽, 오른쪽이 동쪽</text>`;
+  // 따뜻한 물 층
+  if(norm){
+    g += `<path d="M 88,${yo} L 732,${yo} L 732,${yo+16} C 500,${yo+26} 300,${yo+66} 88,${yo+96} Z" fill="#e8603c" opacity=".6"/>
+      <text x="170" y="${yo+62}" font-size="17" font-weight="900" fill="#8a1f08">따뜻한 물 29℃</text>
+      <text x="640" y="${yo+52}" font-size="16" font-weight="900" fill="#0B3E86">23℃ (찬 물)</text>`;
+  }else{
+    g += `<path d="M 88,${yo} L 732,${yo} L 732,${yo+78} C 520,${yo+92} 300,${yo+78} 88,${yo+56} Z" fill="#e8603c" opacity=".6"/>
+      <text x="150" y="${yo+42}" font-size="16" font-weight="900" fill="#8a1f08">28℃</text>
+      <text x="580" y="${yo+52}" font-size="17" font-weight="900" fill="#8a1f08">따뜻한 물 27℃!</text>`;
+  }
+  if(kind === "wind"){
+    const wy = y0+71;
+    if(norm){
+      g += AR(700,wy, 130,wy, 15, "#F5B301", "#c8920a")
+        + `<text x="410" y="${wy-22}" text-anchor="middle" font-size="16" font-weight="900" fill="#8a6a2a">🌬 무역풍 — 동에서 서로 쌩쌩!</text>`;
+    }else{
+      g += AR(620,wy, 380,wy, 7, "#F5B301", "#c8920a")
+        + `<text x="410" y="${wy-22}" text-anchor="middle" font-size="16" font-weight="900" fill="#b02d55">🌬 무역풍이 약해짐!</text>`
+        + AR(240,yo+36, 560,yo+36, 12, "#f2a48c", "#d64545")
+        + `<text x="400" y="${yo+16}" text-anchor="middle" font-size="15" font-weight="900" fill="#b02d55">따뜻한 물이 동쪽으로 되돌아옴</text>`;
+    }
+  }
+  if(kind === "cloud"){
+    if(norm){
+      g += `<text x="200" y="${y0+86}" text-anchor="middle" font-size="34">⛈️</text>
+        <text x="160" y="${y0+86}" text-anchor="middle" font-size="30">🌧️</text>
+        ${AR(180, yo-4, 180, y0+96, 9, "#9ec3e8", "#1f6fd6")}
+        <text x="300" y="${y0+70}" font-size="15" font-weight="900" fill="#0B3E86">따뜻한 바다 위 = 비구름 공장</text>
+        <text x="640" y="${y0+80}" text-anchor="middle" font-size="30">☀️</text>`;
+    }else{
+      g += `<text x="560" y="${y0+86}" text-anchor="middle" font-size="34">⛈️</text>
+        <text x="600" y="${y0+86}" text-anchor="middle" font-size="30">🌧️</text>
+        ${AR(580, yo-4, 580, y0+96, 9, "#9ec3e8", "#1f6fd6")}
+        <text x="430" y="${y0+70}" text-anchor="end" font-size="15" font-weight="900" fill="#b02d55">비구름 공장이 동쪽으로 이사!</text>
+        <text x="150" y="${y0+80}" text-anchor="middle" font-size="28">☀️</text>
+        <text x="190" y="${y0+86}" text-anchor="middle" font-size="24">🔥</text>`;
+    }
+  }
+  return g;
+}
+function figPac(kind, title, bottom){
+  return `<svg viewBox="0 0 820 644" xmlns="http://www.w3.org/2000/svg">
+    <rect width="820" height="644" fill="#fff"/>
+    <text x="30" y="36" font-size="22" font-weight="900" fill="#092f66">${title}</text>
+    ${pacPanel(48, "n", kind)}
+    ${pacPanel(330, "e", kind)}
+    <text x="410" y="632" text-anchor="middle" font-size="13.5" font-weight="900" fill="#c8920a">${bottom}</text>
+  </svg>`;
+}
+const figA1 = () => figPac("wind", "그림 A · 적도 태평양의 바람과 표층 수온", "두 그림에서 달라진 것을 모두 찾아보자!");
+const figA3 = () => figPac("cloud", "그림 A · 비구름 공장의 위치", "비구름은 왜 따뜻한 바다 위에서 생길까? (더운 공기는 위로!)");
+
+/* 페루 연안 연직 단면 — 용승 */
+function upwPanel(y0, mode){
+  const norm = mode === "n";
+  const yo = y0+70, yb = y0+250;
+  const warmH = norm ? 26 : 86;
+  let g = `<rect x="30" y="${y0+8}" width="150" height="32" rx="16" fill="${norm?"#0B3E86":"#d64545"}"/>
+    <text x="105" y="${y0+30}" text-anchor="middle" font-size="17" font-weight="900" fill="#fff">${norm?"평상시":"엘니뇨 때"}</text>
+    <rect x="36" y="${yo}" width="664" height="${yb-yo}" fill="#9dc3e6"/>
+    <rect x="36" y="${yo+110}" width="664" height="${yb-yo-110}" fill="#5e93c7"/>
+    <path d="M 700,${yo} L 784,${yo} L 784,${yb} L 740,${yb} L 700,${yo+60} Z" fill="#cdbf9f"/>
+    ${VT(762, yo+70, "남아메리카", "#6b5a3e")}
+    <rect x="36" y="${yo}" width="664" height="${warmH}" fill="#e8603c" opacity=".62"/>
+    <text x="70" y="${yo+(norm?19:34)}" font-size="15.5" font-weight="900" fill="#8a1f08">따뜻한 층 ${norm?"(얇음)":"(두꺼움!)"}</text>
+    <text x="590" y="${yo+150}" text-anchor="end" font-size="15" font-weight="900" fill="#dcebfa">깊은 곳의 찬 바닷물 — 영양분 가득</text>`;
+  if(norm){
+    g += AR(640, yo+150, 640, yo+36, 15, "#8fd0a8", "#1A9A3E")
+      + `<text x="622" y="${yo+108}" text-anchor="end" font-size="15.5" font-weight="900" fill="#0f5c27">용승 — 찬 바닷물이 영양분을 싣고 상승!</text>
+      <text x="200" y="${yo+16}" font-size="22">🐟🐟🐟🐟</text>
+      <text x="330" y="${yo+44}" font-size="14" font-weight="900" fill="#092f66">플랑크톤 풍년 → 멸치 떼 풍년</text>`;
+  }else{
+    g += `<g opacity=".9">${AR(640, yo+170, 640, yo+110, 12, "#b9c4d4", "#8a93a1")}</g>
+      <line x1="614" y1="${yo+120}" x2="666" y2="${yo+72}" stroke="#d64545" stroke-width="7" stroke-linecap="round"/>
+      <line x1="666" y1="${yo+120}" x2="614" y2="${yo+72}" stroke="#d64545" stroke-width="7" stroke-linecap="round"/>
+      <text x="595" y="${yo+45}" text-anchor="end" font-size="15.5" font-weight="900" fill="#b02d55">두꺼운 따뜻한 층이 뚜껑처럼 용승을 막음 →</text>
+      <text x="330" y="${yo+22}" font-size="20">🐟…?</text>
+      <text x="200" y="${yo+70}" font-size="14" font-weight="900" fill="#8a1f08">영양분 끊김 → 물고기가 사라짐</text>`;
+  }
+  return g;
+}
+const figA2 = () => `<svg viewBox="0 0 820 644" xmlns="http://www.w3.org/2000/svg">
+  <rect width="820" height="644" fill="#fff"/>
+  <text x="30" y="36" font-size="22" font-weight="900" fill="#092f66">그림 A · 페루 앞바다의 속사정 (연직 단면)</text>
+  ${upwPanel(48, "n")}
+  ${upwPanel(330, "e")}
+  <text x="410" y="632" text-anchor="middle" font-size="13.5" font-weight="900" fill="#c8920a">바다를 옆에서 잘라 본 그림 — 찬 바닷물의 엘리베이터(용승)에 무슨 일이?</text>
+</svg>`;
+
+/* 사헬 지도 */
+const figB4 = () => `<svg viewBox="0 0 820 560" xmlns="http://www.w3.org/2000/svg">
+  <rect width="820" height="560" fill="#fff"/>
+  <text x="30" y="36" font-size="22" font-weight="900" fill="#092f66">그림 B · 사헬 지대는 어디?</text>
+  <rect x="60" y="60" width="500" height="460" rx="18" fill="#dcebfa"/>
+  <path d="M 150,80 L 470,80 L 520,180 L 490,290 L 400,400 L 330,500 L 290,500 L 220,380 L 150,260 Z" fill="#cdbf9f"/>
+  <text x="330" y="490" text-anchor="middle" font-size="15" font-weight="900" fill="#6b5a3e">아프리카</text>
+  <path d="M 152,110 L 492,110 L 505,205 L 160,205 Z" fill="#e8c76a"/>
+  <text x="330" y="165" text-anchor="middle" font-size="19" font-weight="900" fill="#8a6a2a">사하라 사막</text>
+  <path d="M 160,205 L 505,205 L 500,250 L 168,250 Z" fill="#e0803c"/>
+  <text x="330" y="235" text-anchor="middle" font-size="16" font-weight="900" fill="#fff">사헬 지대</text>
+  ${AR(240,256, 240,298, 11, "#d8b24a", "#8a6a2a")}
+  ${AR(330,256, 330,298, 11, "#d8b24a", "#8a6a2a")}
+  ${AR(420,256, 420,298, 11, "#d8b24a", "#8a6a2a")}
+  <text x="330" y="318" text-anchor="middle" font-size="14.5" font-weight="900" fill="#b02d55">사막이 해마다 남쪽으로 확장 중!</text>
+  <line x1="60" y1="130" x2="560" y2="130" stroke="#d64545" stroke-width="2" stroke-dasharray="7 5"/>
+  <text x="66" y="122" font-size="13" font-weight="900" fill="#d64545">위도 30°N 부근</text>
+  <rect x="580" y="90" width="214" height="240" rx="12" fill="#eef3fa"/>
+  <text x="687" y="124" text-anchor="middle" font-size="15.5" font-weight="900" fill="#092f66">📌 지난 시간 복습</text>
+  <text x="596" y="158" font-size="13.5" font-weight="700" fill="#3d4652"><tspan x="596" dy="0">위도 30° 부근은 공기가</tspan><tspan x="596" dy="22">가라앉는 자리라 비가 잘</tspan><tspan x="596" dy="22">안 온다 — 세계의 큰</tspan><tspan x="596" dy="22">사막이 모여 있는 이유!</tspan></text>
+  <text x="596" y="276" font-size="13.5" font-weight="900" fill="#c8920a"><tspan x="596" dy="0">사헬 = 사하라의 남쪽</tspan><tspan x="596" dy="22">가장자리(경계) 지역</tspan></text>
+  <text x="410" y="548" text-anchor="middle" font-size="12.5" fill="#8a93a1">수업용 모식도</text>
+</svg>`;
+
+/* ── 모둠 자료 5종 ── */
+const DATASETS = {
+  1:{ emoji:"🌬️", name:"멈춘 컨베이어 — 바람과 바닷물", short:"바람·수온",
+    mission:"사고 신고 1호 — <b>태평양의 열 배달 컨베이어가 멈췄다!</b> 평상시와 엘니뇨 때의 그림·그래프를 비교해, 따뜻한 바닷물의 분포가 <b>왜</b> 달라졌는지 밝혀라.",
+    charts:[()=>figA1(), ()=>barChart({ title:"그래프 B · 적도 부근 무역풍의 세기", sub:"평상시 평균을 100으로 한 상댓값", ylabel:"상대 세기(%)",
+      src:"자료: 미국 해양대기청(NOAA)", ymin:0, ymax:120, yticks:[0,50,100],
+      cats:[{label:"평상시",val:100,color:"#0B3E86"},{label:"엘니뇨 때",val:60,color:"#d64545"}] })],
+    qs:["① 평상시, 따뜻한 바닷물은 태평양의 서쪽·동쪽 중 어디에 모여 있나요? 무엇이 그렇게 만들고 있나요?",
+        "② 엘니뇨 때 무역풍의 세기는 평상시와 비교해 어떻게 달라졌나요? (그래프 B)",
+        "③ 그 결과 따뜻한 바닷물의 분포는 어떻게 바뀌었나요? (그림 A의 아래 그림)"],
+    findPh:"예) 무역풍이 약해지자 따뜻한 바닷물이 …" },
+  2:{ emoji:"🐟", name:"사라진 멸치 떼 — 용승과 어획량", short:"용승·어획량",
+    mission:"사고 신고 2호 — <b>페루 어부들의 그물이 텅 비었다!</b> 바다를 옆에서 잘라 본 그림과 어획량 그래프에서, 물고기가 사라진 <b>진짜 이유</b>를 찾아라.",
+    charts:[()=>figA2(), ()=>lineChart({ title:"그래프 B · 페루의 멸치(앤초비) 어획량", sub:"연도별 어획량 (백만 t)", ylabel:"어획량 (백만 t)",
+      src:"자료: 유엔식량농업기구(FAO)", xmin:1964, xmax:1981, ymin:0, ymax:13.5,
+      yticks:[0,4,8,12], xticks:[1965,1970,1975,1980], dots:true, color:"#1f6fd6",
+      pts:[[1965,7.5],[1966,8.5],[1967,9.8],[1968,10.3],[1969,8.9],[1970,12.3],[1971,10.3],[1972,4.4],[1973,1.8],[1974,4.0],[1975,3.3],[1976,4.3],[1977,0.8],[1978,1.2],[1979,1.4],[1980,0.7]],
+      marks:[[1970,12.3,"1970년 세계 1위!","start",-14],[1973,1.8,"1972~73년 엘니뇨","start",30]] })],
+    qs:["① 평상시 페루 앞바다에서는 깊은 곳의 찬 바닷물이 올라옵니다(용승). 이 바닷물이 물고기에게 주는 선물은 무엇인가요?",
+        "② 엘니뇨 때 그림 A에서 무엇이 두꺼워져서 용승을 막고 있나요?",
+        "③ 그래프 B에서 어획량이 급격히 줄어든 시기를 찾고, 그 까닭을 그림 A와 연결해 설명해 보세요."],
+    findPh:"예) 따뜻한 층이 두꺼워져 용승이 막히면 …" },
+  3:{ emoji:"⛈️", name:"이사 간 비구름 — 날씨 대혼란", short:"구름·기상 이변",
+    mission:"사고 신고 3호 — <b>비구름 공장이 통째로 이사를 갔다!</b> 늘 비가 오던 곳은 바싹 마르고, 사막 같던 해안엔 폭우가. 구름이 <b>왜, 어디로</b> 옮겨 갔는지 추적하라.",
+    charts:[()=>figA3(), ()=>barChart({ title:"그래프 B · 엘니뇨 때 강수량 변화", sub:"평상시 대비 변화율(%) — 적도 태평양의 양쪽", ylabel:"강수량 변화(%)",
+      src:"자료: 미국 해양대기청(NOAA)", ymin:-60, ymax:80, zero:0, yticks:[-40,0,40,80],
+      cats:[{label:"인도네시아 쪽(서쪽)",val:-40,color:"#d8b24a",vlabel:"−40"},{label:"페루 연안(동쪽)",val:60,color:"#1f6fd6",vlabel:"+60"}],
+      notes:[[0,12,"가뭄·산불"],[1,74,"폭우·홍수","#0B3E86"]] })],
+    qs:["① 비구름은 어떤 바다 위에서 잘 만들어지나요? 그림 A의 평상시 그림에서 찾아보세요.",
+        "② 엘니뇨 때 비구름 공장은 어느 쪽으로 이사 갔나요? 왜 그랬을까요? (힌트: 따뜻한 물의 위치)",
+        "③ 그 결과 인도네시아 쪽과 페루 쪽에는 각각 어떤 기상 재해가 일어나나요? (그래프 B)"],
+    findPh:"예) 따뜻한 물을 따라 비구름이 옮겨 가서 …" },
+  4:{ emoji:"🏜️", name:"넓어지는 모래 왕국 — 사헬의 눈물", short:"사헬 사막화",
+    mission:"사고 신고 4호 — <b>사하라 사막의 국경이 남쪽으로 내려오고 있다!</b> 사막 가장자리 '사헬 지대'의 강수량 그래프와 지도를 읽고, 땅이 사막으로 변해 가는 과정을 밝혀라.",
+    charts:[()=>lineChart({ title:"그래프 A · 사헬 지대의 강수량 변화", sub:"평년 대비 편차 지수 — 0보다 작으면 평년보다 비가 적게 온 해", ylabel:"강수량 편차 지수",
+      src:"자료: 미국 워싱턴대 사헬 강수 지수", xmin:1946, xmax:2014, ymin:-1.9, ymax:1.9, zero:0,
+      yticks:[-1,0,1], xticks:[1950,1970,1990,2010], dots:true, color:"#c8920a",
+      pts:[[1950,0.9],[1955,1.3],[1958,0.7],[1961,0.5],[1964,0.1],[1968,-0.5],[1972,-1.0],[1977,-0.9],[1980,-1.1],[1984,-1.5],[1987,-1.2],[1990,-0.9],[1994,-0.4],[1999,-0.2],[2003,-0.1],[2008,0.1],[2012,0.0]],
+      marks:[[1955,1.3,"비가 넉넉하던 시절","start",-14],[1984,-1.5,"1980년대 대가뭄","start",30]] }), ()=>figB4()],
+    qs:["① 사헬 지대는 어디에 있나요? 사하라 사막과의 위치 관계를 그림 B에서 찾아 설명해 보세요.",
+        "② 그래프 A에서 1970~80년대 사헬의 강수량은 어떠했나요?",
+        "③ 비가 계속 부족하면 사막 가장자리의 풀밭과 농경지는 어떻게 변해 갈까요?"],
+    findPh:"예) 수십 년째 비가 모자라자 사하라 가장자리 땅이 …" },
+  5:{ emoji:"🐑", name:"범인은 우리? — 인간 활동과 황사", short:"인간 활동·황사",
+    mission:"사고 신고 5호 — <b>사막화의 공범이 잡혔다. 그런데… 사람?!</b> 원인 그래프에서 인간 활동의 몫을 확인하고, 먼 나라의 사막화가 황사가 되어 우리 교실 창문까지 찾아오는 과정을 추적하라.",
+    charts:[()=>barChart({ title:"그래프 A · 사막화를 일으키는 원인별 비율", sub:"전 세계 사막화 원인 분석", ylabel:"비율(%)",
+      src:"자료: 유엔환경계획(UNEP)", ymin:0, ymax:42, yticks:[0,10,20,30,40],
+      cats:[{label:"과잉 방목",val:35,color:"#0B3E86"},{label:"삼림 벌채",val:30,color:"#1A9A3E"},{label:"과잉 경작",val:28,color:"#c8920a"},{label:"기타",val:7,color:"#8a93a1"}],
+      notes:[[1,38,"대부분이 인간 활동!"]] }), ()=>barChart({ title:"그래프 B · 서울의 연평균 황사 관측 일수", sub:"10년 단위 평균 (일)", ylabel:"황사 일수 (일/년)",
+      src:"자료: 기상청", ymin:0, ymax:12, yticks:[0,4,8,12],
+      cats:[{label:"1970년대",val:2.6,color:"#9fb0c6"},{label:"1980년대",val:3.9,color:"#9fb0c6"},{label:"1990년대",val:5.3,color:"#c8920a"},{label:"2000년대",val:9.8,color:"#d64545"},{label:"2010년대",val:6.9,color:"#e0803c"}],
+      notes:[[4,8.6,"숲 가꾸기의 효과?"]] })],
+    qs:["① 그래프 A에서 사막화를 일으키는 인간 활동 세 가지를 찾아 적어 보세요.",
+        "② 그래프 B에서 서울의 황사 일수는 어떻게 변해 왔나요? 2010년대에 줄어든 까닭은 무엇일까요?",
+        "③ 중국·몽골의 사막화가 왜 우리나라의 문제가 될까요?"],
+    findPh:"예) 지나친 방목과 벌채로 사막이 넓어지면 …" },
+};
+
+/* ── 용어 공식 정의 (교사 콘솔과 동일) ── */
+const DEF_EN = "무역풍이 약해지면서 <b>적도 부근 동태평양(페루 앞바다)의 표층 수온이 평상시보다 높은 상태</b>가 수개월 이상 이어지는 현상";
+const DEF_SD = "오랜 가뭄이나 지나친 개발로 <b>사막 주변(건조·반건조 지역)의 토지가 생산력을 잃고 사막처럼 변해 가는</b> 현상";
+
+const $ = id => document.getElementById(id);
+const views = ["vJoin","vLobby","vSearch","vTerms","vExplore","vPresent","vVote","vWrap"];
+function show(v){ views.forEach(x => $(x).classList.toggle("hidden", x!==v));
+  document.body.classList.toggle("wide", v==="vExplore" || v==="vPresent"); }
+
+let uid = null, meKey = "ocn_me";
+let me = null;            // {name, no, team}
+let myDoc = {};
+let state = {};
+let joined = false, inited = false, everSaw = false, kicked = false;
+let stuUnsub = null, boardUnsub = null, boardTeam = 0;
+let board = {};
+const normN = s => (s||"").replace(/\s+/g,"");
+const stuId = name => "stu_" + normN(name);
+
+let retrying = 0;
+function repaintConn(){
+  const el = $("conn");
+  if(retrying > 0){ el.className = "conn off"; el.textContent = "재연결 중…"; }
+  else { el.className = "conn on"; el.textContent = CLS ? `실시간 · 1-${CLS}반` : "실시간 연결됨"; }
+}
+function watch(ref, onNext){
+  let unsub = null, delay = 2000, timer = null, inRetry = false;
+  (function start(){
+    unsub = onSnapshot(ref,
+      snap => { if(inRetry){ inRetry = false; retrying--; repaintConn(); } delay = 2000; onNext(snap); },
+      () => { if(!inRetry){ inRetry = true; retrying++; repaintConn(); }
+        try{ unsub && unsub(); }catch(e){} unsub = null;
+        clearTimeout(timer); timer = setTimeout(start, delay); delay = Math.min(delay*2, 30000); });
+  })();
+  return () => { try{ unsub && unsub(); }catch(e){} clearTimeout(timer); };
+}
+function subMe(){
+  if(stuUnsub){ stuUnsub(); stuUnsub = null; }
+  everSaw = false;
+  if(!uid) return;
+  stuUnsub = watch(doc(db, COL, uid), snap => {
+    if(snap.exists()){ everSaw = true; myDoc = snap.data() || {}; render(); return; }
+    if(joined && everSaw){ onKicked(); return; }   // 선생님이 퇴장 처리(또는 전체 초기화)
+    myDoc = {}; render();
+  });
+}
+/* 선생님이 콘솔에서 내 입장을 지웠을 때 — 입장 화면으로 복귀 */
+function onKicked(){
+  if(stuUnsub){ stuUnsub(); stuUnsub = null; }
+  if(boardUnsub){ boardUnsub(); boardUnsub = null; boardTeam = 0; }
+  localStorage.removeItem(meKey);
+  uid = null; me = null; myDoc = {}; board = {}; joined = false; kicked = true;
+  selName = null; selTeam = 0; exBuiltFor = 0;
+  $("meLine").textContent = "호남고등학교";
+  buildJoin(); render();
+}
+
+/* ── 입장 화면 구성 ── */
+let selName = null, selTeam = 0, joinBuilt = false;
+function buildJoin(){
+  $("kickNote").classList.toggle("hidden", !kicked);
+  const grid = $("rosterGrid");
+  grid.innerHTML = "";
+  const list = ROSTER[String(CLS)] || [];
+  if(CLS >= 1 && list.length){
+    $("freeName").classList.add("hidden");
+    $("rosterLb").textContent = `1학년 ${CLS}반 명단에서 내 이름 고르기`;
+    list.forEach(s => {
+      const b = document.createElement("button"); b.type = "button";
+      b.innerHTML = `${esc(s.name)}<small>${s.no}번</small>`;
+      b.onclick = () => { selName = s; [...grid.children].forEach(x => x.classList.remove("on")); b.classList.add("on"); syncJoin(); };
+      grid.appendChild(b);
+    });
+  }else{
+    $("rosterLb").textContent = "리허설 모드 — 아래에 이름을 입력하세요";
+    $("freeName").classList.remove("hidden");
+  }
+  const tg = $("teamGrid");
+  tg.innerHTML = "";
+  for(let t=1;t<=5;t++){
+    const b = document.createElement("button"); b.type = "button";
+    b.innerHTML = `${t}모둠<small>${DATASETS[t].short}</small>`;
+    b.onclick = () => { selTeam = t; [...tg.children].forEach(x => x.classList.remove("on")); b.classList.add("on"); syncJoin(); };
+    tg.appendChild(b);
+  }
+  joinBuilt = true;
+  syncJoin();
+}
+function syncJoin(){
+  const hasName = CLS >= 1 ? !!selName : true;
+  $("btnJoin").disabled = !(hasName && selTeam);
+}
+$("inName").oninput = syncJoin;
+
+$("btnJoin").onclick = async () => {
+  if(!inited){ alert("서버에 연결 중입니다. 잠시 후 다시 눌러 주세요."); return; }
+  let name, no = 0;
+  if(CLS >= 1){
+    if(!selName){ alert("명단에서 본인 이름을 골라 주세요"); return; }
+    name = selName.name; no = selName.no;
+  }else{
+    name = $("inName").value.trim();
+    if(!name){ alert("이름을 입력하세요"); return; }
+  }
+  if(!selTeam){ alert("모둠을 선택하세요"); return; }
+  const id = stuId(name);
+  const sameAsMe = me && normN(me.name) === normN(name);
+  if(!sameAsMe){
+    try{
+      const ex = await getDoc(doc(db, COL, id));
+      if(ex.exists()){
+        const d = ex.data();
+        const t = (d.joinedAt && d.joinedAt.toMillis) ? d.joinedAt.toMillis() : 0;
+        if(d.name && t && (Date.now() - t < 40*60*1000)){
+          const ok = confirm(`'${d.name}' 이름으로 이미 입장한 기록이 있어요.\n\n· 본인이 다시 들어온 거라면 [확인]을 눌러 이어서 입장하세요.\n· 본인이 아니라면 [취소]를 누르고 선생님께 알려 주세요.`);
+          if(!ok) return;
+        }
+      }
+    }catch(e){}
+  }
+  uid = id;
+  me = {name, no, team:selTeam};
+  localStorage.setItem(meKey, JSON.stringify(me));
+  kicked = false; $("kickNote").classList.add("hidden");
+  subMe();
+  try{
+    await setDoc(doc(db, COL, uid), { name, no, team:selTeam, joinedAt: serverTimestamp() }, {merge:true});
+    joined = true;
+    $("meLine").innerHTML = `호남고등학교 · <b>조사관 ${esc(name)}</b> · ${selTeam}모둠`;
+    render();
+  }catch(e){ alert("접속 오류: 선생님께 알려주세요\n" + e.message); }
+};
+
+/* ── 반 연동 ── */
+let liveCls = null;
+watch(doc(db, COLBASE, "live"), snap => {
+  const c = +((snap.data() || {}).cls || 0);
+  if(liveCls === null){ liveCls = c; init(c); }
+  else if(c !== liveCls){ location.reload(); }
+});
+
+function init(cls){
+  CLS = cls; COL = cls ? COLBASE + "_c" + cls : COLBASE;
+  const K = cls ? "ocn_c" + cls + "_" : "ocn_";
+  meKey = K + "me";
+  me = JSON.parse(localStorage.getItem(meKey) || "null");
+  buildJoin();
+  if(me && me.name){
+    uid = stuId(me.name);
+    if(CLS >= 1){
+      const list = ROSTER[String(CLS)] || [];
+      const hit = list.find(s => normN(s.name) === normN(me.name));
+      if(hit){ selName = hit; [...$("rosterGrid").children].forEach((b,i) => b.classList.toggle("on", list[i] === hit)); }
+    }else{ $("inName").value = me.name; }
+    if(me.team >= 1 && me.team <= 5){ selTeam = me.team;
+      [...$("teamGrid").children].forEach((b,i) => b.classList.toggle("on", i+1 === me.team)); }
+    syncJoin();
+  }
+  watch(doc(db, COL, "state"), snap => {
+    state = snap.data() || {};
+    $("lobbyN").textContent = state.count || 0;
+    repaintConn();
+    render();
+  });
+  subMe();
+  inited = true; window.__ocBooted = true;
+  render();
+}
+
+$("btnRejoin").onclick = () => {
+  if(!inited) return;
+  if(stuUnsub){ stuUnsub(); stuUnsub = null; }
+  if(boardUnsub){ boardUnsub(); boardUnsub = null; boardTeam = 0; }
+  uid = null;
+  localStorage.removeItem(meKey);
+  me = null; myDoc = {}; board = {}; joined = false; kicked = false;
+  selName = null; selTeam = 0; exBuiltFor = 0;
+  $("meLine").textContent = "호남고등학교";
+  buildJoin();
+  show("vJoin");
+};
+
+async function save(data){
+  if(!uid) return;
+  try{ await setDoc(doc(db, COL, uid), data, {merge:true}); }
+  catch(e){ alert("전송 오류: " + e.message); }
+}
+
+/* ── 모둠 수사 보드 (board_<N>) — 모둠 공용 문서 ── */
+const myTeam = () => myDoc.team || (me && me.team) || 0;
+function subBoard(){
+  const t = myTeam();
+  if(t === boardTeam) return;
+  if(boardUnsub){ boardUnsub(); boardUnsub = null; }
+  boardTeam = t; board = {};
+  if(!t) return;
+  boardUnsub = watch(doc(db, COL, "board_" + t), snap => { board = snap.data() || {}; syncBoard(); });
+}
+async function saveBoard(data){
+  const t = myTeam();
+  if(!t) return;
+  try{ await setDoc(doc(db, COL, "board_" + t), {team:t, ...data}, {merge:true}); }
+  catch(e){ alert("전송 오류: " + e.message); }
+}
+/* 들어온 보드 값 반영 — 내가 입력 중인 칸은 건드리지 않음 */
+function syncBoard(){
+  if($("vExplore").classList.contains("hidden")) return;
+  [["exA1","a1"],["exA2","a2"],["exA3","a3"],["inFind","find"]].forEach(([id,k]) => {
+    const el = $(id);
+    if(el && document.activeElement !== el && (board[k] || "") !== el.value) el.value = board[k] || "";
+  });
+}
+
+/* ── 렌더 ── */
+function render(){
+  if(!joinBuilt) return;
+  if(!joined && !(me && myDoc.name)){ show("vJoin"); return; }
+  if(me && myDoc.name && !joined){ joined = true;
+    $("meLine").innerHTML = `호남고등학교 · <b>조사관 ${esc(me.name)}</b> · ${myTeam()}모둠`; }
+  if(me && myDoc.team && me.team !== myDoc.team){   // 선생님이 콘솔에서 모둠을 옮겨 준 경우
+    me.team = myDoc.team; localStorage.setItem(meKey, JSON.stringify(me));
+    $("meLine").innerHTML = `호남고등학교 · <b>조사관 ${esc(me.name)}</b> · ${me.team}모둠`;
+  }
+  const ph = state.phase || "lobby";
+  if(ph === "search"){ renderSearch(); }
+  else if(ph === "terms"){ renderTerms(); }
+  else if(ph === "explore"){ renderExplore(); }
+  else if(ph === "present"){ renderPresent(); }
+  else if(ph === "vote"){ renderVote(); }
+  else if(ph === "wrap"){ renderWrap(); }
+  else { renderLobby(); }
+}
+
+function renderLobby(){
+  show("vLobby");
+  if(me) $("lobbyMsg").textContent = `${me.name} 조사관, ${myTeam()}모둠으로 등록 완료!`;
+}
+
+/* 1단계 — 검색 ---------------------------------------------------- */
+let defBuilt = false, defT = null;
+function renderSearch(){
+  show("vSearch");
+  if(!defBuilt){
+    const push = () => {
+      save({ defEN: $("inDefEN").value.trim(), defSD: $("inDefSD").value.trim() });
+      $("defSaved").textContent = "✓ 저장됨 — 앞 화면에 모이는 중";
+    };
+    $("inDefEN").oninput = () => { clearTimeout(defT); defT = setTimeout(push, 600); };
+    $("inDefSD").oninput = () => { clearTimeout(defT); defT = setTimeout(push, 600); };
+    defBuilt = true;
+    if(myDoc.defEN) $("inDefEN").value = myDoc.defEN;
+    if(myDoc.defSD) $("inDefSD").value = myDoc.defSD;
+  }
+}
+
+/* 용어 정리 -------------------------------------------------------- */
+function renderTerms(){
+  show("vTerms");
+  const open = !!state.termsReveal;
+  $("defENBox").innerHTML = open ? DEF_EN : '<span class="lockdef">앞 화면에서 함께 확정 중…</span>';
+  $("defSDBox").innerHTML = open ? DEF_SD : '<span class="lockdef">앞 화면에서 함께 확정 중…</span>';
+  $("mineEN").innerHTML = myDoc.defEN ? `<b>내가 정리한 문장</b> — ${esc(myDoc.defEN)}` : "<b>내가 정리한 문장</b> — (아직 없음)";
+  $("mineSD").innerHTML = myDoc.defSD ? `<b>내가 정리한 문장</b> — ${esc(myDoc.defSD)}` : "<b>내가 정리한 문장</b> — (아직 없음)";
+}
+
+/* 2단계 — 모둠 증거 분석 ------------------------------------------ */
+let exBuiltFor = 0, exT = null;
+function renderExplore(){
+  show("vExplore");
+  const t = myTeam();
+  if(!t){ $("exH").textContent = "모둠이 아직 없어요"; $("exMission").innerHTML = "선생님께 모둠 배정을 요청하세요."; return; }
+  subBoard();
+  if(exBuiltFor !== t){
+    const D = DATASETS[t];
+    $("exH").textContent = `수사 2단계 — ${t}모둠 ${D.emoji} ${D.name}`;
+    $("exMission").innerHTML = D.mission + "<br>그림·그래프를 읽고 아래 질문에 <b>모둠의 답</b>을 적으세요. 발표 때 이 보드가 앞 화면에 뜹니다!";
+    $("exCharts").innerHTML = D.charts.map(f => `<div class="chartwrap">${f()}</div>`).join("");
+    $("exQs").innerHTML = D.qs.map((q,i) => `
+      <div class="qblock"><div class="q">${q}</div>
+      <textarea id="exA${i+1}" maxlength="150" placeholder="모둠에서 이야기하고 적어 보세요"></textarea></div>`).join("");
+    $("inFind").placeholder = D.findPh;
+    const wire = (id,k) => { $(id).oninput = () => { clearTimeout(exT);
+      exT = setTimeout(() => { saveBoard({[k]: $(id).value.trim()}); $("exSaved").textContent = "✓ 모둠 보드 저장됨"; }, 600); }; };
+    wire("exA1","a1"); wire("exA2","a2"); wire("exA3","a3"); wire("inFind","find");
+    exBuiltFor = t;
+  }
+  syncBoard();
+}
+
+/* 발표 보기 -------------------------------------------------------- */
+function renderPresent(){
+  show("vPresent");
+  const pt = +state.pteam || 0;
+  if(!pt){
+    $("prH").textContent = "발표 — 어느 수사반이 뽑힐까?";
+    $("prMsg").innerHTML = "앞 화면에서 발표 모둠을 뽑고 있어요. 두구두구… 🥁";
+    $("prCharts").innerHTML = ""; $("prBoard").innerHTML = "";
+    return;
+  }
+  const D = DATASETS[pt], mine = pt === myTeam();
+  $("prH").textContent = `발표 — ${pt}모둠 ${D.emoji} ${D.name}`;
+  $("prMsg").innerHTML = mine
+    ? "<b style='color:var(--gold-d)'>우리 모둠 차례!</b> 앞에 나가 그림을 가리키며 수사 결과를 발표하세요."
+    : "발표를 들으며 <b>이 모둠이 밝혀낸 핵심</b>을 내 머릿속 수사 노트에 기록해 두세요. 발표가 끝나면 투표가 있어요!";
+  $("prCharts").innerHTML = D.charts.map(f => `<div class="chartwrap">${f()}</div>`).join("");
+  const pb = state.pboard || {};
+  $("prBoard").innerHTML = [["a1",D.qs[0]],["a2",D.qs[1]],["a3",D.qs[2]]].map(([k,q]) =>
+    `<div class="ansbox ${pb[k]?"":"empty"}"><b>${q}</b>${pb[k] ? esc(pb[k]) : "(기록 없음)"}</div>`).join("")
+    + `<div class="ansbox ${pb.find?"":"empty"}" style="border-left-color:var(--navy)"><b>📢 발표 한 문장</b>${pb.find ? esc(pb.find) : "(기록 없음)"}</div>`;
+}
+
+/* 투표 ------------------------------------------------------------- */
+function renderVote(){
+  show("vVote");
+  const S = state.sentences || {};
+  const mineT = myTeam();
+  $("voteList").innerHTML = [1,2,3,4,5].map(t => {
+    const s = S[t] || {};
+    const sel = +myDoc.vote === t, isMine = t === mineT;
+    return `<button type="button" class="votecard ${sel?"sel":""} ${isMine?"mine":""} ${s.text?"":"empty"}" data-t="${t}" ${isMine?"disabled":""}>
+      <span class="tno">${t}모둠</span>
+      <span class="tx"><small>${DATASETS[t].emoji} ${DATASETS[t].short}${isMine?" · 우리 모둠":""}</small>${s.text ? esc(s.text) : "발표 한 문장이 아직 없어요"}</span>
+      <span style="font-size:18px">${sel ? "✅" : ""}</span>
+    </button>`;
+  }).join("");
+  document.querySelectorAll("#voteList .votecard").forEach(el => {
+    el.onclick = () => {
+      const t = +el.dataset.t;
+      if(t === mineT) return;
+      save({vote: t});
+      $("voteSaved").textContent = `✓ ${t}모둠에 투표했어요 — 다른 모둠을 누르면 바뀝니다`;
+    };
+  });
+}
+
+/* 정리 ------------------------------------------------------------- */
+$("btnEnd").onclick = () => {
+  const op = $("inOpinion").value.trim();
+  if(!op){ alert("오늘의 한 문장을 적어 주세요!"); return; }
+  save({ opinion: op, endTs: Date.now() });
+  $("endDone").innerHTML = "<b style='color:var(--green)'>제출 완료!</b> 다음 시간에는 문제로 실력을 확인합니다 ✏️";
+};
+function renderWrap(){
+  show("vWrap");
+  if(!$("inOpinion").value && myDoc.opinion) $("inOpinion").value = myDoc.opinion;
+  if(myDoc.opinion) $("endDone").innerHTML = "<b style='color:var(--green)'>제출됨</b> — 다시 제출하면 덮어써요.";
+}
+</script>
+
+<!-- 인앱 브라우저 안내 + 로드 지연 가드 -->
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var ua = navigator.userAgent || "";
+  var isApp = /KAKAOTALK|NAVER|Instagram|FBAN|FBAV|FB_IAB|Line\/|Daum|everytime|; wv\)/i.test(ua);
+  function positionConn(){
+    var c = $("conn"); if(!c) return;
+    var h = 0;
+    ["iab","loadWarn"].forEach(function(id){
+      var el = $(id);
+      if(el && !el.classList.contains("hidden")) h += el.offsetHeight;
+    });
+    c.style.top = h ? (h + 8) + "px" : "";
+  }
+  if(isApp){
+    var bar = $("iab");
+    if(bar){
+      bar.classList.remove("hidden");
+      positionConn();
+      var url = location.href.split("#")[0];
+      var isAndroid = /Android/i.test(ua), isiOS = /iPhone|iPad|iPod/i.test(ua);
+      var openBtn = $("iabOpen");
+      if(isAndroid){
+        openBtn.textContent = "크롬에서 열기";
+        openBtn.onclick = function(){ location.href = "intent://" + url.replace(/^https?:\/\//,"") + "#Intent;scheme=https;package=com.android.chrome;end;"; };
+      } else {
+        openBtn.textContent = isiOS ? "기본 브라우저로 열기" : "브라우저로 열기";
+        openBtn.onclick = function(){ alert("화면 메뉴의 ‘다른 브라우저로 열기 / Safari로 열기’를 사용하거나,\n아래 주소를 기본 브라우저 주소창에 직접 입력해 주세요.\n\n" + url); };
+      }
+      $("iabCopy").onclick = function(){
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          navigator.clipboard.writeText(url).then(function(){ $("iabCopy").textContent = "복사됨!"; }, function(){ window.prompt("아래 주소를 복사하세요", url); });
+        } else { window.prompt("아래 주소를 복사하세요", url); }
+      };
+      $("iabX").onclick = function(){ bar.classList.add("hidden"); positionConn(); };
+    }
+  }
+  var lw = $("loadWarn");
+  if(lw){ var r = $("lwReload"); if(r) r.onclick = function(){ location.reload(); }; }
+  setTimeout(function(){
+    if(!window.__ocBooted && lw){ lw.classList.remove("hidden"); positionConn(); }
+  }, 5000);
+  window.addEventListener("resize", positionConn);
+  positionConn();
+})();
+</script>
+</body>
+</html>

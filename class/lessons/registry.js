@@ -3,6 +3,14 @@
    colbase = 그 수업의 Firestore 컬렉션 접두사(반별 _c<N>), clsKey = 교사 반 복원용 localStorage 키 — 수업별로 반드시 달라야 함. */
 export const LESSONS = [
   {
+    id: "nino", emoji: "🚨",
+    title: "배달 사고", subtitle: "엘니뇨와 사막화",
+    unit: "통합과학2 · 지구 환경 변화 3/3",
+    student: "https://zeroyoung-collab.github.io/hn-sci/nino/",
+    colbase: "pw_openclass_nino", clsKey: "ocn_teacher_cls",
+    clsHint: "학생은 반 명단에서 본인 이름을 골라 입장해요. 로비 화면에서 이름을 클릭하면 모둠 이동·퇴장 처리가 됩니다.",
+  },
+  {
     id: "circ", emoji: "🚚",
     title: "지구 배달 주식회사", subtitle: "대기 대순환과 해수의 표층 순환",
     unit: "통합과학2 · 지구 환경 변화 2/3",
