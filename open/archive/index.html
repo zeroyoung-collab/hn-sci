@@ -413,6 +413,7 @@
     <button class="tab" data-tab="kentech">KENTECH 진로체험 활동<span class="n" id="cnt-kentech">0</span></button>
     <button class="tab" data-tab="jutamgu">주제탐구 발표회<span class="n" id="cnt-jutamgu">0</span></button>
     <button class="tab" data-tab="lab">찾아가는 과학탐구실험<span class="n" id="cnt-lab">15</span></button>
+    <button class="tab" data-tab="lecture">과학자와의 만남<span class="n" id="cnt-lecture">32</span></button>
     
   </div></div>
 
@@ -579,6 +580,30 @@
       <h3 class="kt-h3">학생별 탐구 보고서 <span class="en">SEMICONDUCTOR LAB</span><span class="sb" id="lab-n">0명</span></h3>
       <div class="kt-grid" id="lab-list"></div>
     </section>
+
+    <section class="panel" id="panel-lecture">
+      <div class="shead">
+        <h2>과학자와의 만남 — 입자물리학의 세계</h2>
+        <span class="datechip">2026.11.6</span>
+        <span class="meta">대학 물리교육과 교수 초청 특강 · 2시간 30분</span>
+      </div>
+      <div class="ovw">과학활동중점학교 「과학자와의 만남」 프로그램으로 대학 물리교육과 교수님을 모시고 진행한 저녁 특강입니다.
+        <b>입자물리학</b>의 최신 연구 성과와 <b>과학자가 새로운 사실을 발견하는 과정</b>을 주제로, 1·2학년 학생들이 현대 과학의 최전선과 연구자의 진로를 만났습니다. (교학실, 19:00–21:30)</div>
+      <div class="stats">
+        <div class="stat"><div class="v">32</div><div class="k">참여 학생</div></div>
+        <div class="stat"><div class="v">21</div><div class="k">1학년</div></div>
+        <div class="stat"><div class="v">11</div><div class="k">2학년</div></div>
+      </div>
+      <h3 class="kt-h3">강의 구성 <span class="en">PROGRAM</span></h3>
+      <div class="lec-ses">
+        <div class="kt-card"><div class="lec-time">1부 · 19:00–20:10 (70분)</div><div class="lec-tt">작은 세계와 큰 세계</div><div class="lec-tx">물질을 이루는 기본 입자와 자연의 근본 법칙, 거대강입자가속기(LHC)의 작동 원리와 현대 입자물리학의 연구 성과, 암흑물질·암흑에너지처럼 아직 풀리지 않은 우주의 수수께끼를 다루었습니다.</div></div>
+        <div class="kt-card"><div class="lec-time">2부 · 20:20–21:30 (70분)</div><div class="lec-tt">과학자는 어떻게 새로운 사실을 발견하는가</div><div class="lec-tx">질문과 가설에서 실험 설계, 데이터 분석과 검증으로 이어지는 연구 과정을 살펴보고, CERN의 국제 공동연구와 WWW의 탄생 사례로 기초과학과 기술의 관계를 이해했습니다. 과학자의 연구 생활과 진로도 소개되었습니다.</div></div>
+      </div>
+      <h3 class="kt-h3">참여 학생 <span class="en">PARTICIPANTS</span><span class="sb" id="lec-n">32명</span></h3>
+      <div class="kt-note">개인정보 보호를 위해 이름 일부를 가렸습니다.</div>
+      <div id="lec-list"></div>
+    </section>
+
 
         
 
@@ -1453,6 +1478,39 @@ if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
     var sat=LAB.reduce(function(a,s){return a+(+s.l||0);},0)/LAB.length;
     document.getElementById('lab-ssat').textContent=(Math.round(sat*10)/10).toFixed(1);
     document.getElementById('lab-search').addEventListener('input',render);
+    render();
+  })();
+  </script>
+<style>
+.lec-ses{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:6px}
+.lec-ses .kt-card{padding:15px 17px}
+@media(max-width:700px){.lec-ses{grid-template-columns:1fr}}
+.lec-time{font-size:11px;font-weight:800;color:var(--gold-d);letter-spacing:.06em}
+.lec-tt{font-family:var(--serif);font-size:16px;font-weight:900;color:var(--ink);margin:4px 0 6px}
+.lec-tx{font-size:13px;color:var(--soft);line-height:1.75;word-break:keep-all}
+.lec-grp{margin-bottom:14px}
+.lec-gh{font-size:13px;font-weight:800;color:var(--navy);margin-bottom:6px}
+.lec-gh span{color:var(--mut);font-weight:600;margin-left:6px}
+.lec-chips{display:flex;flex-wrap:wrap;gap:6px}
+.lec-chip{background:#fff;border:1px solid var(--hair);padding:5px 10px;font-size:13px;color:var(--ink)}
+.lec-chip .no{color:var(--mut);font-size:11px;margin-right:5px}
+</style>
+<script>
+  (function(){
+    var LEC=[{"g":"1","name":"김○현"},{"g":"1","name":"김○현"},{"g":"1","name":"박○현"},{"g":"1","name":"양○민"},{"g":"1","name":"백○훈"},{"g":"1","name":"윤○은"},{"g":"1","name":"은○진"},{"g":"1","name":"이○민"},{"g":"1","name":"임○하"},{"g":"1","name":"장○별"},{"g":"1","name":"김○서"},{"g":"1","name":"김○우"},{"g":"1","name":"김○우"},{"g":"1","name":"박○빈"},{"g":"1","name":"이○빈"},{"g":"1","name":"김○준"},{"g":"1","name":"박○민"},{"g":"1","name":"송○영"},{"g":"1","name":"이○민"},{"g":"1","name":"김○주"},{"g":"1","name":"송○경"},{"g":"2","name":"박○현"},{"g":"2","name":"이○후"},{"g":"2","name":"문○후"},{"g":"2","name":"박○성"},{"g":"2","name":"신○훈"},{"g":"2","name":"김○성"},{"g":"2","name":"김○겸"},{"g":"2","name":"우○재"},{"g":"2","name":"이○기"},{"g":"2","name":"이○우"},{"g":"2","name":"임○연"}];var PUB=true;
+    var E=function(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');};
+    function render(){
+      var el=document.getElementById('lec-search');var q=el?(el.value||'').trim():'';
+      var list=LEC.filter(function(s){return !q||(s.name+' '+(s.sid||'')).indexOf(q)>-1;});
+      var groups={},order=[];
+      list.forEach(function(s){var k=PUB?s.g+'학년':s.sid[0]+'학년 '+(+s.sid[1])+'반';if(!groups[k]){groups[k]=[];order.push(k);}groups[k].push(s);});
+      document.getElementById('lec-list').innerHTML=order.map(function(k){
+        return '<div class="lec-grp"><div class="lec-gh">'+k+'<span>'+groups[k].length+'명</span></div><div class="lec-chips">'+groups[k].map(function(s){
+          return '<span class="lec-chip">'+(PUB?'':'<span class="no">'+E(s.sid)+'</span>')+E(s.name)+'</span>';}).join('')+'</div></div>';
+      }).join('')||'<div class="kt-note">검색 결과가 없습니다.</div>';
+      var n=document.getElementById('lec-n');if(n)n.textContent=list.length+'명';
+    }
+    var se=document.getElementById('lec-search');if(se)se.addEventListener('input',render);
     render();
   })();
   </script>
