@@ -599,7 +599,9 @@ const actsEl = document.getElementById("acts");
 function render(){
   if(!slides.length) return;
   const s = slides[cur];
+  const keep = {}; stage.querySelectorAll("[data-scroll]").forEach(el => keep[el.dataset.scroll] = el.scrollTop);
   stage.innerHTML = `<div class="slide on">${s.fn()}</div>`;
+  stage.querySelectorAll("[data-scroll]").forEach(el => { if(keep[el.dataset.scroll] != null) el.scrollTop = keep[el.dataset.scroll]; });
   document.getElementById("hudPg").textContent = cur+1;
   actsEl.innerHTML = "";
   (s.acts ? s.acts() : []).forEach(([label, cls, fn, disabled]) => {

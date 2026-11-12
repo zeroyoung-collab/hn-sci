@@ -306,7 +306,7 @@ export default function build(E){
   /* 3 수사 1단계 — 검색 */
   E.slide(() => {
     const defs = k => E.students.filter(s => (s[k]||"").trim());
-    const feed = (k, color) => defs(k).slice(-10).map(s =>
+    const feed = (k, color) => defs(k).map(s =>
       `<div class="opline" style="border-left-color:${color}"><b>${esc(s.name)}</b>${esc(s[k])}</div>`).join("")
       || `<div style="font-size:2.2vh;color:#a8b2c0;padding:1vh">아직 올라온 문장이 없어요…</div>`;
     return `
@@ -315,11 +315,11 @@ export default function build(E){
     <div style="display:flex;gap:2vw;flex:1;min-height:0;margin-top:1vh">
       <div style="flex:1;display:flex;flex-direction:column;min-height:0">
         <div style="font-size:2.6vh;font-weight:900;color:var(--navy)">🌊 엘니뇨란?</div>
-        <div style="${opfeedStyle};grid-template-columns:1fr">${feed("defEN","#1f6fd6")}</div>
+        <div data-scroll="defEN" style="${opfeedStyle};grid-template-columns:1fr;overflow-y:auto;padding-right:.6vw;scrollbar-width:thin">${feed("defEN","#1f6fd6")}</div>
       </div>
       <div style="flex:1;display:flex;flex-direction:column;min-height:0">
         <div style="font-size:2.6vh;font-weight:900;color:var(--gold-d)">🏜️ 사막화란?</div>
-        <div style="${opfeedStyle};grid-template-columns:1fr">${feed("defSD","#c8920a")}</div>
+        <div data-scroll="defSD" style="${opfeedStyle};grid-template-columns:1fr;overflow-y:auto;padding-right:.6vw;scrollbar-width:thin">${feed("defSD","#c8920a")}</div>
       </div>
       <div style="flex:0 0 26vh">${E.timerHTML()}</div>
     </div>`;
